@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bellewear Admin Login</title>
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      body {
+        font-family: Inter, sans-serif;
+        background: #f8fafc;
+      }
+    </style>
+  </head>
+
+  <body class="flex items-center justify-center min-h-screen">
+    <div class="bg-white w-full max-w-md p-8 rounded-2xl shadow-xl">
+      <h1 class="text-2xl font-bold text-center mb-1">Admin Login</h1>
+      <p class="text-slate-500 text-center mb-6">Bellewear Dashboard</p>
+
+      <form id="loginForm" class="space-y-4 relative">
+        <input
+          id="email"
+          type="email"
+          required
+          placeholder="Email"
+          class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+        />
+
+        <div class="relative">
+          <input
+            id="password"
+            type="password"
+            required
+            placeholder="Password"
+            class="w-full px-4 py-2 border rounded-lg pr-10 focus:ring-2 focus:ring-indigo-500 outline-none"
+          />
+          <button
+            type="button"
+            id="togglePass"
+            class="absolute right-3 top-2.5 text-slate-500 hover:text-slate-700"
+          >
+            👁️
+          </button>
+        </div>
+
+        <p id="errorMsg" class="text-sm text-red-600 text-center hidden"></p>
+        <p id="statusMsg" class="text-sm text-center hidden"></p>
+
+        <button
+          id="signInBtn"
+          class="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition flex justify-center items-center gap-2"
+        >
+          <span id="btnText">Sign in</span>
+          <svg
+            id="spinner"
+            class="w-5 h-5 animate-spin hidden"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="white"
+              stroke-width="4"
+              fill="none"
+              opacity="0.3"
+            />
+            <path
+              d="M22 12a10 10 0 01-10 10"
+              stroke="white"
+              stroke-width="4"
+              fill="none"
+            />
+          </svg>
+        </button>
+
+        <button
+          type="button"
+          id="googleBtn"
+          class="w-full border mt-3 py-2 rounded-lg flex justify-center items-center gap-2 hover:bg-slate-50"
+        >
+          <!-- Google SVG -->
+          <svg width="20" height="20" viewBox="0 0 48 48">
+            <path
+              fill="#EA4335"
+              d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
+            />
+            <path
+              fill="#4285F4"
+              d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.27 5.48-4.78 7.18l7.73 6c4.51-4.18 7.11-10.5 7.11-18.66z"
+            />
+            <path
+              fill="#FBBC05"
+              d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.28-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"
+            />
+            <path
+              fill="#34A853"
+              d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
+            />
+          </svg>
+          Sign in with Google
+        </button>
+      </form>
+    </div>
+
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+      import {
+        getAuth,
+        signInWithEmailAndPassword,
+        signInWithPopup,
+        GoogleAuthProvider,
+        setPersistence,
+        browserLocalPersistence,
+      } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+      import {
+        getFirestore,
+        doc,
+        getDoc,
+      } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyD6UqMyedaoaXgqOeddQN47ADgP8joO364",
+        authDomain: "bellewear-boutique.firebaseapp.com",
+        projectId: "bellewear-boutique",
+        storageBucket: "bellewear-boutique.appspot.com",
+        messagingSenderId: "795858464616",
+        appId: "1:795858464616:web:0bbf307b3da145766ff0dd",
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
+
+      await setPersistence(auth, browserLocalPersistence);
+
+      // Verify that the signed-in user is an admin (checks custom claims)
+      async function checkIsAdmin(user) {
+        if (!user) return false;
+        try {
+          const idTokenResult = await user.getIdTokenResult();
+          return idTokenResult.claims.admin === true;
+        } catch (err) {
+          console.error("checkIsAdmin error", err);
+          return false;
+        }
+      }
+
+      const form = document.getElementById("loginForm");
+      const emailInput = document.getElementById("email");
+      const passwordInput = document.getElementById("password");
+      const errorMsg = document.getElementById("errorMsg");
+      const statusMsg = document.getElementById("statusMsg");
+      const btnText = document.getElementById("btnText");
+      const spinner = document.getElementById("spinner");
+
+      document.getElementById("togglePass").onclick = () => {
+        passwordInput.type =
+          passwordInput.type === "password" ? "text" : "password";
+      };
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        errorMsg.classList.add("hidden");
+        statusMsg.classList.add("hidden");
+        btnText.textContent = "Signing in...";
+        spinner.classList.remove("hidden");
+
+        try {
+          const cred = await signInWithEmailAndPassword(
+            auth,
+            emailInput.value,
+            passwordInput.value,
+          );
+          const user = cred.user;
+
+          const isAdmin = await checkIsAdmin(user);
+
+          if (!isAdmin) {
+            await auth.signOut();
+            errorMsg.textContent = "Access denied. Admins only.";
+            errorMsg.classList.remove("hidden");
+            btnText.textContent = "Sign in";
+            spinner.classList.add("hidden");
+            return;
+          }
+
+          // ✅ If admin
+          window.location.replace("admin.html");
+        } catch (err) {
+          errorMsg.textContent = "Invalid credentials";
+          errorMsg.classList.remove("hidden");
+          btnText.textContent = "Sign in";
+          spinner.classList.add("hidden");
+        }
+      });
+
+      document.getElementById("googleBtn").onclick = async () => {
+        errorMsg.classList.add("hidden");
+        statusMsg.classList.add("hidden");
+
+        try {
+          const result = await signInWithPopup(auth, new GoogleAuthProvider());
+          const user = result.user;
+
+          const isAdmin = await checkIsAdmin(user);
+
+          if (!isAdmin) {
+            await auth.signOut();
+            errorMsg.textContent = "Access denied. Admins only.";
+            errorMsg.classList.remove("hidden");
+            return;
+          }
+
+          window.location.replace("admin.html");
+        } catch (err) {
+          errorMsg.textContent = "Google sign-in failed";
+          errorMsg.classList.remove("hidden");
+        }
+      };
+    </script>
+  </body>
+</html>

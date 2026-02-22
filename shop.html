@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Boutique | Shop</title>
+
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="fontawesome-free-7.1.0-web/css/all.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Firebase SDKs -->
+    <script type="module" src="main.js"></script>
+    <script type="module" src="shop.js" defer></script>
+  </head>
+
+  <body>
+    <!-- ================= HEADER ================= -->
+    <header id="header">
+      <!-- TOP BAR -->
+      <div class="header-top">
+        <!-- Logo -->
+        <a href="index.html" class="logo">Bellewear <span>Boutique</span></a>
+
+        <!-- Search (WhatsApp-style) -->
+        <div class="search-container">
+          <div class="search-input-wrapper">
+            <i class="fas fa-search search-input-icon"></i>
+            <input
+              type="text"
+              id="searchInput"
+              class="search-input"
+              placeholder="Search for products..."
+            />
+          </div>
+          <button id="searchBtn" class="search-btn">SEARCH</button>
+        </div>
+
+        <!-- Profile Icon + Greeting -->
+        <div class="profile-wrapper">
+          <a href="#" class="profile-link">
+            <i class="fas fa-user-circle"></i>
+            <i class="fas fa-chevron-down chevron"></i>
+          </a>
+
+          <div class="profile-dropdown">
+            <p class="dropdown-title" id="profileGreeting">Sign In</p>
+            <p class="dropdown-user-name" id="profileUserName"></p>
+            <div id="profileActions">
+              <a href="auth.html"><i class="fas fa-sign-in-alt"></i> Sign In</a>
+            </div>
+          </div>
+
+          <span class="profile-greet"
+            >Hello, <span id="userName">Guest</span></span
+          >
+        </div>
+
+        <!-- Search Overlay -->
+        <div class="search-overlay">
+          <div class="search-box">
+            <input
+              type="text"
+              id="searchInputOverlay"
+              placeholder="Search products..."
+            />
+            <button id="searchButtonOverlay">
+              <i class="fas fa-search"></i>
+            </button>
+            <button id="closeSearch" class="close-search">&times;</button>
+            <div class="search-results"></div>
+          </div>
+        </div>
+
+        <!-- Right Icons -->
+        <div class="top-icons">
+          <!-- Cart -->
+          <a href="cart.html" class="cart-link">
+            <i class="fas fa-shopping-cart"></i>
+            <span class="cart-count">0</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- NAVIGATION BAR -->
+
+      <nav class="nav-bar">
+        <ul class="nav-links">
+          <!-- Hamburger Button to open menu -->
+          <button id="menuBtn" class="menu-btn" aria-label="Open menu">
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org"
+            >
+              <line
+                x1="3"
+                y1="6"
+                x2="21"
+                y2="6"
+                stroke="currentColor"
+                stroke-width="2"
+              />
+              <line
+                x1="3"
+                y1="12"
+                x2="21"
+                y2="12"
+                stroke="currentColor"
+                stroke-width="2"
+              />
+              <line
+                x1="3"
+                y1="18"
+                x2="21"
+                y2="18"
+                stroke="currentColor"
+                stroke-width="2"
+              />
+            </svg>
+          </button>
+
+          <!-- Main Nav Links -->
+          <li><a href="index.html">Home</a></li>
+          <li><a href="shop.html" class="active">Shop</a></li>
+          <li><a href="blog.html">Blog</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </nav>
+
+      <!-- Overlay (for background dimming) -->
+      <div id="overlay" class="overlay"></div>
+
+      <!-- Side Menu -->
+      <aside id="sideMenu" class="side-menu">
+        <div class="menu-header">
+          <span id="mobileGreeting">👤 Hello, John</span>
+          <button id="closeMenu">✕</button>
+        </div>
+
+        <div class="menu-section">
+          <h4>Shop By Department</h4>
+          <ul id="mobileCategories">
+            <!-- Categories will be populated dynamically -->
+          </ul>
+        </div>
+
+        <div class="menu-section help-settings">
+          <h4>Help & Settings</h4>
+          <div class="help-links">
+            <a href="account.html" class="help-link">
+              <i class="fas fa-user"></i>
+              <span>Your account</span>
+            </a>
+
+            <a href="#" class="help-link">
+              <i class="fas fa-headset"></i>
+              <span>Customer Service</span>
+            </a>
+          </div>
+
+          <a href="#" id="signOut" class="sign-out">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Sign out</span>
+          </a>
+        </div>
+      </aside>
+    </header>
+
+    <!-- Overlay -->
+    <div id="overlay"></div>
+
+    <!-- ================= PAGE HEADER ================= -->
+    <section id="page-header" class="page-header-with-filter">
+      <h2>#Stay Home</h2>
+      <p>Order via Bellewear boutique and receive it safe and secure</p>
+    </section>
+
+    <!-- ================= SHOP ================= -->
+    <section id="product1" class="section-p1">
+      <div class="shop-layout">
+        <!-- ===== MODERN FILTER SIDEBAR ===== -->
+        <aside class="filters" id="filters-sidebar">
+          <!-- Mobile Filter Toggle Button -->
+          <button id="filter-toggle-btn" class="filter-toggle-btn">
+            <i class="fas fa-filter"></i>
+            <span>Filters</span>
+            <i class="fas fa-chevron-down toggle-icon"></i>
+          </button>
+
+          <!-- Filter Content (collapsible on mobile) -->
+          <div id="filter-content" class="filter-content">
+            <h2 class="text-xl font-bold text-gray-900 mb-6 tracking-tight">
+              Filters
+            </h2>
+
+            <!-- Clear All Filters Button -->
+            <button
+              id="clear-all-filters"
+              class="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-2.5 rounded-xl shadow-md shadow-gray-100 transition-all active:scale-[0.98] mb-6"
+            >
+              Clear All Filters
+            </button>
+
+            <!-- Category Filter -->
+            <div
+              class="filter-section"
+              data-section="category"
+              data-open="true"
+            >
+              <button class="filter-header">
+                <h4
+                  class="text-sm font-semibold text-gray-700 uppercase tracking-wider"
+                >
+                  Category
+                </h4>
+                <i class="fas fa-chevron-down toggle-icon"></i>
+              </button>
+              <div class="filter-body" id="filter-category">
+                <!-- Dynamic content like checkboxes or links go here -->
+              </div>
+            </div>
+
+            <!-- Brand Filter -->
+            <div class="filter-section" data-section="brand" data-open="true">
+              <button class="filter-header">
+                <h4
+                  class="text-sm font-semibold text-gray-700 uppercase tracking-wider"
+                >
+                  Brand
+                </h4>
+                <i class="fas fa-chevron-down toggle-icon"></i>
+              </button>
+              <div class="filter-body" id="filter-brand"></div>
+            </div>
+
+            <!-- Sizes Filter -->
+            <div class="filter-section" data-section="sizes" data-open="true">
+              <button class="filter-header">
+                <h4
+                  class="text-sm font-semibold text-gray-700 uppercase tracking-wider"
+                >
+                  Sizes
+                </h4>
+                <i class="fas fa-chevron-down toggle-icon"></i>
+              </button>
+              <div class="filter-body" id="filter-sizes">
+                <div class="mt-4 grid grid-cols-2 gap-2">
+                  <label class="relative group cursor-pointer">
+                    <input type="checkbox" value="S" class="sr-only peer" />
+                    <div
+                      class="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-lg transition-all peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:border-indigo-600 hover:border-indigo-300"
+                    >
+                      S
+                    </div>
+                  </label>
+                  <label class="relative group cursor-pointer">
+                    <input type="checkbox" value="M" class="sr-only peer" />
+                    <div
+                      class="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-lg transition-all peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:border-indigo-600 hover:border-indigo-300"
+                    >
+                      M
+                    </div>
+                  </label>
+                  <label class="relative group cursor-pointer">
+                    <input type="checkbox" value="L" class="sr-only peer" />
+                    <div
+                      class="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-lg transition-all peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:border-indigo-600 hover:border-indigo-300"
+                    >
+                      L
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Price Filter -->
+            <div class="filter-section" data-section="price" data-open="true">
+              <button class="filter-header">
+                <h4
+                  class="text-sm font-semibold text-gray-700 uppercase tracking-wider"
+                >
+                  Price
+                </h4>
+                <i class="fas fa-chevron-down toggle-icon"></i>
+              </button>
+              <div class="filter-body">
+                <div class="mt-4 space-y-4">
+                  <div class="flex items-center gap-3">
+                    <div class="relative flex-1">
+                      <span
+                        class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"
+                        >$</span
+                      >
+                      <input
+                        type="number"
+                        id="price-min"
+                        placeholder="Min"
+                        class="w-full pl-7 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                      />
+                    </div>
+                    <div class="relative flex-1">
+                      <span
+                        class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"
+                        >Ksh</span
+                      >
+                      <input
+                        type="number"
+                        id="price-max"
+                        placeholder="Max"
+                        class="w-full pl-10 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                      />
+                    </div>
+                  </div>
+                  <button
+                    id="apply-price-filter"
+                    class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl shadow-md shadow-indigo-100 transition-all active:scale-[0.98]"
+                  >
+                    Apply Range
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <!-- ===== PRODUCTS GRID ===== -->
+        <div class="main-content">
+          <div class="pro-container skeleton-container" id="productsGrid">
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- States -->
+      <p id="emptyProducts" hidden>No products available.</p>
+      <p id="errorProducts" hidden>Failed to load products.</p>
+    </section>
+
+    <!-- ================= FOOTER ================= -->
+    <footer class="section-p1">
+      <p>© 2025 BELLEWEAR BOUTIQUE</p>
+    </footer>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // Mobile Filter Toggle Button Functionality
+        const filterToggleBtn = document.getElementById("filter-toggle-btn");
+        const filterContent = document.getElementById("filter-content");
+        const isMobile = window.innerWidth <= 768;
+
+        if (filterToggleBtn && filterContent) {
+          // On mobile, initially hide filter content. On desktop, show it.
+          if (isMobile) {
+            filterContent.style.display = "none";
+          } else {
+            filterContent.style.display = "block";
+          }
+
+          filterToggleBtn.addEventListener("click", function () {
+            const isHidden = filterContent.style.display === "none";
+            filterContent.style.display = isHidden ? "block" : "none";
+
+            // Toggle the chevron icon
+            const toggleIcon = filterToggleBtn.querySelector(".toggle-icon");
+            if (toggleIcon) {
+              toggleIcon.classList.toggle("rotate-180", isHidden);
+            }
+          });
+        }
+
+        // Filter Section Toggle (for individual sections)
+        const filterSections = document.querySelectorAll(".filter-section");
+
+        filterSections.forEach((section) => {
+          const header = section.querySelector(".filter-header");
+          const body = section.querySelector(".filter-body");
+
+          if (header && body) {
+            // Initialize as open on desktop, closed on mobile
+            if (isMobile) {
+              section.setAttribute("data-open", "false");
+              body.style.display = "none";
+            } else {
+              section.setAttribute("data-open", "true");
+              body.style.display = "block";
+            }
+
+            header.addEventListener("click", function () {
+              const isOpen = section.getAttribute("data-open") === "true";
+              section.setAttribute("data-open", isOpen ? "false" : "true");
+              body.style.display = isOpen ? "none" : "block";
+
+              // Rotate the chevron icon
+              const icon = header.querySelector(".toggle-icon");
+              if (icon) {
+                icon.classList.toggle("rotate-180", !isOpen);
+              }
+            });
+          }
+        });
+
+        // Handle window resize to reset filter visibility
+        window.addEventListener("resize", function () {
+          const isNowMobile = window.innerWidth <= 768;
+
+          if (filterContent) {
+            if (isNowMobile) {
+              filterContent.style.display = "none";
+            } else {
+              filterContent.style.display = "block";
+            }
+          }
+
+          filterSections.forEach((section) => {
+            const body = section.querySelector(".filter-body");
+            if (body) {
+              if (isNowMobile) {
+                section.setAttribute("data-open", "false");
+                body.style.display = "none";
+              } else {
+                section.setAttribute("data-open", "true");
+                body.style.display = "block";
+              }
+            }
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,1718 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bellewear Boutique | Admin Dashboard</title>
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Date adapter for Chart.js (time scale) -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@2.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@2.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+
+    <!-- Lucide Icons (ES Module) -->
+    <link rel="stylesheet" href="fontawesome-free-7.1.0-web/css/all.css" />
+
+    <!-- Google Font -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --bg: linear-gradient(90deg, #0b1220 0%, #1b1434 100%);
+        --panel: linear-gradient(
+          180deg,
+          rgba(8, 9, 23, 0.6),
+          rgba(10, 12, 25, 0.6)
+        );
+        --sidebar-bg: linear-gradient(
+          180deg,
+          rgba(7, 9, 18, 0.9),
+          rgba(15, 18, 32, 0.95)
+        );
+        --muted: #94a3b8;
+        --text-color: #e6eef6;
+        --accent: #6d28d9;
+        --accent-2: #088178;
+        --glass: rgba(255, 255, 255, 0.04);
+      }
+      .light-theme {
+        --bg: linear-gradient(90deg, #ffffff 0%, #eef2ff 100%);
+        --panel: linear-gradient(180deg, #ffffff, #f8fafc);
+        --sidebar-bg: linear-gradient(180deg, #ffffff, #f1f5f9);
+        --muted: #6b7280;
+        --text-color: #0b1220;
+        --accent: #4f46e5;
+        --accent-2: #0f766e;
+        --glass: rgba(0, 0, 0, 0.06);
+      }
+
+      /* Smooth transitions for theme changes */
+      * {
+        transition: background-color 350ms ease, color 350ms ease,
+          border-color 350ms ease;
+      }
+      body {
+        font-family: "Inter", sans-serif;
+        background: var(--bg);
+        color: var(--text-color);
+        overflow: auto; /* allow page scroll for normal browsing */
+        transition: background 400ms ease, color 400ms ease;
+        height: 100%;
+      }
+      aside.sidebar {
+        background: var(--sidebar-bg);
+        color: var(--text-color);
+        border-right: 1px solid rgba(255, 255, 255, 0.04);
+        transition: background 350ms ease, color 350ms ease,
+          box-shadow 240ms ease, transform 240ms ease;
+        box-shadow: 0 6px 18px rgba(2, 6, 23, 0.14);
+        border-radius: 12px;
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: 18rem;
+        z-index: 10;
+      }
+      @media (min-width: 768px) {
+        main {
+          margin-left: 18rem;
+        }
+      }
+      aside.sidebar:hover {
+        box-shadow: 0 10px 28px rgba(2, 6, 23, 0.18);
+        transform: translateY(-1px);
+      }
+      header.topbar {
+        background: transparent;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        padding: 0.5rem 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        justify-content: space-between;
+      }
+
+      /* Improve topbar controls spacing and appearance */
+      header.topbar .theme-toggle {
+        margin-left: 0;
+        border-radius: 8px;
+        padding: 6px;
+        height: 36px;
+        width: 36px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--panel);
+        border: 1px solid rgba(255,255,255,0.03);
+        transition: transform 300ms cubic-bezier(.2,.9,.2,1), background 200ms ease;
+        will-change: transform;
+      }
+      header.topbar .theme-toggle i {
+        font-size: 14px;
+        color: var(--text-color);
+        transition: opacity 220ms ease, transform 220ms ease;
+        display: inline-block;
+      }
+      /* Anim class applied briefly on toggle */
+      header.topbar .theme-toggle.theme-anim {
+        transform: rotate(-18deg) scale(1.06);
+      }
+      header.topbar .theme-toggle.theme-anim i {
+        transform: rotate(12deg) scale(1.05);
+        opacity: 0.95;
+      }
+      /* Make toggle friendlier on very small screens */
+      @media (max-width: 420px) {
+        header.topbar .theme-toggle { margin-right: 6px; }
+      }
+      /* Brand icon uses accent colors so it adapts to theme */
+      .logo > span:first-child {
+        background: linear-gradient(135deg, var(--accent), #a78bfa);
+        transition: background 350ms ease, color 350ms ease,
+          box-shadow 250ms ease;
+      }
+      /* Buttons in header / notifications adapt to theme */
+      #notifBtn,
+      #userMenuBtn {
+        background: var(--panel) !important;
+        color: var(--text-color) !important;
+        border: 1px solid rgba(255, 255, 255, 0.03);
+        transition: background 250ms ease, color 250ms ease;
+      }
+      .stat-card {
+        background: var(--panel);
+        border: 1px solid rgba(255, 255, 255, 0.03);
+        color: var(--text-color);
+      }
+      .stat-card .meta {
+        color: var(--muted);
+        font-size: 0.85rem;
+      }
+      .stat-card .value {
+        font-weight: 700;
+        font-size: 1.4rem;
+      }
+      .panel {
+        background: var(--panel);
+        border: 1px solid rgba(255, 255, 255, 0.03);
+        border-radius: 12px;
+        color: var(--text-color);
+        transition: background 350ms ease, color 350ms ease;
+      } /* Sidebar layout split into top and bottom so Settings is pinned */
+      .nav-top {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+        flex: 1;
+      }
+      .nav-bottom {
+        margin-top: auto;
+      }
+      .nav-bottom button {
+        background: transparent;
+      }
+
+      /* Nav buttons: spacing, dynamic colors and active state */
+      .nav-btn {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 0.85rem 1rem;
+        border-radius: 10px;
+        transition: background 220ms ease, transform 160ms ease,
+          box-shadow 220ms ease;
+        color: var(--text-color);
+      }
+      .nav-btn .label {
+        color: var(--text-color);
+        font-weight: 600;
+      }
+      .nav-btn i {
+        font-size: 18px;
+        color: var(--muted);
+        transition: color 220ms ease, transform 220ms ease;
+      }
+      .nav-btn:hover {
+        background: rgba(255, 255, 255, 0.02);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(2, 6, 23, 0.12);
+      }
+      .nav-btn.active-link {
+        background: linear-gradient(
+          90deg,
+          rgba(99, 102, 241, 0.12),
+          rgba(16, 185, 129, 0.02)
+        );
+        box-shadow: 0 8px 18px rgba(99, 102, 241, 0.04);
+      }
+      .nav-btn.active-link i {
+        color: var(--accent);
+        transform: translateX(-3px);
+      }
+      .nav-btn.active-link .label {
+        color: var(--accent);
+      }
+      .nav-btn.active-link::before {
+        content: "";
+        position: absolute;
+        left: 8px;
+        top: 8px;
+        bottom: 8px;
+        width: 5px;
+        border-radius: 8px;
+        background: linear-gradient(180deg, var(--accent), var(--accent-2));
+      }
+      /* Collapsed state tweaks */
+      aside.sidebar.collapsed .nav-btn {
+        justify-content: center;
+        padding: 0.6rem;
+      }
+      aside.sidebar.collapsed .nav-btn .label {
+        display: none;
+      }
+      aside.sidebar.collapsed .nav-btn.active-link::before {
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+      }
+
+      /* Active animation */
+      .nav-btn.active-anim {
+        animation: nav-active-pop 420ms cubic-bezier(0.2, 0.9, 0.3, 1);
+      }
+      @keyframes nav-active-pop {
+        0% {
+          transform: scale(0.98);
+        }
+        60% {
+          transform: scale(1.03);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      .nav-badge {
+        margin-left: auto;
+        background: #ef4444;
+        color: #fff;
+        padding: 3px 6px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .nav-badge.hidden {
+        display: none;
+      }
+
+      /* Minimal table & badge styles for templates */
+      .table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .table thead th {
+        text-align: left;
+        font-size: 0.85rem;
+        padding: 0.6rem;
+        color: var(--muted);
+      }
+      .table tbody td {
+        padding: 0.6rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.03);
+      }
+      .badge {
+        padding: 0.25rem 0.5rem;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+      }
+      .badge.green {
+        background: #16a34a;
+        color: #fff;
+      }
+      .badge.red {
+        background: #ef4444;
+        color: #fff;
+      }
+      .search-small {
+        padding: 0.5rem;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        background: var(--glass);
+        color: var(--text-color);
+      }
+
+      /* Products table styles (modern list view) */
+      .products-panel .panel-head {
+        padding: 0.9rem 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .products-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .products-table thead th {
+        text-align: left;
+        padding: 1rem;
+        color: var(--muted);
+        font-weight: 600;
+        font-size: 0.95rem;
+      }
+      .products-table tbody tr {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+      }
+      .products-table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+      }
+      /* Remove internal scrolling — allow the page to scroll to reveal more products */
+      .products-panel > .overflow-auto {
+        max-height: none;
+        overflow: visible;
+      }
+      .product-thumb {
+        width: 56px;
+        height: 56px;
+        object-fit: cover;
+        border-radius: 10px;
+        box-shadow: 0 8px 20px rgba(2, 6, 23, 0.06);
+      }
+      .product-name {
+        font-weight: 600;
+      }
+      .product-sub {
+        color: var(--muted);
+        font-size: 0.85rem;
+        margin-top: 3px;
+      }
+      .status-pill {
+        padding: 0.35rem 0.65rem;
+        border-radius: 999px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        display: inline-block;
+      }
+
+      /* Customers panel styles (match screenshot) */
+      .customers-panel { background: transparent; }
+      .customers-table thead tr { background: #ffffff; box-shadow: 0 1px 0 rgba(0,0,0,0.03); }
+      .customers-table thead th { color: #6b7280; font-weight: 700; padding: 1rem; text-transform: uppercase; font-size: 0.85rem; }
+      .customers-table tbody tr { border-bottom: 1px solid rgba(2,6,23,0.03); background: #fff; }
+      .customers-table tbody td { padding: 1rem; vertical-align: middle; color: #0b1220; }
+      .customer-search-wrapper .search-input { width: 420px; max-width: 100%; padding: 12px 48px; border-radius: 50px; background: #fff; border: 1px solid #e0e0e0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); color: #333; font-size: 16px; outline: none; transition: box-shadow 0.2s ease; }
+      .customer-search-wrapper .search-input:focus { box-shadow: 0 4px 8px rgba(0,0,0,0.15); border-color: #007bff; }
+      .customer-search-wrapper .search-input::placeholder { color: #999; }
+      .customer-search-wrapper { position: relative; }
+      .customer-search-wrapper::before { content: ''; position: absolute; left: 16px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'%3E%3C/circle%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'%3E%3C/line%3E%3C/svg%3E"); background-size: contain; background-repeat: no-repeat; }
+      .customers-panel .panel-head { background: transparent; border-bottom: 0; }
+      .sort-arrows { color: #9ca3af; font-size: 0.85rem; margin-left: 8px; }
+      @media (max-width: 640px) { .customer-search-wrapper .search-input { width: 100%; } }
+      .status-published {
+        background: rgba(16, 185, 129, 0.12);
+        color: #10b981;
+      }
+      .status-inactive {
+        background: rgba(239, 68, 68, 0.08);
+        color: #ef4444;
+      }
+      .status-draft {
+        background: rgba(148, 163, 184, 0.06);
+        color: #6b7280;
+      }
+      .action-btn {
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.03);
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .content-main {
+        padding: 1rem;
+        
+       
+      }
+      .page-title {
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+      }
+      .flex-row {
+        display: flex;
+        gap: 0.8rem;
+        align-items: center;
+      }
+      .chart-wrap {
+        background: transparent;
+        padding: 0.5rem;
+      }
+      .card-stats {
+        display: flex;
+        gap: 0.6rem;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .stat-box {
+        background: rgba(255, 255, 255, 0.02);
+        padding: 0.6rem 0.9rem;
+        border-radius: 8px;
+        min-width: 10rem;
+      }
+      .search-input {
+        background: var(--glass);
+        color: var(--text-color);
+        border: 1px solid rgba(255, 255, 255, 0.04);
+      }
+
+      /* Products-specific search styling — Google-like pill input */
+      .product-search-wrapper { position: relative; display:inline-block; }
+      #section-products .search-input {
+        width: 540px;
+        max-width: 100%;
+        padding: 10px 48px 10px 48px; /* left icon + right clear */
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2399a0a6' stroke-width='2'><circle cx='11' cy='11' r='7'/><line x1='21' y1='21' x2='16.65' y2='16.65'/></svg>");
+        background-repeat: no-repeat;
+        background-position: 16px center;
+        border-radius: 24px;
+        transition: box-shadow 200ms ease, border-color 200ms ease, background 150ms ease, transform 120ms ease;
+        background: #ffffff;
+        border: 1px solid rgba(0,0,0,0.12);
+        box-shadow: 0 1px 3px rgba(60,64,67,0.15), 0 1px 2px rgba(60,64,67,0.1);
+        color: #111827;
+        font-size: 0.98rem;
+      }
+      #section-products .search-input::placeholder { color: #6b7280; }
+      #section-products .search-input:focus {
+        border-color: rgba(60,64,67,0.25);
+        box-shadow: 0 6px 20px rgba(60,64,67,0.18);
+        outline: none;
+        transform: none;
+      }
+
+      /* Orders-specific search styling — Google-like pill input */
+      .order-search-wrapper { position: relative; display:inline-block; }
+      #section-orders .search-input {
+        width: 540px;
+        max-width: 100%;
+        padding: 10px 48px 10px 48px; /* left icon + right clear */
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2399a0a6' stroke-width='2'><circle cx='11' cy='11' r='7'/><line x1='21' y1='21' x2='16.65' y2='16.65'/></svg>");
+        background-repeat: no-repeat;
+        background-position: 16px center;
+        border-radius: 24px;
+        transition: box-shadow 200ms ease, border-color 200ms ease, background 150ms ease, transform 120ms ease;
+        background: #ffffff;
+        border: 1px solid rgba(0,0,0,0.12);
+        box-shadow: 0 1px 3px rgba(60,64,67,0.15), 0 1px 2px rgba(60,64,67,0.1);
+        color: #111827;
+        font-size: 0.98rem;
+      }
+      #section-orders .search-input::placeholder { color: #6b7280; }
+      #section-orders .search-input:focus {
+        border-color: rgba(60,64,67,0.25);
+        box-shadow: 0 6px 20px rgba(60,64,67,0.18);
+        outline: none;
+        transform: none;
+      }
+
+      .clear-btn {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        border: none;
+        background: rgba(60,64,67,0.06);
+        color: #111827;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        font-weight: 700;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 120ms ease, color 120ms ease, transform 120ms ease;
+      }
+      .clear-btn:hover { background: rgba(60,64,67,0.12); transform: scale(1.04); }
+      .clear-btn.hidden { display: none !important; }
+      @media (max-width: 640px) {
+        #section-products .search-input { width: 100%; padding-left: 44px; padding-right: 44px; }
+        #section-orders .search-input { width: 100%; padding-left: 44px; padding-right: 44px; }
+      }
+
+      /* Order review content scrollable without scrollbar */
+      #order-review-content {
+        height: calc(100vh - 120px); /* Adjust for header and padding */
+        overflow: auto;
+      }
+      #order-review-content::-webkit-scrollbar {
+        display: none;
+      }
+
+      .avatar-name {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--text-color);
+      }
+      .small-muted {
+        color: var(--muted);
+        font-size: 0.85rem;
+      }
+      /* Toast override */
+      #toast {
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: 24px;
+        background: rgba(15, 23, 42, 0.95);
+        transition: background 250ms ease;
+      }
+
+      /* Theme toggle */
+      .theme-toggle {
+        width: 54px;
+        height: 30px;
+        display: inline-flex;
+        align-items: center;
+        padding: 3px;
+        border-radius: 999px;
+        background: var(--glass);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        cursor: pointer;
+        position: relative;
+        transition: background 300ms ease,
+          transform 300ms cubic-bezier(0.2, 0.9, 0.3, 1);
+      }
+      .theme-toggle .knob {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: var(--text-color);
+        box-shadow: 0 2px 8px rgba(2, 6, 23, 0.6);
+        transition: transform 300ms cubic-bezier(0.2, 0.9, 0.3, 1),
+          background 300ms ease, box-shadow 300ms ease;
+        transform: translateX(0);
+        display: block;
+      }
+      .theme-toggle[data-theme="light"] .knob {
+        transform: translateX(24px);
+        background: white;
+        box-shadow: 0 6px 18px rgba(2, 6, 23, 0.12);
+      }
+      .theme-toggle.theme-anim {
+        animation: theme-pop 420ms ease;
+      }
+      @keyframes theme-pop {
+        0% {
+          transform: scale(0.98);
+        }
+        50% {
+          transform: scale(1.03);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      /* Notifications */
+      #notifDropdown {
+        background: var(--panel);
+        min-width: 18rem;
+        border-radius: 10px;
+        overflow: visible; /* allow it to expand but we trim items in JS */
+        box-shadow: 0 8px 30px rgba(2, 6, 23, 0.6);
+        transform-origin: top right;
+        opacity: 0;
+        transform: translateY(-6px) scale(0.99);
+        transition: opacity 220ms ease,
+          transform 220ms cubic-bezier(0.2, 0.9, 0.3, 1);
+      }
+      #notifDropdown:not(.hidden) {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+      #notifList {
+        padding: 0;
+        margin: 0;
+        list-style: none;
+        max-height: calc(60vh - 120px); /* fit within viewport */
+        overflow-y: auto;
+        scrollbar-width: thin; /* Firefox */
+        scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+      }
+      /* Webkit scrollbar styling */
+      #notifList::-webkit-scrollbar {
+        width: 8px;
+      }
+      #notifList::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      #notifList::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 8px;
+      }
+      #notifDropdown:hover #notifList::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.14);
+      }
+      .light-theme #notifList::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.08);
+      }
+      #notifList .notif-item {
+        padding: 12px 14px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        display: block;
+        transition: background 200ms ease, opacity 200ms ease,
+          transform 220ms ease;
+        cursor: pointer;
+      }
+      #notifList .notif-item.unread {
+        border-left: 4px solid var(--accent);
+        background: rgba(255, 255, 255, 0.05);
+      }
+      .light-theme #notifList .notif-item.unread {
+        border-left: 4px solid var(--accent-2);
+        background: rgba(0, 0, 0, 0.05);
+      }
+      #notifList .notif-item.read {
+        opacity: 0.8;
+      }
+      #notifList .notif-item:hover {
+        transform: translateY(-2px);
+        background: rgba(255, 255, 255, 0.04);
+      }
+      .notif-icon-wrapper {
+        width: 36px;
+        flex: 0 0 36px;
+        height: 36px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.03);
+      }
+      .notif-icon {
+        width: 18px;
+        height: 18px;
+        display: inline-block;
+      }
+      .notif-icon.order::before {
+        content: "\f07a";
+        font-family: "Font Awesome 5 Free";
+        font-weight: 900;
+        color: #34d399;
+      }
+      .notif-icon.user {
+        color: #60a5fa;
+      }
+      .notif-icon.alert::before {
+        content: "\f466";
+        font-family: "Font Awesome 5 Free";
+        font-weight: 900;
+        color: #fb7185;
+      }
+      .notif-title {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+      }
+      .notif-msg {
+        color: var(--muted);
+        font-size: 13px;
+        margin-top: 4px;
+      }
+      .notif-ts {
+        color: var(--muted);
+        font-size: 11px;
+      }
+
+      /* Badge pop */
+      #notifCount {
+        display: inline-grid;
+        place-items: center;
+        width: 18px;
+        height: 18px;
+        border-radius: 999px;
+        background: #ef4444;
+        color: #fff;
+        font-size: 11px;
+        padding: 0 4px;
+        position: absolute;
+        top: -6px;
+        right: -6px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+        transition: transform 200ms ease;
+      }
+      .pop {
+        animation: notif-pop 420ms cubic-bezier(0.2, 0.9, 0.3, 1);
+      }
+      @keyframes notif-pop {
+        0% {
+          transform: scale(0.8);
+        }
+        60% {
+          transform: scale(1.12);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      /* Navbar & controls */
+      #menuToggle {
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        color: var(--text-color);
+        transition: transform 150ms ease, background 150ms ease;
+      }
+      #menuToggle:hover {
+        transform: translateY(-2px);
+        background: rgba(255, 255, 255, 0.02);
+      }
+      .search-input::placeholder {
+        color: rgba(255, 255, 255, 0.45);
+      }
+      .search-input:focus {
+        outline: none;
+        box-shadow: 0 6px 20px rgba(1, 63, 146, 0.12);
+        border-color: var(--accent);
+        background: rgba(255, 255, 255, 0.02);
+      }
+      #notifBtn.open {
+        transform: scale(1.04);
+        background: rgba(99, 102, 241, 0.2);
+        border: 1px solid rgba(99, 102, 241, 0.4);
+        box-shadow: 0 0 15px rgba(99, 102, 241, 0.6);
+        animation: pulse 1s infinite;
+      }
+
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+      }
+
+      .product-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.product-image {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  object-fit: cover;
+  background: #f1f5f9;
+}
+
+
+.badge {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.badge-green {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.badge-orange {
+  background: #ffedd5;
+  color: #c2410c;
+}
+
+tbody tr:not(:last-child) {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          transition: none !important;
+          animation: none !important;
+        }
+      }
+
+      /* Content sizing (allow normal page scrolling) */
+      .content-wrapper {
+        padding-left: 1rem;
+        padding-right: 1rem;
+      }
+      .content-wrapper section {
+        /* default block flow */
+        margin: 0;
+      }
+      .content-wrapper .grid {
+        gap: 0.6rem;
+      }
+
+      /* keep legacy panel canvas rule but de-prioritize it for charts */
+      /* Only limit height for SMALL stat charts — NOT analytics charts */
+.stat-card canvas {
+  max-height: 220px;
+}
+
+/* Analytics / large charts must be unconstrained */
+.chart-panel canvas {
+  max-height: none !important;
+}
+
+      .stat-card {
+        padding: 0.9rem;
+      }
+      .stat-card .value {
+        font-size: 1.15rem;
+      }
+
+#categoryChart {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+#salesChart {
+  width: 100% !important;
+  height: 300px !important;
+}
+
+
+      
+    </style>
+  </head>
+
+  <body class="flex h-screen" >
+    <!-- SIDEBAR -->
+    <aside class="w-72 sidebar hidden md:flex flex-col px-4 py-6">
+      <div class="mb-6 px-2 flex items-center justify-between">
+        <h1 class="logo text-2xl font-bold flex items-center gap-3">
+          <span
+            class="w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow"
+            >B</span
+          >
+          <span class="text-lg font-semibold">Bellewear</span>
+        </h1>
+        <button
+          id="sidebarCollapse"
+          class="hidden md:inline-flex items-center justify-center p-2 rounded-md"
+          title="Collapse sidebar"
+          aria-label="Collapse sidebar"
+        >
+          <i class="fas fa-chevron-left"></i>
+        </button>
+      </div>
+
+      <nav class="nav-top flex-1 px-4 space-y-2">
+        <button
+          id="nav-overview"
+          data-route="overview"
+          class="nav-btn w-full active-link"
+          title="Dashboard"
+        >
+          <i class="fas fa-bar-chart"></i><span class="label">Dashboard</span
+          ><span class="nav-badge hidden" id="badge-overview">0</span>
+        </button>
+        <button
+          id="nav-products"
+          data-route="products"
+          class="nav-btn w-full"
+          title="Products"
+        >
+          <i class="fab fa-shopify"></i><span class="label">Products</span
+          ><span class="nav-badge hidden" id="badge-products">0</span>
+        </button>
+        <button
+          id="nav-orders"
+          data-route="orders"
+          class="nav-btn w-full"
+          title="Orders"
+        >
+          <i class="fas fa-handshake"></i><span class="label">Orders</span
+          ><span class="nav-badge hidden" id="badge-orders">0</span>
+        </button>
+        <button
+          id="nav-analytics"
+          data-route="analytics"
+          class="nav-btn w-full"
+          title="Analytics"
+        >
+          <i class="fas fa-chart-line"></i><span class="label">Analytics</span
+          ><span class="nav-badge hidden" id="badge-analytics">0</span>
+        </button>
+        <button
+          id="nav-customers"
+          data-route="customers"
+          class="nav-btn w-full"
+          title="Customers"
+        >
+          <i class="fas fa-users"></i><span class="label">Customers</span
+          ><span class="nav-badge hidden" id="badge-customers">0</span>
+        </button>
+      </nav>
+
+      <nav class="nav-bottom px-4 mt-4">
+        <button
+          id="nav-settings"
+          data-route="settings"
+          class="nav-btn w-full"
+          title="Settings"
+        >
+          <i class="fas fa-cog"></i><span class="label">Settings</span>
+        </button>
+      </nav>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="flex-1 flex flex-col overflow-visible">
+      <!-- HEADER -->
+      <header class="h-16 topbar px-6 flex items-center justify-between">
+        <!-- Left: Section Title -->
+        <div class="flex items-center gap-4">
+          <button
+            id="menuToggle"
+            class="md:hidden bg-indigo-600 text-white px-3 py-2 rounded-lg"
+          >
+            Menu
+          </button>
+          <h2 id="section-title" class="text-xl font-semibold">
+            eCommerce Dashboard
+          </h2>
+
+        </div>
+
+        <!-- Right: Notifications & User Menu -->
+      <div class="flex items-center gap-4">
+
+  <!-- THEME TOGGLE -->
+  <button
+    id="themeToggle"
+    class="theme-toggle w-10 h-10 flex items-center justify-center rounded-full bg-[#0f1724] hover:bg-[#131827] transition"
+    aria-label="Toggle theme"
+    title="Toggle theme"
+    data-theme="dark"
+  >
+    <i id="themeIcon" class="fas fa-moon text-[#93c5fd]"></i>
+  </button>
+
+  <!-- NOTIFICATIONS -->
+  <!-- Parent stays relative for the button layout -->
+<div class="relative">
+  <!-- Bell Button -->
+  <button
+    id="notifBtn"
+    class="relative w-81 h-10 flex items-center justify-center rounded-full bg-[#0f1724] hover:bg-[#131827] transition focus:outline-none"
+  >
+    <i class="fas fa-bell text-[#93c5fd] text-lg"></i>
+    <span
+      id="notifCount"
+      class="hidden absolute -top-1 -right-1 bg-red-600 text-white text-xs px-1.5 py-0.5 rounded-full"
+    >0</span>
+  </button>
+
+  <!-- Dropdown: Space from edge (right-4), Adjusted width (w-88), Taller (min-h) -->
+  <div
+    id="notifDropdown"
+    class="hidden fixed right-4 top-20 w-80 min-h-[350px] bg-[#081024] rounded-2xl shadow-2xl z-50 flex flex-col"
+  >
+    <!-- Heading -->
+    <div class="p-5 border-b border-slate-700/50">
+      <h2 class="text-white font-bold text-lg tracking-tight">ALL NOTIFICATIONS</h2>
+    </div>
+    
+    <!-- Notification List Area: Grows to fill height -->
+    <ul id="notifList" class="flex-grow text-sm overflow-y-auto">
+      <li id="noNotif" class="h-full flex flex-col items-center justify-center p-12 text-slate-500 text-center">
+        <i class="fas fa-bell-slash text-4xl mb-4 opacity-10"></i>
+        <p>No notifications yet</p>
+      </li>
+    </ul>
+  </div>
+</div>
+
+  <!-- USER AVATAR + NAME -->
+  <div class="relative flex items-center gap-2">
+    <button
+      id="userMenuBtn"
+      class="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold"
+    >
+      A
+    </button>
+
+    <div class="hidden sm:block ml-2 text-left">
+      <div id="adminName" class="font-semibold text-white">Admin</div>
+      <div class="small-muted text-xs text-slate-400">Administrator</div>
+    </div>
+
+    <!-- USER DROPDOWN -->
+    <div
+      id="userDropdown"
+      class="hidden absolute right-0 mt-2 w-44 bg-[#081024] border rounded-lg shadow-lg z-50"
+    >
+      <a href="#" class="block px-4 py-2 hover:bg-slate-800 text-white">Profile</a>
+      <a href="#" class="block px-4 py-2 hover:bg-slate-800 text-white">Settings</a>
+      <button
+        id="logoutBtn"
+        class="w-full text-left px-4 py-2 hover:bg-slate-800 text-red-400"
+      >Log out</button>
+    </div>
+  </div>
+</div>
+
+      </header>
+
+      <!-- CONTENT -->
+      <div class="p-4 content-wrapper">
+        <!-- OVERVIEW -->
+        <!-- OVERVIEW -->
+
+        <section id="section-overview" class="space-y-6">
+  <!-- Stats Cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+    
+    <!-- New Orders -->
+    <div class="stat-card p-4 rounded-xl flex flex-col justify-between bg-gradient-to-br from-indigo-200 to-indigo-400 hover:scale-105 transform transition duration-300 shadow-lg">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="meta text-indigo-900 font-semibold">New Orders</p>
+          <div class="value text-indigo-950 text-xl font-bold" id="stat-orders">0</div>
+        </div>
+        <div class="p-3 rounded-lg bg-indigo-700 shadow-md">
+          <i class="fas fa-shopping-cart text-white text-lg drop-shadow-md"></i>
+        </div>
+      </div>
+      <div class="mt-3 small-muted">
+        <span id="stat-orders-change" class="text-indigo-800 font-medium">+0.00%</span>
+        <span class="small-muted">(30 days)</span>
+      </div>
+    </div>
+
+    <!-- Total Income -->
+    <div class="stat-card p-4 rounded-xl flex flex-col justify-between bg-gradient-to-br from-emerald-200 to-emerald-400 hover:scale-105 transform transition duration-300 shadow-lg">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="meta text-emerald-900 font-semibold">Total Income</p>
+          <div class="value text-emerald-950 text-xl font-bold" id="stat-sales">$0</div>
+        </div>
+        <div class="p-3 rounded-lg bg-emerald-700 shadow-md">
+          <i class="fas fa-dollar-sign text-white text-lg drop-shadow-md"></i>
+        </div>
+      </div>
+      <div class="mt-3 small-muted">
+        <span id="stat-sales-change" class="text-emerald-800 font-medium">+0.00%</span>
+        <span class="small-muted">Increased</span>
+      </div>
+    </div>
+
+    <!-- New Users -->
+    <div class="stat-card p-4 rounded-xl flex flex-col justify-between bg-gradient-to-br from-orange-200 to-orange-400 hover:scale-105 transform transition duration-300 shadow-lg">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="meta text-orange-900 font-semibold">New Users</p>
+          <div class="value text-orange-950 text-xl font-bold" id="stat-customers">0</div>
+        </div>
+        <div class="p-3 rounded-lg bg-orange-700 shadow-md">
+          <i class="fas fa-user text-white text-lg drop-shadow-md"></i>
+        </div>
+      </div>
+      <div class="mt-3 small-muted">
+        <span id="stat-customers-change" class="text-orange-800 font-medium">+0.00%</span>
+        <span class="small-muted">Earning</span>
+      </div>
+    </div>
+
+    <!-- Low Stock -->
+    <div class="stat-card p-4 rounded-xl flex flex-col justify-between bg-gradient-to-br from-red-200 to-red-400 hover:scale-105 transform transition duration-300 shadow-lg">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="meta text-red-900 font-semibold">Low Stock</p>
+          <div class="value text-red-950 text-xl font-bold" id="stat-lowstock">0</div>
+        </div>
+        <div class="p-3 rounded-lg bg-red-700 shadow-md">
+          <i class="fas fa-box text-white text-lg drop-shadow-md"></i>
+        </div>
+      </div>
+      <div class="mt-3 small-muted">
+        <span id="stat-lowstock-change" class="text-red-800 font-medium">0 products</span>
+        <span class="small-muted">Alert</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Charts -->
+  <div class="space-y-4 mt-6">
+
+    <!-- Revenue Chart -->
+    <div class="panel p-4 rounded-xl flex flex-col overflow-y-auto bg-green-900">
+      <div class="flex items-center justify-between mb-2">
+        <h4 class="font-semibold text-red-400">Revenue Chart</h4>
+        <select id="yearlyStatsRange" class="bg-transparent border rounded px-2 py-1 text-sm text-white">
+          <option value="12">Last 12 months</option>
+          <option value="6">Last 6 months</option>
+          <option value="3">Last 3 months</option>
+        </select>
+      </div>
+      <div class="flex-1 min-h-[300px]">
+        <canvas id="salesChart" class="w-full h-[300px]"></canvas>
+      </div>
+    </div>
+
+    <!-- Bottom Row: Top Categories (half width) + Space for another chart -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+      <!-- Top Categories Chart -->
+      <div class="panel p-4 rounded-xl flex flex-col">
+  <div class="flex items-center justify-between mb-2">
+    <h4 class="font-semibold text-emerald-900">Top Categories</h4>
+  </div>
+
+  <!-- Chart container -->
+  <div class="relative w-full h-[350px]">
+    <canvas id="categoryChart"></canvas>
+  </div>
+</div>
+
+
+      <!-- Top Products -->
+      <div class="panel p-4 rounded-xl md:col-span-2 lg:col-span-1">
+        <h4 class="font-semibold mb-4">Top Products</h4>
+        <table class="w-full text-sm">
+          <thead class="text-left text-gray-400 border-b">
+            <tr>
+              <th class="pb-3">Product</th>
+              <th class="pb-3">Sales</th>
+              <th class="pb-3">Revenue</th>
+              <th class="pb-3">Status</th>
+            </tr>
+          </thead>
+          <tbody id="overview-top-products"></tbody>
+        </table>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+
+
+        <!-- PRODUCTS -->
+        <section id="section-products" class="hidden space-y-6">
+          <div class="flex justify-between items-center">
+            <div class="flex gap-3 items-center">
+              <div class="relative product-search-wrapper">
+                <input
+                  id="search-product"
+                  placeholder="Search products, category or ID..."
+                  class="search-input px-4 py-2 rounded-lg"
+                />
+                <button id="clear-product-search" class="clear-btn hidden" aria-label="Clear search">&times;</button>
+              </div>
+              <button
+                onclick="toggleModal('product-modal')"
+                class="bg-indigo-600 text-white px-4 py-2 rounded-lg"
+              >
+                Add Product
+              </button>
+            </div>
+            <div id="product-modal" class="fixed inset-0 bg-black/50 flex justify-center items-center z-50 hidden">
+  <div class="bg-white rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 relative">
+    <button onclick="toggleModal('product-modal')" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-2xl font-bold">&times;</button>
+    <h2 id="modal-title" class="text-xl font-semibold mb-4">Add Product</h2>
+
+    <form id="product-form" class="space-y-4">
+      <input type="hidden" id="p-id" />
+
+      <div class="grid grid-cols-1 gap-4">
+        <input type="text" id="p-name" placeholder="Product Name" class="input-field" required />
+        <input type="text" id="p-brand" placeholder="Brand" class="input-field" />
+        <input type="text" id="p-category" placeholder="Category" class="input-field" />
+        <input type="number" id="p-price" placeholder="Price" class="input-field" required />
+        <input type="number" id="p-oldPrice" placeholder="Old Price (optional)" class="input-field" />
+        <input type="number" id="p-stock" placeholder="Stock Quantity" class="input-field" required />
+
+        <textarea id="p-description" placeholder="Description" class="input-field resize-none h-20"></textarea>
+
+        <div>
+          <label class="block mb-1 font-medium">Sizes:</label>
+          <div class="flex gap-2 flex-wrap">
+            <label><input type="checkbox" class="p-size" value="S" /> S</label>
+            <label><input type="checkbox" class="p-size" value="M" /> M</label>
+            <label><input type="checkbox" class="p-size" value="L" /> L</label>
+            <label><input type="checkbox" class="p-size" value="XL" /> XL</label>
+          </div>
+        </div>
+
+        <div>
+          <label class="block mb-1 font-medium">Images (max 3):</label>
+          <input type="file" id="p-images" multiple accept="image/*" class="input-field" />
+          <div id="previewContainer" class="flex gap-2 mt-2 flex-wrap"></div>
+        </div>
+      </div>
+
+      <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-lg w-full hover:bg-indigo-700 transition">Save Product</button>
+    </form>
+  </div>
+</div>
+
+<style>
+  .input-field {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #ccc;
+    border-radius: 0.5rem;
+    outline: none;
+  }
+  .input-field:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+  }
+
+  /* Scrollable image preview container */
+#previewContainer {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+}
+
+/* Thin custom scrollbar */
+#previewContainer::-webkit-scrollbar {
+  height: 6px; /* horizontal scrollbar height */
+}
+
+#previewContainer::-webkit-scrollbar-track {
+  background: #f0f0f0;
+  border-radius: 3px;
+}
+
+#previewContainer::-webkit-scrollbar-thumb {
+  background: #6366f1; /* Indigo 600, matches button color */
+  border-radius: 3px;
+}
+
+#previewContainer::-webkit-scrollbar-thumb:hover {
+  background: #4f46e5; /* Slightly darker on hover */
+}
+
+/* Modern input/textarea styling */
+#product-modal input,
+#product-modal textarea {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 0.5rem;
+  outline: none;
+  font-size: 0.95rem;
+  font-family: 'Inter', sans-serif;
+  background-color: #fafafa;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+#product-modal input::placeholder,
+#product-modal textarea::placeholder {
+  color: #6b7280; /* Gray-500 for formal look */
+  font-style: italic;
+}
+
+#product-modal input:focus,
+#product-modal textarea:focus {
+  border-color: #6366f1; /* Indigo 600 */
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+  background-color: #fff;
+}
+
+.order-actions {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 1rem;
+  align-items: center;
+}
+
+.status-select {
+  padding: 0.7rem 0.8rem;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-weight: 700;
+}
+
+
+</style>
+
+          </div>
+
+          <div class="panel overflow-hidden products-panel">
+            
+            <div class="table-wrap">
+              <table class="w-full bg-transparent products-table">
+                <thead>
+                  <tr class="text-sm text-muted small-muted">
+                    <th class="p-4 text-left">Product name</th>
+                    <th class="p-4">Category</th>
+                    <th class="p-4">ID</th>
+                    <th class="p-4">Price</th>
+                    <th class="p-4">Created At</th>
+                    <th class="p-4">Status</th>
+                    <th class="p-4 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="product-table-body"></tbody>
+              </table>
+
+          </div>
+        </section>
+
+        <!-- ORDERS -->
+
+    <section
+  id="section-orders"
+  class="hidden grid grid-cols-3 gap-4 items-stretch"
+  
+>
+  <!-- =======================
+       LEFT: ORDERS TABLE
+       ======================= -->
+    <div class="col-span-2 space-y-0">
+    <!-- Header -->
+
+      <div class="order-search-wrapper mb-4 flex items-center">
+        <input
+          id="search-order"
+          placeholder="Search orders..."
+          class="search-input px-4 py-2 rounded-lg flex-1"
+        />
+        <button id="clear-order-search" class="clear-btn hidden" aria-label="Clear search">&times;</button>
+      </div>
+    <div class="panel p-4 rounded-b-none">
+      <h1 class="text-xl font-semibold">
+        Orders
+        <span class="text-gray-500 text-sm">
+          (<span id="filtered-orders-count">0</span> found)
+        </span>
+      </h1>
+    </div>
+
+    <!-- Search and Filters Row -->
+    <div class="panel p-4 rounded-none flex justify-between items-center">
+    
+
+      <div class="flex items-center gap-2">
+        <button
+          data-filter="ALL"
+          class="filter-btn px-3 py-1 text-sm rounded-full bg-blue-500 text-white"
+        >
+          All
+        </button>
+        <button
+          data-filter="DELIVERED"
+          class="filter-btn px-3 py-1 text-sm rounded-full text-gray-500 hover:bg-gray-100"
+        >
+          Completed
+        </button>
+        <button
+          data-filter="PENDING"
+          class="filter-btn px-3 py-1 text-sm rounded-full text-gray-500 hover:bg-gray-100"
+        >
+          Pending
+        </button>
+        <button
+          data-filter="CANCELLED"
+          class="filter-btn px-3 py-1 text-sm rounded-full text-gray-500 hover:bg-gray-100"
+        >
+          Cancelled
+        </button>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <table
+      class="w-full border border-t-0 rounded-b-xl shadow-sm"
+    >
+      <thead>
+        <tr>
+          <th class="p-4 text-left text-xs font-semibold text-gray-500">
+            #
+          </th>
+          <th class="p-4 text-left text-xs font-semibold text-gray-500">
+            Products
+          </th>
+          <th class="p-4 text-left text-xs font-semibold text-gray-500">
+            Address
+          </th>
+          <th class="p-4 text-left text-xs font-semibold text-gray-500">
+            Date
+          </th>
+          <th class="p-4 text-right text-xs font-semibold text-gray-500">
+            Total
+          </th>
+          <th class="p-4 text-center text-xs font-semibold text-gray-500">
+            Status
+          </th>
+          <th class="p-4 text-center text-xs font-semibold text-gray-500">
+            Action
+          </th>
+        </tr>
+      </thead>
+
+      <tbody id="order-table-body">
+        <!-- Rows injected by JS -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- =======================
+       RIGHT: ORDER REVIEW
+       ======================= -->
+  <aside class="col-span-1 h-[83vh] sticky top-0">
+    <div id="no-order-message" class="panel p-4 text-gray-400 text-center h-full flex items-center justify-center">
+      No order opened please click an order to view details
+    </div>
+    <div
+      id="order-review"
+      class="panel p-4 min-h-screen hidden overflow-auto"
+      <!-- Header -->
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-semibold">Order Preview</h2>
+        <button
+          onclick="closeReview()"
+          class="text-gray-400 hover:text-gray-700 text-xl"
+        >
+          &times;
+        </button>
+      </div>
+
+      <!-- Content -->
+      <div
+        id="order-review-content"
+        class="space-y-4 text-sm text-gray-700"
+      >
+        <!-- Injected dynamically by JS -->
+      </div>
+    </div>
+  </aside>
+</section>
+
+
+
+
+        <!-- ANALYTICS -->
+        <section id="section-analytics" class="hidden space-y-6">
+          <div class="flex justify-between items-center">
+            <h3 class="page-title">Analytics</h3>
+            <div class="flex gap-2">
+              <div class="small-muted">Date range:</div>
+              <select id="analytics-range" class="search-small">
+                <option value="12">Last 12 months</option>
+                <option value="6">Last 6 months</option>
+                <option value="3">Last 3 months</option>
+              </select>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="panel p-4 rounded-xl">
+              <h4 class="font-semibold">Monthly Revenue</h4>
+              <div class="chart-wrap">
+                <canvas
+                  id="analyticsRevenueChart"
+                  class="w-full h-[220px]"
+                ></canvas>
+              </div>
+            </div>
+            <div class="panel p-4 rounded-xl">
+              <h4 class="font-semibold">Orders Per Month</h4>
+              <div class="chart-wrap">
+                <canvas
+                  id="analyticsOrdersChart"
+                  class="w-full h-[220px]"
+                ></canvas>
+              </div>
+            </div>
+             <div class="panel p-4 rounded-xl md:col-span-2 lg:col-span-1">
+    <h4 class="font-semibold mb-4">Top Products</h4>
+    <table class="w-full text-sm">
+      <thead class="text-left text-gray-400 border-b">
+        <tr>
+          <th class="pb-3">Product</th>
+          <th class="pb-3">Sales</th>
+          <th class="pb-3">Revenue</th>
+          <th class="pb-3">Status</th>
+        </tr>
+      </thead>
+      <tbody id="analytics-top-products"></tbody>
+    </table>
+  </div>
+          </div>
+  
+        </section>
+
+        <!-- CUSTOMERS -->
+        <section id="section-customers" class="hidden space-y-8">
+          <div class="flex justify-between items-center">
+            <h3 class="page-title">Customers</h3>
+            <div class="customer-search-wrapper">
+              <input id="customers-search" placeholder="Search users..." class="search-input px-4 py-3 rounded-lg" />
+            </div>
+          </div>
+
+          <div class="panel p-0 rounded-xl customers-panel overflow-hidden">
+            <div class="panel-head p-6">
+              <div class="flex items-center justify-between">
+                <div class="small-muted">Search results</div>
+                <div class="small-muted">&nbsp;</div>
+              </div>
+            </div>
+            <div class="overflow-auto">
+              <table class="w-full bg-transparent customers-table">
+                <thead>
+                  <tr class="text-sm text-muted small-muted bg-white">
+                    <th class="p-6 text-left">USER</th>
+                    <th class="p-6">EMAIL</th>
+                    <th class="p-6">PHONE</th>
+                    <th class="p-6">STATUS</th>
+                    <th class="p-6">JOINED</th>
+                    <th class="p-6 text-right">ACTION <span class="sort-arrows">▲▼</span></th>
+                  </tr>
+                </thead>
+                <tbody id="customers-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- SETTINGS -->
+        <section id="section-settings" class="hidden space-y-6">
+          <h3 class="page-title">Settings</h3>
+          <div class="panel p-4 rounded-xl">
+            <form id="settings-form" class="space-y-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block small-muted">Store Name</label>
+                  <input id="settings-store-name" class="search-small w-full" />
+                </div>
+                <div>
+                  <label class="block small-muted">Store Email</label>
+                  <input
+                    id="settings-store-email"
+                    class="search-small w-full"
+                  />
+                </div>
+                <div>
+                  <label class="block small-muted">Default Currency</label>
+                  <select id="settings-currency" class="search-small w-full">
+                    <option value="USD">USD</option>
+                    <option value="EUR">EUR</option>
+                    <option value="KES">KES</option>
+                  </select>
+                </div>
+              </div>
+              <div class="flex gap-2">
+                <button
+                  type="submit"
+                  class="bg-indigo-600 text-white px-4 py-2 rounded"
+                >
+                  Save Settings
+                </button>
+                <button
+                  type="button"
+                  id="settings-reload"
+                  class="bg-gray-200 px-4 py-2 rounded"
+                >
+                  Reload
+                </button>
+              </div>
+            </form>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <!-- PRODUCT MODAL -->
+    <div
+      id="product-modal"
+      class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+    >
+      <div class="bg-white p-8 rounded-xl w-full max-w-md relative">
+        <button
+          class="absolute top-3 right-3 text-gray-500 hover:text-gray-900 font-bold"
+          onclick="toggleModal('product-modal')"
+        >
+          ✕
+        </button>
+        <h3 class="font-bold mb-4 text-center" id="modal-title">Add Product</h3>
+        <form id="product-form" class="space-y-4">
+          <input type="hidden" id="p-id" />
+
+          <label class="block font-semibold">Product Name</label>
+          <input
+            id="p-name"
+            placeholder="Name"
+            class="w-full border px-4 py-2 rounded"
+          />
+
+          <label class="block font-semibold">Category</label>
+          <input
+            id="p-category"
+            placeholder="Category"
+            class="w-full border px-4 py-2 rounded"
+          />
+
+          <label class="block font-semibold">Price</label>
+          <input
+            id="p-price"
+            type="number"
+            placeholder="Price"
+            class="w-full border px-4 py-2 rounded"
+          />
+
+          <label class="block font-semibold">Stock</label>
+          <input
+            id="p-stock"
+            type="number"
+            placeholder="Stock"
+            class="w-full border px-4 py-2 rounded"
+          />
+
+          <label class="block font-semibold">Product Images</label>
+          <div id="p-image-preview-container" class="flex gap-2 mb-2"></div>
+          <input
+            id="p-image"
+            type="file"
+            accept="image/*"
+            multiple
+            class="w-full border px-4 py-2 rounded"
+          />
+
+          <!-- Inside your existing #product-modal form, before submit button -->
+
+<!-- Brand -->
+<input type="text" id="p-brand" placeholder="Brand (e.g., Demin)" class="px-4 py-2 rounded-lg border border-gray-300 w-full mb-2">
+
+<!-- Old Price -->
+<input type="number" id="p-oldPrice" placeholder="Old Price" class="px-4 py-2 rounded-lg border border-gray-300 w-full mb-2">
+
+<!-- Sizes (checkboxes) -->
+<div class="flex gap-2 mb-2">
+  <span class="text-sm text-gray-600">Sizes:</span>
+  <label><input type="checkbox" class="p-size" value="S"> S</label>
+  <label><input type="checkbox" class="p-size" value="M"> M</label>
+  <label><input type="checkbox" class="p-size" value="L"> L</label>
+  <label><input type="checkbox" class="p-size" value="XL"> XL</label>
+  <label><input type="checkbox" class="p-size" value="XXL"> XXL</label>
+</div>
+
+<!-- Description -->
+<textarea id="p-description" placeholder="Product description..." rows="3" class="px-4 py-2 rounded-lg border border-gray-300 w-full"></textarea>
+
+
+          <button
+            type="submit"
+            class="w-full bg-indigo-600 text-white py-2 rounded"
+          >
+            Save
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- LOADER -->
+    <div
+      id="auth-loading"
+      class="fixed inset-0 bg-white flex items-center justify-center z-50"
+    >
+      <div class="flex flex-col items-center gap-3">
+        <div
+          class="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"
+        ></div>
+        <p class="text-sm text-slate-600">Checking session…</p>
+      </div>
+    </div>
+
+    <!-- TOAST -->
+    <div
+      id="toast"
+      class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-6 py-3 rounded-lg shadow-lg opacity-0 pointer-events-none transition-all duration-300"
+    ></div>
+
+    <script type="module" src="admin-guard.js"></script>
+    <script type="module" src="admin.js"></script>
+  </body>
+</html>

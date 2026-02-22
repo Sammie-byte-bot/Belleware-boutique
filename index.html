@@ -1,0 +1,667 @@
+<!doctype html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Boutique</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="fontawesome-free-7.1.0-web/css/all.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com">
+    <style>
+      /* overlay blur */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(6px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.modal.show {
+  display: flex;
+}
+
+/* modal content */
+.modal-content {
+  width: 90%;
+  max-width: 500px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 15px 50px rgba(0,0,0,0.25);
+  position: relative;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+/* header */
+.modal-header {
+  margin-bottom: 20px;
+}
+
+.modal-header h2 {
+  margin: 0 0 5px 0;
+  font-size: 20px;
+}
+
+.modal-header p {
+  margin: 0;
+  font-size: 14px;
+  color: #666;
+}
+
+/* close button */
+.close {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  background: transparent;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  color: #666;
+}
+
+/* modal body */
+.modal-body {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+/* review item */
+.review-item {
+  margin-bottom: 20px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 15px;
+}
+
+.product-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.product-image {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  margin-right: 10px;
+  border-radius: 4px;
+}
+
+.product-details h4 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.product-details p {
+  margin: 5px 0 0 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.rating-section label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.star-rating {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.star {
+  font-size: 24px;
+  color: #ddd;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.star.selected {
+  color: #f7b500;
+}
+
+.review-section label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.review-textarea {
+  width: 100%;
+  height: 80px;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+/* submit button */
+.btn-submit {
+  width: 100%;
+  padding: 12px;
+  background: #0d6efd;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 15px;
+}
+
+.btn-submit:hover {
+  background: #0b5ed7;
+}
+    /* Header layout */
+    .header-top {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      flex-wrap: nowrap;
+    }
+
+    .header-top .logo {
+      flex: 0 0 auto;
+      font-size: 20px;
+      text-decoration: none;
+    }
+
+    .profile-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex: 0 0 auto;
+    }
+
+    .profile-greet {
+      display: inline-block;
+      white-space: nowrap;
+      font-size: 14px;
+      font-weight: 600;
+      color: #222;
+      margin-left: 6px;
+      flex: 0 0 auto;
+    }
+
+    .top-icons {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 0 0 auto;
+    }
+
+    /* WhatsApp-like search input + button */
+    .search-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .search-input-wrapper {
+      position: relative;
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 10px 14px 10px 38px;
+      border-radius: 22px;
+      border: 1px solid #e9ecef;
+      background: #f2f3f5;
+      font-size: 14px;
+      color: #202124;
+      outline: none;
+      transition: box-shadow 0.15s, border-color 0.15s;
+      min-width: 0;
+    }
+
+    .search-input:focus {
+      box-shadow: 0 4px 12px rgba(37,211,102,0.12);
+      border-color: rgba(37,211,102,0.6);
+      background: #fff;
+    }
+
+    .search-input::placeholder {
+      color: #7a7a7a;
+    }
+
+    .search-input-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #7b7b7b;
+      font-size: 14px;
+      pointer-events: none;
+    }
+
+    .search-btn {
+      padding: 8px 14px;
+      background: #25D366;
+      color: #fff;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: 600;
+      box-shadow: 0 6px 18px rgba(37,211,102,0.18);
+      transition: transform 0.08s ease, filter 0.08s ease;
+      flex: 0 0 auto;
+      white-space: nowrap;
+    }
+
+    .search-btn:hover { filter: brightness(0.95); transform: translateY(-1px); }
+
+    /* Ensure button remains visible on narrow screens (iPhone X ~375px) */
+    @media (max-width: 420px) {
+      .header-top { gap: 8px; padding: 8px 10px; flex-wrap: wrap; align-items: center; }
+      .search-input { padding: 8px 10px 8px 36px; font-size: 13px; }
+      .logo { order: 0; flex: 0 0 auto; }
+      .profile-wrapper, .top-icons { order: 1; flex: 0 0 auto; }
+      .search-container { order: 2; flex: 1 1 100%; min-width: 0; margin-top: 8px; }
+      .search-btn { padding: 8px 10px; }
+    }
+
+    </style>
+    </head>
+
+    <body>
+
+
+      <!-- HEADER -->
+     <header id="header">
+      <!-- TOP BAR -->
+      <div class="header-top">
+        <!-- Logo -->
+        <a href="index.html" class="logo">Bellewear <span>Boutique</span></a>
+
+        <!-- Search (WhatsApp-style) -->
+        <div class="search-container">
+          <div class="search-input-wrapper">
+            <i class="fas fa-search search-input-icon"></i>
+            <input
+              type="text"
+              id="searchInput"
+              class="search-input"
+              placeholder="Search for products..."
+            />
+          </div>
+          <button id="searchBtn" class="search-btn">SEARCH</button>
+        </div>
+
+        <!-- Profile Icon + Greeting -->
+        <div class="profile-wrapper">
+          <a href="#" class="profile-link">
+            <i class="fas fa-user-circle"></i>
+            <i class="fas fa-chevron-down chevron"></i>
+          </a>
+
+          <div class="profile-dropdown">
+            <p class="dropdown-title" id="profileGreeting">Sign In</p>
+            <p class="dropdown-user-name" id="profileUserName"></p>
+            <div id="profileActions">
+              <a href="auth.html"><i class="fas fa-sign-in-alt"></i> Sign In</a>
+            </div>
+          </div>
+
+          <span class="profile-greet">Hello, <span id="userName">Guest</span></span>
+        </div>
+
+        <!-- Search Overlay -->
+        <div class="search-overlay">
+          <div class="search-box">
+            <input
+              type="text"
+              id="searchInputOverlay"
+              placeholder="Search products..."
+            />
+            <button id="searchButtonOverlay">
+              <i class="fas fa-search"></i>
+            </button>
+            <button id="closeSearch" class="close-search">&times;</button>
+            <div class="search-results"></div>
+          </div>
+        </div>
+
+        <!-- Right Icons -->
+        <div class="top-icons">
+          <!-- Cart -->
+          <a href="cart.html" class="cart-link">
+            <i class="fas fa-shopping-cart"></i>
+            <span class="cart-count">0</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- NAVIGATION BAR -->
+
+      <nav class="nav-bar">
+        <ul class="nav-links">
+          <!-- Hamburger Button to open menu -->
+          <button id="menuBtn" class="menu-btn" aria-label="Open menu">
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org"
+            >
+              <line
+                x1="3"
+                y1="6"
+                x2="21"
+                y2="6"
+                stroke="currentColor"
+                stroke-width="2"
+              />
+              <line
+                x1="3"
+                y1="12"
+                x2="21"
+                y2="12"
+                stroke="currentColor"
+                stroke-width="2"
+              />
+              <line
+                x1="3"
+                y1="18"
+                x2="21"
+                y2="18"
+                stroke="currentColor"
+                stroke-width="2"
+              />
+            </svg>
+          </button>
+
+          <!-- Main Nav Links -->
+          <li><a href="index.html" class="active">Home</a></li>
+          <li><a href="shop.html">Shop</a></li>
+          <li><a href="blog.html">Blog</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </nav>
+
+      <!-- Overlay (for background dimming) -->
+      <div id="overlay" class="overlay"></div>
+
+      <!-- Side Menu -->
+      <aside id="sideMenu" class="side-menu">
+        <div class="menu-header">
+          <span id="mobileGreeting">👤 Hello, John</span>
+          <button id="closeMenu">✕</button>
+        </div>
+
+        <div class="menu-section">
+          <h4>Shop By Department</h4>
+          <ul id="mobileCategories">
+            <!-- Categories will be populated dynamically -->
+          </ul>
+        </div>
+
+        <div class="menu-section help-settings">
+          <h4>Help & Settings</h4>
+          <div class="help-links">
+            <a href="account.html" class="help-link">
+              <i class="fas fa-user"></i>
+              <span>Your account</span>
+            </a>
+
+            <a href="#" class="help-link">
+              <i class="fas fa-headset"></i>
+              <span>Customer Service</span>
+            </a>
+          </div>
+
+          <a href="#" id="signOut" class="sign-out">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Sign out</span>
+          </a>
+        </div>
+      </aside>
+    </header>
+
+
+     <section class="jumia-carousel" id="heroCarousel">
+
+  <!-- BLUR TARGET -->
+  <div class="carousel-blur-target" id="carouselBlurTarget">
+    <div class="carousel-wrapper">
+      <div class="carousel-slide">
+        <img src="img/b10.jpg" alt="Promo 1" />
+        <div class="carousel-overlay">
+          <h2>Big Discount!</h2>
+          <p>Up to 50% off selected items</p>
+          <a href="shop.html" class="btn">Shop Now</a>
+        </div>
+      </div>
+
+      <div class="carousel-slide">
+        <img src="img/b18.jpg" alt="Promo 2" />
+        <div class="carousel-overlay">
+          <h2>New Arrivals</h2>
+          <p>Check out the latest trends</p>
+          <a href="shop.html" class="btn">Discover</a>
+        </div>
+      </div>
+
+      <div class="carousel-slide">
+        <img src="img/b17.jpg" alt="Promo 3" />
+        <div class="carousel-overlay">
+          <h2>Flash Sale</h2>
+          <p>Grab them before they're gone!</p>
+          <a href="shop.html" class="btn">Shop Now</a>
+        </div>
+      </div>
+    </div>
+
+    <button class="carousel-prev">&#10094;</button>
+    <button class="carousel-next">&#10095;</button>
+    <div class="carousel-dots"></div>
+  </div>
+
+  <!-- REVIEW MODAL OVERLAY -->
+  <!-- REVIEW MODAL -->
+<div id="reviewModal" class="modal hidden">
+  <div class="modal-content">
+
+    <span class="close" id="closeReviewModal">&times;</span>
+
+    <!-- HEADER -->
+    <div id="reviewModalHeader" class="modal-header"></div>
+
+    <!-- BODY -->
+    <div class="modal-body">
+      <!-- Content will be dynamically generated by JS -->
+
+</section>
+
+
+      <section id="feature" class="section-p1">
+        <div class="fe-box">
+          <img src="img/features/f1.png" alt="" />
+          <h6>free shipping</h6>
+        </div>
+
+        <div class="fe-box">
+          <img src="img/features/f2.png" alt="" />
+          <h6>Online Order</h6>
+        </div>
+
+        <div class="fe-box">
+          <img src="img/features/f3.png" alt="" />
+          <h6>Save money</h6>
+        </div>
+
+        <div class="fe-box">
+          <img src="img/features/f4.png" alt="" />
+          <h6>Promotions</h6>
+        </div>
+
+        <div class="fe-box">
+          <img src="img/features/f5.png" alt="" />
+          <h6>Happy sell</h6>
+        </div>
+
+        <div class="fe-box">
+          <img src="img/features/f6.png" alt="" />
+          <h6>24/7 Support</h6>
+        </div>
+      </section>
+
+      <section id="product1" class="section-p1">
+        <h2>BEST SELLING PRODUCTS</h2>
+        <div class="pro-container skeleton-container" id="bestSellingContainer">
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+        </div>
+      </section>
+
+      <section id="banner" class="section-m1">
+        <h4>Repair services</h4>
+        <h2>upto <span>70% off </span> all t-shirts and accessories</h2>
+        <button class="normal">Explore more</button>
+      </section>
+
+      <section id="product2" class="section-p1">
+        <h2>NEW ARRIVALS</h2>
+        <div class="pro-container skeleton-container" id="newArrivalsContainer">
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+        </div>
+      </section>
+
+
+      <section id="sm-banner" class="section-p1">
+        <div class="banner-box">
+          <h4>Crazy Deals</h4>
+          <h2>Buy 1 get 1 free</h2>
+          <span>The best classic dress is on Sale at Bellewear boutique</span>
+          <button class="white">Learn more</button>
+        </div>
+
+        <div class="banner-box banner-box2">
+          <h4>spring/summer</h4>
+          <h2>Upcoming seasons</h2>
+          <span>The best classic dress is on Sale at Bellewear boutique</span>
+          <button class="white">Learn more</button>
+        </div>
+      </section>
+
+      <section id="banner3">
+        <div class="banner-box">
+          <h2>SEASONAL SALE</h2>
+          <h3>winter collection -50% off</h3>
+          <button class="white">Explore more</button>
+        </div>
+
+        <div class="banner-box banner-box2">
+          <h2>NEW FOOTWEAR</h2>
+          <h3>Spring/summer 2025</h3>
+          <button class="white">Explore more</button>
+        </div>
+
+        <div class="banner-box banner-box3">
+          <h2>T-SHIRTS</h2>
+          <h3>New trendy prints</h3>
+          <button class="white">Explore more</button>
+        </div>
+      </section>
+
+      <section id="newsletter" class="section-p1 section-m1">
+        <div class="newstext">
+          <h4>Get 10% Off Your First Order</h4>
+          <p>
+            Join our list for early access to new arrivals, exclusive deals, and
+            limited stock alerts — no spam.
+          </p>
+        </div>
+        <div class="form">
+          <input type="email" placeholder="Enter your email" required />
+          <button class="normal">Get My 10% Off</button>
+        </div>
+      </section>
+
+      <footer class="section-p1">
+        <div class="col">
+          <a href="#" class="logo">Bellewear <span>Boutique</span></a>
+          <h4>Contact</h4>
+          <p>Address: <strong>31 Gatukuyu</strong></p>
+          <p>Phone: <strong>+254 117 355 310 / +254 737 018 962</strong></p>
+          <p>Hours: <strong>8:00am - 7:00 pm mon -sat</strong></p>
+          <div class="follow">
+            <h4>follow us</h4>
+            <div class="icon">
+              <i class="fab fa-facebook"></i>
+              <i class="fab fa-twitter"></i>
+              <i class="fab fa-instagram"></i>
+              <i class="fab fa-pinterest-p"></i>
+              <i class="fab fa-youtube"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="col">
+          <h4>About</h4>
+          <a href="about.html">about us</a>
+          <a href="#">Delivery information</a>
+          <a href="#">privacy policy</a>
+          <a href="#">Terms and condition</a>
+          <a href="Contact.html">Contact</a>
+          <a href="login.html">Admin</a>
+        </div>
+
+        <div class="col">
+          <h4>My Account</h4>
+          <a href="auth.html">Sign in</a>
+          <a href="cart.html">View Cart</a>
+          <a href="#">My Wishlist</a>
+          <a href="#">Track my Order</a>
+          <a href="#">Help</a>
+        </div>
+
+        <div class="col-install">
+          <h4>Install app</h4>
+          <p>From apple store or google play store</p>
+          <div class="row">
+            <img src="img/pay/app.jpg" alt="" />
+            <img src="img/pay/play.jpg" alt="" />
+          </div>
+          <p>secured payment Gateways</p>
+          <img src="img/pay/pay.png" alt="" />
+        </div>
+
+        <div class="copyright">
+          <p>©️ 2025 BELLEWEAR BOUTIQUE @ codebee productions LTD</p>
+        </div>
+      </footer>
+
+      
+     
+
+      <script type="module" src="main.js"></script>
+      <script type="module" src="index.js"></script>
+    </body>
+  </html>
+</doctype>

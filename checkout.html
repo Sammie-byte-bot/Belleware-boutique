@@ -1,0 +1,656 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Checkout | Bellewear Boutique</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="stylesheet" href="styless.css" />
+    <link rel="stylesheet" href="fontawesome-free-7.1.0-web/css/all.css" />
+
+    <style>
+      /* READ-ONLY ORDER ITEMS */
+      .order-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.8rem 0;
+        border-bottom: 1px dashed #ccc;
+      }
+
+      .order-item img {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 8px;
+        margin-right: 10px;
+      }
+
+      .item-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .item-info span {
+        font-size: 0.9rem;
+        color: #555;
+      }
+
+      .delivery-area {
+        margin: 1rem 0;
+        font-weight: 500;
+      }
+
+      .checkout-right button {
+        padding: 12px;
+        width: 100%;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        background: #111;
+        color: #fff;
+        font-weight: 600;
+      }
+
+      .checkout-right button:hover {
+        opacity: 0.9;
+      }
+
+      /* Multi-step checkout styles */
+      .checkout-step {
+        display: none;
+      }
+
+      .checkout-step.active {
+        display: block;
+      }
+
+      .step-navigation {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 2rem;
+      }
+
+      .step-navigation button {
+        padding: 12px 24px;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease;
+      }
+
+      .btn-prev {
+        background: #f1f5f9;
+        color: #333;
+      }
+
+      .btn-prev:hover {
+        background: #e2e8f0;
+      }
+
+      .btn-next {
+        background: #3bc1a8;
+        color: #fff;
+      }
+
+      .btn-next:hover {
+        background: #2a9d8f;
+      }
+
+      .btn-next:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+
+      .step-indicator {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 2rem;
+      }
+
+      .step {
+        display: flex;
+        align-items: center;
+        margin: 0 1rem;
+      }
+
+      .step-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        margin-right: 0.5rem;
+        transition: all 0.3s ease;
+      }
+
+      .step-circle.active {
+        background: #3bc1a8;
+        color: white;
+      }
+
+      .step-circle.completed {
+        background: #2a9d8f;
+        color: white;
+      }
+
+      .step-circle.inactive {
+        background: #e2e8f0;
+        color: #666;
+      }
+
+      .step-text {
+        font-weight: 600;
+        color: #666;
+      }
+
+      .step.active .step-text {
+        color: #3bc1a8;
+      }
+
+      .step.completed .step-text {
+        color: #2a9d8f;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- NAVBAR -->
+    <section id="header">
+      <!-- Logo + Greeting -->
+      <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0">
+        <a href="index.html" class="logo">Bellewear <span>Boutique</span></a>
+        <span class="profile-greet" style="white-space: nowrap; font-size: 12px"
+          >Hello, <span id="userName">Guest</span></span
+        >
+      </div>
+      <ul id="navbar">
+        <li><a href="index.html">Continue shopping</a></li>
+      </ul>
+    </section>
+
+    <!-- CHECKOUT PAGE -->
+    <main class="checkout-page">
+      <h2>Checkout</h2>
+
+      <!-- Step Indicator -->
+      <div class="step-indicator">
+        <div class="step active" id="step-1">
+          <div class="step-circle active">1</div>
+          <span class="step-text">Address</span>
+        </div>
+        <div class="step" id="step-2">
+          <div class="step-circle inactive">2</div>
+          <span class="step-text">Delivery</span>
+        </div>
+        <div class="step" id="step-3">
+          <div class="step-circle inactive">3</div>
+          <span class="step-text">Payment</span>
+        </div>
+      </div>
+
+      <div class="checkout-container">
+        <!-- CUSTOMER DETAILS & PAYMENT -->
+        <div class="checkout-left">
+          <!-- STEP 1: CUSTOMER ADDRESS CARD -->
+          <div class="checkout-step active" id="step1-content">
+            <div class="checkout-card">
+              <div class="card-number">1</div>
+              <h3>Customer Address</h3>
+              <form id="address-form">
+                <label for="full-name">Full Name</label>
+                <input type="text" id="full-name" required />
+
+                <label for="phone">Phone Number</label>
+                <input type="tel" id="phone" required />
+
+                <label for="address">Delivery Address</label>
+                <textarea id="address" rows="5" required></textarea>
+              </form>
+            </div>
+            <div class="step-navigation">
+              <div></div>
+              <button class="btn-next" id="next-to-step2">Next</button>
+            </div>
+          </div>
+
+          <!-- STEP 2: DELIVERY DETAILS CARD -->
+          <div class="checkout-step" id="step2-content">
+            <div class="checkout-card">
+              <div class="card-number">2</div>
+              <h3>Delivery Details</h3>
+              <label for="delivery-area">Select Delivery Area</label>
+              <select id="delivery-area">
+                <option value="Nairobi CBD">Nairobi CBD - Ksh 150</option>
+                <option value="Kangemi">Kangemi - Ksh 150</option>
+                <option value="Kabete">Kabete - Ksh 150</option>
+                <option value="Uthiru" selected>Uthiru - Ksh 110</option>
+                <option value="Kinoo">Kinoo - Ksh 150</option>
+              </select>
+              <p class="delivery-fee">
+                Delivery Fee: Ksh <span id="delivery-fee-display">110</span>
+              </p>
+            </div>
+            <div class="step-navigation">
+              <button class="btn-prev" id="back-to-step1">Previous</button>
+              <button class="btn-next" id="next-to-step3">Next</button>
+            </div>
+          </div>
+
+          <!-- STEP 3: PAYMENT METHOD -->
+          <div class="checkout-step" id="step3-content">
+            <div class="checkout-card">
+              <div class="card-number">3</div>
+              <h3>Payment Method</h3>
+              <div class="payment-options">
+                <label class="payment-option">
+                  <input type="radio" name="payment" value="mpesa" checked />
+                  <span>M-Pesa</span>
+                </label>
+                <label class="payment-option">
+                  <input type="radio" name="payment" value="card" />
+                  <span>Credit/Debit Card</span>
+                </label>
+                <label class="payment-option">
+                  <input type="radio" name="payment" value="pickup" />
+                  <span>Pickup on our store</span>
+                </label>
+              </div>
+              <div id="mpesa-details" class="payment-details">
+                <label for="mpesa-number">M-Pesa Number</label>
+                <input
+                  type="tel"
+                  id="mpesa-number"
+                  placeholder="e.g. 0712345678"
+                />
+              </div>
+              <div id="card-details" class="payment-details hidden">
+                <label for="card-number">Card Number</label>
+                <input
+                  type="text"
+                  id="card-number"
+                  placeholder="1234 5678 9012 3456"
+                />
+
+                <div class="card-row">
+                  <div>
+                    <label for="expiry">Expiry Date</label>
+                    <input type="text" id="expiry" placeholder="MM/YY" />
+                  </div>
+                  <div>
+                    <label for="cvv">CVV</label>
+                    <input type="text" id="cvv" placeholder="123" />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="step-navigation">
+              <button class="btn-prev" id="back-to-step2">Previous</button>
+              <button class="btn-next" id="place-order">Place Order</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ORDER SUMMARY -->
+        <div class="checkout-right">
+          <h3>Order Summary</h3>
+
+          <div id="order-items"></div>
+
+          <div class="summary-row">
+            <span>Subtotal</span>
+            <span>Ksh <span id="subtotal">0</span></span>
+          </div>
+
+          <div class="summary-row">
+            <span>Delivery</span>
+            <span>Ksh <span id="delivery-fee">0</span></span>
+          </div>
+
+          <div class="summary-row total">
+            <span>Total</span>
+            <span>Ksh <span id="grand-total">0</span></span>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- SUCCESS OVERLAY -->
+    <div id="success-overlay" class="success-overlay hidden">
+      <div class="success-card">
+        <div class="checkmark">
+          <i class="fas fa-check"></i>
+        </div>
+        <h2>Order Placed Successfully</h2>
+        <p>Your order has been received and is being processed.</p>
+
+        <button id="go-to-orders">View My Orders</button>
+      </div>
+    </div>
+
+    <script type="module">
+      import {
+        initializeApp,
+        getApps,
+      } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+      import {
+        getAuth,
+        onAuthStateChanged,
+      } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+      import {
+        getFirestore,
+        collection,
+        addDoc,
+        serverTimestamp,
+        doc,
+        getDoc,
+      } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyD6UqMyedaoaXgqOeddQN47ADgP8joO364",
+        authDomain: "bellewear-boutique.firebaseapp.com",
+        projectId: "bellewear-boutique",
+        storageBucket: "bellewear-boutique.firebasestorage.app",
+        messagingSenderId: "795858464616",
+        appId: "1:795858464616:web:0bbf307b3da145766ff0dd",
+      };
+
+      const app = getApps().length
+        ? getApps()[0]
+        : initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
+
+      const supportedAreas = {
+        "Nairobi CBD": 150,
+        Kangemi: 150,
+        Kabete: 150,
+        Uthiru: 110,
+        Kinoo: 150,
+      };
+
+      const defaultArea = "Uthiru";
+      const deliveryFee = supportedAreas[defaultArea];
+
+      const rawOrder = localStorage.getItem("pendingOrder");
+      if (!rawOrder) {
+        alert("No pending order found");
+        window.location.href = "cart.html";
+      }
+
+      const pendingOrder = JSON.parse(rawOrder);
+
+      const orderItemsContainer = document.getElementById("order-items");
+      const subtotalEl = document.getElementById("subtotal");
+      const deliveryEl = document.getElementById("delivery-fee");
+      const grandTotalEl = document.getElementById("grand-total");
+      const deliveryAreaSelect = document.getElementById("delivery-area");
+      const deliveryFeeDisplay = document.getElementById(
+        "delivery-fee-display",
+      );
+      const paymentRadios = document.querySelectorAll('input[name="payment"]');
+      const mpesaDetails = document.getElementById("mpesa-details");
+      const cardDetails = document.getElementById("card-details");
+
+      function renderOrderItems() {
+        let subtotal = 0;
+        orderItemsContainer.innerHTML = "";
+
+        pendingOrder.items.forEach((item) => {
+          const itemTotal = item.price * item.quantity;
+          subtotal += itemTotal;
+
+          const div = document.createElement("div");
+          div.className = "order-item";
+          div.innerHTML = `
+        <img src="${item.img}" />
+        <div class="item-info">
+          <strong>${item.name}</strong>
+          <span>Qty: ${item.quantity}</span>
+        </div>
+        <span>KES ${itemTotal}</span>
+      `;
+          orderItemsContainer.appendChild(div);
+        });
+
+        subtotalEl.textContent = subtotal;
+        deliveryEl.textContent = deliveryFee;
+        grandTotalEl.textContent = subtotal + deliveryFee;
+      }
+
+      renderOrderItems();
+
+      let currentUser = null;
+      let currentStep = 1;
+
+      // Multi-step navigation functions
+      function showStep(step) {
+        // Hide all steps
+        document.querySelectorAll(".checkout-step").forEach((stepEl) => {
+          stepEl.classList.remove("active");
+        });
+
+        // Show current step
+        document.getElementById(`step${step}-content`).classList.add("active");
+
+        // Update step indicators
+        for (let i = 1; i <= 3; i++) {
+          const stepEl = document.getElementById(`step-${i}`);
+          const circle = stepEl.querySelector(".step-circle");
+          const text = stepEl.querySelector(".step-text");
+
+          if (i < step) {
+            stepEl.classList.remove("active");
+            stepEl.classList.add("completed");
+            circle.classList.remove("active", "inactive");
+            circle.classList.add("completed");
+            text.style.color = "#2a9d8f";
+          } else if (i === step) {
+            stepEl.classList.add("active");
+            stepEl.classList.remove("completed");
+            circle.classList.add("active");
+            circle.classList.remove("inactive", "completed");
+            text.style.color = "#3bc1a8";
+          } else {
+            stepEl.classList.remove("active", "completed");
+            circle.classList.add("inactive");
+            circle.classList.remove("active", "completed");
+            text.style.color = "#666";
+          }
+        }
+
+        currentStep = step;
+      }
+
+      // Pre-fill user data
+      async function prefillUserData(user) {
+        try {
+          const userRef = doc(db, "users", user.uid);
+          const userSnap = await getDoc(userRef);
+
+          if (userSnap.exists()) {
+            const userData = userSnap.data();
+
+            // Pre-fill full name
+            const fullNameInput = document.getElementById("full-name");
+            if (userData.fullName) {
+              fullNameInput.value = userData.fullName;
+            }
+
+            // Pre-fill phone
+            const phoneInput = document.getElementById("phone");
+            if (userData.phone) {
+              phoneInput.value = userData.phone;
+            }
+
+            // Pre-fill address
+            const addressTextarea = document.getElementById("address");
+            if (userData.address && typeof userData.address === "object") {
+              const addr = userData.address;
+              const addressString =
+                `${addr.streetAddress || ""}\n${addr.city || ""}\n${addr.postalCode || ""}\n${addr.country || ""}`.trim();
+              if (addressString) {
+                addressTextarea.value = addressString;
+              }
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+        }
+      }
+
+      onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+          alert("Please login first");
+          window.location.href = "auth.html";
+          return;
+        }
+        currentUser = user;
+
+        // Pre-fill user data
+        await prefillUserData(user);
+      });
+
+      // Handle delivery area change
+      deliveryAreaSelect.addEventListener("change", (e) => {
+        const selectedArea = e.target.value;
+        const fee = supportedAreas[selectedArea];
+        deliveryFeeDisplay.textContent = fee;
+        deliveryEl.textContent = fee;
+        const subtotal = parseInt(subtotalEl.textContent);
+        grandTotalEl.textContent = subtotal + fee;
+      });
+
+      // Handle payment method change
+      paymentRadios.forEach((radio) => {
+        radio.addEventListener("change", (e) => {
+          if (e.target.value === "mpesa") {
+            mpesaDetails.classList.remove("hidden");
+            cardDetails.classList.add("hidden");
+          } else if (e.target.value === "card") {
+            mpesaDetails.classList.add("hidden");
+            cardDetails.classList.remove("hidden");
+          } else if (e.target.value === "pickup") {
+            mpesaDetails.classList.add("hidden");
+            cardDetails.classList.add("hidden");
+            // For pickup, set delivery fee to 0
+            deliveryEl.textContent = "0";
+            const subtotal = parseInt(subtotalEl.textContent);
+            grandTotalEl.textContent = subtotal;
+          }
+        });
+      });
+
+      // Step navigation event listeners
+      document.getElementById("next-to-step2").addEventListener("click", () => {
+        // Validate step 1
+        const fullName = document.getElementById("full-name").value.trim();
+        const phone = document.getElementById("phone").value.trim();
+        const address = document.getElementById("address").value.trim();
+
+        if (!fullName || !phone || !address) {
+          alert(
+            "Please fill in all required fields (Full Name, Phone Number, and Delivery Address) before proceeding.",
+          );
+          return;
+        }
+
+        showStep(2);
+      });
+
+      document.getElementById("back-to-step1").addEventListener("click", () => {
+        showStep(1);
+      });
+
+      document.getElementById("next-to-step3").addEventListener("click", () => {
+        showStep(3);
+      });
+
+      document.getElementById("back-to-step2").addEventListener("click", () => {
+        showStep(2);
+      });
+
+      document
+        .getElementById("place-order")
+        .addEventListener("click", async () => {
+          if (!currentUser) return;
+
+          // Collect form data
+          const fullName = document.getElementById("full-name").value.trim();
+          const phone = document.getElementById("phone").value.trim();
+          const address = document.getElementById("address").value.trim();
+          const selectedArea = deliveryAreaSelect.value;
+          const paymentMethod = document.querySelector(
+            'input[name="payment"]:checked',
+          ).value;
+          const mpesaNumber = document
+            .getElementById("mpesa-number")
+            .value.trim();
+
+          // Basic validation
+          if (!fullName || !phone || !address) {
+            alert("Please fill in all required fields");
+            return;
+          }
+
+          if (paymentMethod === "mpesa" && !mpesaNumber) {
+            alert("Please enter your M-Pesa number");
+            return;
+          }
+
+          try {
+            const subtotal = pendingOrder.items.reduce(
+              (sum, item) => sum + item.price * item.quantity,
+              0,
+            );
+            const currentDeliveryFee = supportedAreas[selectedArea];
+
+            const orderData = {
+              orderId: "ORD-" + Date.now(),
+              userId: currentUser.uid,
+              items: pendingOrder.items,
+              subtotal,
+              deliveryFee: currentDeliveryFee,
+              total: subtotal + currentDeliveryFee,
+              customerInfo: {
+                fullName,
+                phone,
+                address,
+                deliveryArea: selectedArea,
+              },
+              paymentMethod,
+              mpesaNumber: paymentMethod === "mpesa" ? mpesaNumber : null,
+              status: "PLACED",
+              createdAt: serverTimestamp(),
+            };
+
+            await addDoc(collection(db, "orders"), orderData);
+
+            localStorage.removeItem("pendingOrder");
+
+            // Clear the cart after placing order
+            const cartKey = currentUser
+              ? `cart_${currentUser.uid}`
+              : "cart_guest";
+            localStorage.removeItem(cartKey);
+
+            document
+              .getElementById("success-overlay")
+              .classList.remove("hidden");
+            document.getElementById("place-order").disabled = true;
+
+            setTimeout(() => {
+              window.location.href = "account.html";
+            }, 2500);
+          } catch (err) {
+            console.error("ORDER WRITE FAILED:", err);
+            alert("Order failed to save");
+          }
+        });
+    </script>
+  </body>
+</html>

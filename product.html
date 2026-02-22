@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Product - Bellewear Boutique</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="fontawesome-free-7.1.0-web/css/all.css" />
+    <!-- Firebase App -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <!-- Firebase Firestore -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <style>
+      .order-card {
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 14px;
+        margin-bottom: 12px;
+        background: #fff;
+      }
+
+      .order-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+
+      .order-customer {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .customer-name {
+        font-weight: 600;
+        font-size: 14px;
+        color: #111;
+      }
+
+      .verified-badge {
+        background: #e6f4ea;
+        color: #1e7e34;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 3px 6px;
+        border-radius: 4px;
+        display: inline-flex;
+        align-items: center;
+      }
+
+      .order-date {
+        font-size: 12px;
+        color: #6b7280;
+      }
+    </style>
+  </head>
+  <body>
+    <header id="header">
+      <!-- TOP BAR -->
+      <div class="header-top">
+        <!-- Logo -->
+        <a href="index.html" class="logo">Bellewear <span>Boutique</span></a>
+
+        <!-- Search (WhatsApp-style) -->
+        <div class="search-container">
+          <div class="search-input-wrapper">
+            <i class="fas fa-search search-input-icon"></i>
+            <input
+              type="text"
+              id="searchInput"
+              class="search-input"
+              placeholder="Search for products..."
+            />
+          </div>
+          <button id="searchBtn" class="search-btn">SEARCH</button>
+        </div>
+
+        <!-- Profile Icon + Greeting -->
+        <div class="profile-wrapper">
+          <a href="#" class="profile-link">
+            <i class="fas fa-user-circle"></i>
+            <i class="fas fa-chevron-down chevron"></i>
+          </a>
+
+          <div class="profile-dropdown">
+            <p class="dropdown-title" id="profileGreeting">Sign In</p>
+            <p class="dropdown-user-name" id="profileUserName"></p>
+            <div id="profileActions">
+              <a href="auth.html"><i class="fas fa-sign-in-alt"></i> Sign In</a>
+            </div>
+          </div>
+
+          <span class="profile-greet"
+            >Hello, <span id="userName">Guest</span></span
+          >
+        </div>
+
+        <!-- Search Overlay -->
+        <div class="search-overlay">
+          <div class="search-box">
+            <input
+              type="text"
+              id="searchInputOverlay"
+              placeholder="Search products..."
+            />
+            <button id="searchButtonOverlay">
+              <i class="fas fa-search"></i>
+            </button>
+            <button id="closeSearch" class="close-search">&times;</button>
+            <div class="search-results"></div>
+          </div>
+        </div>
+
+        <!-- Right Icons -->
+        <div class="top-icons">
+          <!-- Cart -->
+          <a href="cart.html" class="cart-link">
+            <i class="fas fa-shopping-cart"></i>
+            <span class="cart-count">0</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- NAVIGATION BAR -->
+
+      <nav class="nav-bar">
+        <ul class="nav-links">
+          <!-- Hamburger Button to open menu -->
+          <button id="menuBtn" class="menu-btn" aria-label="Open menu">
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org"
+            >
+              <line
+                x1="3"
+                y1="6"
+                x2="21"
+                y2="6"
+                stroke="currentColor"
+                stroke-width="2"
+              />
+              <line
+                x1="3"
+                y1="12"
+                x2="21"
+                y2="12"
+                stroke="currentColor"
+                stroke-width="2"
+              />
+              <line
+                x1="3"
+                y1="18"
+                x2="21"
+                y2="18"
+                stroke="currentColor"
+                stroke-width="2"
+              />
+            </svg>
+          </button>
+
+          <!-- Main Nav Links -->
+          <li><a href="index.html">Home</a></li>
+          <li><a href="shop.html" class="active">Shop</a></li>
+          <li><a href="blog.html">Blog</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </nav>
+
+      <!-- Overlay (for background dimming) -->
+      <div id="overlay" class="overlay"></div>
+
+      <!-- Side Menu -->
+      <aside id="sideMenu" class="side-menu">
+        <div class="menu-header">
+          <span id="mobileGreeting">👤 Hello, John</span>
+          <button id="closeMenu">✕</button>
+        </div>
+
+        <div class="menu-section">
+          <h4>Shop By Department</h4>
+          <ul id="mobileCategories">
+            <!-- Categories will be populated dynamically -->
+          </ul>
+        </div>
+
+        <div class="menu-section help-settings">
+          <h4>Help & Settings</h4>
+          <div class="help-links">
+            <a href="account.html" class="help-link">
+              <i class="fas fa-user"></i>
+              <span>Your account</span>
+            </a>
+
+            <a href="#" class="help-link">
+              <i class="fas fa-headset"></i>
+              <span>Customer Service</span>
+            </a>
+          </div>
+
+          <a href="#" id="signOut" class="sign-out">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Sign out</span>
+          </a>
+        </div>
+      </aside>
+    </header>
+
+    <!-- Overlay -->
+    <div id="overlay"></div>
+
+    <!-- PRODUCT SECTION -->
+    <section class="single-product">
+      <div class="product-wrapper">
+        <!-- LEFT: IMAGE GALLERY -->
+        <div class="product-gallery">
+          <div class="main-image">
+            <div class="skeleton-loader"></div>
+            <img id="productImage" alt="Product Image" />
+          </div>
+          <div class="thumbnails"></div>
+        </div>
+
+        <!-- CENTER: DETAILS -->
+        <div class="product-details">
+          <h1 id="productName">Product Name</h1>
+          <p class="brand" id="productBrand">Brand Name</p>
+
+          <div class="rating" id="productRating"></div>
+
+          <div class="price-box">
+            <span class="current-price" id="productPrice">Ksh 0</span>
+            <span class="old-price" id="productOldPrice"></span>
+            <span class="discount" id="productDiscount"></span>
+          </div>
+
+          <p class="stock-warning" id="stockWarning"></p>
+
+          <!-- VARIANTS -->
+          <div class="variants">
+            <div class="variant" id="sizeVariant"><label>Size:</label></div>
+            <div class="variant" id="colorVariant"><label>Color:</label></div>
+          </div>
+
+          <!-- QUANTITY -->
+          <div class="quantity">
+            <button id="decreaseQty">−</button>
+            <span id="quantityValue">1</span>
+            <button id="increaseQty">+</button>
+          </div>
+
+          <!-- ACTIONS -->
+          <div class="actions">
+            <button class="buy-now">Buy Now</button>
+            <button class="add-cart" id="addToCart">Add to Cart</button>
+            <button class="wishlist" id="addToWishlist">♡ Wishlist</button>
+          </div>
+
+          <div class="trust-box">
+            <p>✔ Free Returns within 7 Days</p>
+            <p>✔ Cash on Delivery Available</p>
+            <p>✔ Official Store</p>
+          </div>
+
+          <div class="product-info">
+            <h3>Product Details</h3>
+            <p id="productDescription"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="reviews">
+      <h3>Customer Feedback</h3>
+      <div class="reviews-wrapper">
+        <!-- LEFT: Overall Ratings -->
+        <div class="overall-rating" id="overallRating">
+          <div class="rating-box">
+            <span class="avg-rating" id="avgRating">0</span>/5
+            <div class="stars" id="avgStars"></div>
+            <p id="totalRatings">0 verified ratings</p>
+          </div>
+          <div class="rating-distribution" id="ratingDistribution"></div>
+        </div>
+
+        <!-- RIGHT: Individual Reviews -->
+        <div class="product-reviews" id="reviewsContainer"></div>
+      </div>
+    </section>
+
+    <section class="recently-viewed">
+      <h3>Recently Viewed Products</h3>
+      <div
+        id="recentlyViewedContainer"
+        class="recently-viewed-wrapper flex gap-4 overflow-x-auto"
+      ></div>
+    </section>
+
+    <!-- SCRIPTS -->
+    <script type="module" src="main.js"></script>
+    <script type="module" src="product.js"></script>
+  </body>
+</html>

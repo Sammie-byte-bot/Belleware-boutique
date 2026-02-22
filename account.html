@@ -1,0 +1,1150 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Account | Bellewear</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="fontawesome-free-7.1.0-web/css/all.css" />
+
+    <style>
+      body {
+        background: #f4f6f8;
+        font-family:
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          sans-serif;
+      }
+
+      .modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.55);
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+      }
+
+      .account-page {
+        display: flex;
+        height: 80vh;
+        gap: 2rem;
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+      }
+
+      .sidebar {
+        width: 260px;
+        background: #fff;
+        border-radius: 12px;
+        padding: 1.2rem;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: 80vh;
+        position: fixed;
+        left: 1in;
+        top: 120px; /* Adjust based on header height */
+      }
+
+      .sidebar-link {
+        display: block;
+        padding: 14px 16px;
+        margin: 8px 0;
+        text-decoration: none;
+        color: #333;
+        font-weight: 700;
+        border-radius: 8px;
+      }
+
+      .sidebar-link.active {
+        background: #f1f5f9;
+        border-left: 4px solid #3bc1a8;
+      }
+
+      .content {
+        flex: 1;
+        margin-left: 280px; /* Account for fixed sidebar */
+      }
+
+      .content-section {
+        display: none;
+      }
+
+      .content-section.active {
+        display: block;
+      }
+
+      .account-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+        margin-top: 2rem;
+        max-height: calc(100vh - 200px); /* Ensure it fits in viewport */
+        overflow: hidden; /* Prevent scrolling */
+      }
+
+      .account-card {
+        background: #fff;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: calc((100vh - 250px) / 2); /* Make cards fit in viewport */
+        min-height: 200px; /* Minimum height */
+      }
+
+      .account-card .btn-blue {
+        align-self: flex-end;
+        margin-top: auto;
+      }
+
+      .profile-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        font-weight: 700;
+        color: #fff;
+        background: linear-gradient(135deg, #3bc1a8, #ff6b35);
+        margin-right: 1rem;
+        flex-shrink: 0;
+      }
+
+      .account-card h3 {
+        margin: 0 0 1rem 0;
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #333;
+      }
+
+      .account-card p {
+        margin: 0.5rem 0;
+        color: #666;
+      }
+
+      .account-card .value {
+        font-size: 1.5rem;
+        font-weight: 900;
+        color: #3bc1a8;
+      }
+
+      .btn-blue {
+        margin-top: 1rem;
+        padding: 10px 14px;
+        background: #3bc1a8;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .cta-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: auto;
+      }
+
+      .btn-shop {
+        background: #3bc1a8;
+        color: #fff;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+        flex: 1;
+      }
+
+      .btn-home {
+        background: #f1f5f9;
+        color: #333;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+        flex: 1;
+      }
+
+      .section-title {
+        font-size: 1.8rem;
+        font-weight: 800;
+        margin-bottom: 0.6rem;
+      }
+
+      .orders-container {
+        background: #fff;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+      }
+
+      .order-card {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+        padding: 1.2rem;
+        margin-bottom: 1.2rem;
+      }
+
+      .order-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      .order-ref {
+        font-weight: 700;
+        font-size: 1rem;
+        color: #222;
+      }
+
+      .order-date {
+        color: #777;
+        font-size: 0.9rem;
+        margin-top: 0.2rem;
+      }
+
+      .track-btn {
+        background: #3bc1a8;
+        color: #fff;
+        padding: 0.7rem 1.2rem;
+        border-radius: 30px;
+        font-weight: 700;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .order-items {
+        margin-top: 1.2rem;
+        border-top: 1px solid #eee;
+        padding-top: 1.2rem;
+      }
+
+      .item-row {
+        display: grid;
+        grid-template-columns: 90px 1fr 250px 220px;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem 0;
+        border-bottom: 1px solid #eee;
+      }
+
+      .item-row:last-child {
+        border-bottom: none;
+      }
+
+      .item-row img {
+        width: 90px;
+        height: 90px;
+        border-radius: 10px;
+        object-fit: cover;
+      }
+
+      .item-details {
+        font-weight: 700;
+        font-size: 1rem;
+      }
+
+      .item-details small {
+        font-weight: 400;
+        display: block;
+        margin-top: 0.4rem;
+        color: #777;
+      }
+
+      .status-badge {
+        display: inline-block;
+        padding: 0.6rem 0.9rem;
+        border-radius: 999px;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+      }
+
+      .status-PLACED {
+        background: #fff3cd;
+        color: #856404;
+      }
+      .status-CONFIRMED {
+        background: #e7f3ff;
+        color: #0b5ed7;
+      }
+      .status-SHIPPED {
+        background: #e0e7ff;
+        color: #3730a3;
+      }
+      .status-DELIVERED {
+        background: #e6f4ea;
+        color: #1e7e34;
+      }
+      .status-CANCELLED {
+        background: #f8d7da;
+        color: #721c24;
+      }
+
+      .delivery {
+        text-align: right;
+        color: #333;
+        font-weight: 700;
+      }
+
+      .delivery small {
+        display: block;
+        font-weight: 400;
+        color: #777;
+      }
+
+      .order-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #eee;
+      }
+
+      .cancel-btn {
+        background: transparent;
+        border: none;
+        color: #333;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .cancel-btn:hover {
+        text-decoration: underline;
+      }
+
+      .total {
+        font-weight: 900;
+        font-size: 1.2rem;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- HEADER (Your existing header here) -->
+
+    <header id="header">
+      <!-- TOP BAR -->
+      <div class="header-top">
+        <!-- Logo -->
+        <a href="index.html" class="logo">Bellewear <span>Boutique</span></a>
+
+        <!-- Search (WhatsApp-style) -->
+        <div class="search-container">
+          <div class="search-input-wrapper">
+            <i class="fas fa-search search-input-icon"></i>
+            <input
+              type="text"
+              id="searchInput"
+              class="search-input"
+              placeholder="Search for products..."
+            />
+          </div>
+          <button id="searchBtn" class="search-btn">SEARCH</button>
+        </div>
+
+        <!-- Profile Icon + Greeting -->
+        <div class="profile-wrapper">
+          <a href="#" class="profile-link">
+            <i class="fas fa-user-circle"></i>
+            <i class="fas fa-chevron-down chevron"></i>
+          </a>
+
+          <div class="profile-dropdown">
+            <p class="dropdown-title" id="profileGreeting">Sign In</p>
+            <p class="dropdown-user-name" id="profileUserName"></p>
+            <div id="profileActions">
+              <a href="auth.html"><i class="fas fa-sign-in-alt"></i> Sign In</a>
+            </div>
+          </div>
+
+          <span class="profile-greet"
+            >Hello, <span id="userName">Guest</span></span
+          >
+        </div>
+
+        <!-- Search Overlay -->
+        <div class="search-overlay">
+          <div class="search-box">
+            <input
+              type="text"
+              id="searchInputOverlay"
+              placeholder="Search products..."
+            />
+            <button id="searchButtonOverlay">
+              <i class="fas fa-search"></i>
+            </button>
+            <button id="closeSearch" class="close-search">&times;</button>
+            <div class="search-results"></div>
+          </div>
+        </div>
+
+        <!-- Right Icons -->
+        <div class="top-icons">
+          <!-- Cart -->
+          <a href="cart.html" class="cart-link">
+            <i class="fas fa-shopping-cart"></i>
+            <span class="cart-count">0</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- NAVIGATION BAR -->
+
+      <nav class="nav-bar">
+        <ul class="nav-links">
+          <!-- Hamburger Button to open menu -->
+          <button id="menuBtn" class="menu-btn" aria-label="Open menu">
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org"
+            >
+              <line
+                x1="3"
+                y1="6"
+                x2="21"
+                y2="6"
+                stroke="currentColor"
+                stroke-width="2"
+              />
+              <line
+                x1="3"
+                y1="12"
+                x2="21"
+                y2="12"
+                stroke="currentColor"
+                stroke-width="2"
+              />
+              <line
+                x1="3"
+                y1="18"
+                x2="21"
+                y2="18"
+                stroke="currentColor"
+                stroke-width="2"
+              />
+            </svg>
+          </button>
+
+          <!-- Main Nav Links -->
+          <li><a href="index.html">Home</a></li>
+          <li><a href="shop.html" class="active">Shop</a></li>
+          <li><a href="blog.html">Blog</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </nav>
+
+      <!-- Overlay (for background dimming) -->
+      <div id="overlay" class="overlay"></div>
+
+      <!-- Side Menu -->
+      <aside id="sideMenu" class="side-menu">
+        <div class="menu-header">
+          <span id="mobileGreeting">👤 Hello, John</span>
+          <button id="closeMenu">✕</button>
+        </div>
+
+        <div class="menu-section">
+          <h4>Shop By Department</h4>
+          <ul id="mobileCategories">
+            <!-- Categories will be populated dynamically -->
+          </ul>
+        </div>
+
+        <div class="menu-section help-settings">
+          <h4>Help & Settings</h4>
+          <div class="help-links">
+            <a href="account.html" class="help-link">
+              <i class="fas fa-user"></i>
+              <span>Your account</span>
+            </a>
+
+            <a href="#" class="help-link">
+              <i class="fas fa-headset"></i>
+              <span>Customer Service</span>
+            </a>
+          </div>
+
+          <a href="#" id="signOut" class="sign-out">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Sign out</span>
+          </a>
+        </div>
+      </aside>
+    </header>
+
+    <!-- ACCOUNT PAGE -->
+    <div class="account-page">
+      <aside class="sidebar">
+        <div class="sidebar-links">
+          <a href="#account" class="sidebar-link active"
+            ><i class="fas fa-user"></i> Account</a
+          >
+          <a href="#orders" class="sidebar-link"
+            ><i class="fas fa-box"></i> Orders</a
+          >
+          <a href="#wishlist" class="sidebar-link"
+            ><i class="fas fa-heart"></i> Wishlist</a
+          >
+          <a href="#messages" class="sidebar-link">
+            <i class="fas fa-envelope"></i> Messages
+          </a>
+        </div>
+        <a href="#" class="sidebar-link logout-btn" id="logoutBtn"
+          ><i class="fas fa-sign-out-alt"></i> Logout</a
+        >
+      </aside>
+
+      <main class="content">
+        <!-- ACCOUNT SECTION -->
+        <section id="account" class="content-section active">
+          <div class="account-grid">
+            <!-- Account Details Card -->
+            <div class="account-card">
+              <h3><i class="fas fa-user"></i> Account Details</h3>
+              <div
+                style="display: flex; align-items: center; margin-bottom: 1rem"
+              >
+                <div class="profile-avatar" id="profile-avatar">U</div>
+                <div>
+                  <p id="account-name" style="margin: 0; font-weight: 700">
+                    Loading...
+                  </p>
+                  <p
+                    id="account-email"
+                    style="margin: 0; color: #666; font-size: 0.9rem"
+                  >
+                    Loading...
+                  </p>
+                </div>
+              </div>
+              <p id="account-phone">Loading...</p>
+              <button class="btn-blue" onclick="editProfile()">
+                Edit Profile
+              </button>
+            </div>
+
+            <!-- Address Card -->
+
+            <div class="account-card">
+              <h3><i class="fas fa-map-marker-alt"></i> Address</h3>
+              <p id="account-address">No address set</p>
+              <button class="btn-blue" onclick="editAddress()">
+                Manage Address
+              </button>
+              <!-- ADDRESS MODAL -->
+              <div id="addressModal" class="modal">
+                <div class="modal-content">
+                  <h3>Set Delivery Address</h3>
+                  <form id="addressForm">
+                    <input
+                      id="streetAddress"
+                      type="text"
+                      placeholder="Enter your street address"
+                      required
+                    />
+                    <input
+                      id="city"
+                      type="text"
+                      placeholder="Enter your city"
+                      required
+                    />
+                    <input
+                      id="postalCode"
+                      type="text"
+                      placeholder="Enter your postal code"
+                      required
+                    />
+                    <input
+                      id="country"
+                      type="text"
+                      placeholder="Enter your country"
+                      required
+                    />
+                  </form>
+                  <div class="modal-actions">
+                    <button class="btn btn-cancel" id="closeAddressModal">
+                      Close
+                    </button>
+                    <button class="btn btn-submit" id="saveAddressBtn">
+                      Save Address
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Wallet Balance Card -->
+            <div class="account-card">
+              <h3><i class="fas fa-wallet"></i> Wallet Balance</h3>
+              <p>Available Balance</p>
+              <p class="value" id="wallet-balance">KES 0.00</p>
+              <button class="btn-blue" onclick="addFunds()">Add Funds</button>
+            </div>
+
+            <!-- Call to Action Card -->
+            <div class="account-card">
+              <h3><i class="fas fa-shopping-bag"></i> Shop More</h3>
+              <p>Discover amazing products</p>
+              <p>Exclusive deals waiting for you!</p>
+              <div class="cta-buttons">
+                <button
+                  class="btn-shop"
+                  onclick="window.location.href = 'shop.html'"
+                >
+                  Shop Now
+                </button>
+                <button
+                  class="btn-home"
+                  onclick="window.location.href = 'index.html'"
+                >
+                  Go Home
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ORDERS SECTION -->
+        <section id="orders" class="content-section">
+          <div class="orders-container">
+            <div class="section-title">My Orders</div>
+            <div id="ordersList"></div>
+          </div>
+        </section>
+
+        <!-- WISHLIST SECTION -->
+        <section id="wishlist" class="content-section">
+          <div class="orders-container">
+            <div class="section-title">Wishlist</div>
+            <div id="wishlistList"></div>
+          </div>
+        </section>
+
+        <!-- MESSAGES SECTION -->
+        <section id="messages" class="content-section">
+          <div class="orders-container">
+            <div class="section-title">Messages</div>
+            <div id="messagesList"></div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- CANCEL MODAL -->
+    <div id="cancelModal" class="modal">
+      <div class="modal-content">
+        <h3>Cancel Order</h3>
+        <p style="color: #777; margin: 0.4rem 0 0.8rem 0">
+          Tell us why you want to cancel this order.
+        </p>
+        <textarea
+          id="cancelReason"
+          placeholder="Reason for cancelling..."
+        ></textarea>
+        <div class="modal-actions">
+          <button class="btn btn-cancel" id="closeModal">Close</button>
+          <button class="btn btn-submit" id="submitCancel">Submit</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- REVIEW MODAL -->
+    <div id="reviewModal" class="modal">
+      <div class="modal-content">
+        <h3>Rate & Review Products</h3>
+        <div id="reviewItems"></div>
+        <div class="modal-actions">
+          <button class="btn btn-cancel" id="closeReviewModal">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Close review modal
+      document.getElementById("closeReviewModal").onclick = () => {
+        document.getElementById("reviewModal").style.display = "none";
+      };
+    </script>
+
+    <!-- FIREBASE + JS -->
+    <script type="module">
+      import {
+        initializeApp,
+        getApps,
+      } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+
+      import {
+        getAuth,
+        onAuthStateChanged,
+        updateProfile,
+        signOut,
+      } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+
+      import {
+        getFirestore,
+        doc,
+        getDoc,
+        updateDoc,
+        collection,
+        query,
+        where,
+        getDocs,
+        orderBy,
+        serverTimestamp,
+        addDoc,
+      } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyD6UqMyedaoaXgqOeddQN47ADgP8joO364",
+        authDomain: "bellewear-boutique.firebaseapp.com",
+        projectId: "bellewear-boutique",
+        storageBucket: "bellewear-boutique.firebasestorage.app",
+        messagingSenderId: "795858464616",
+        appId: "1:795858464616:web:0bbf307b3da145766ff0dd",
+      };
+
+      const app = getApps().length
+        ? getApps()[0]
+        : initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
+
+      const nameEl = document.querySelector(".profile-info h2");
+      const emailEl = document.querySelector(".profile-info p:nth-of-type(1)");
+      const phoneEl = document.querySelector(".profile-info p:nth-of-type(2)");
+      const editBtn = document.querySelector(".btn-blue");
+      const logoutBtn = document.querySelector("#logoutBtn");
+
+      const accountNameEl = document.getElementById("account-name");
+      const accountEmailEl = document.getElementById("account-email");
+      const accountPhoneEl = document.getElementById("account-phone");
+      const accountAddressEl = document.getElementById("account-address");
+      const walletBalanceEl = document.getElementById("wallet-balance");
+      const profileAvatarEl = document.getElementById("profile-avatar");
+
+      const ordersList = document.getElementById("ordersList");
+      const wishlistList = document.getElementById("wishlistList");
+
+      let selectedOrderId = null;
+
+      const cancelModal = document.getElementById("cancelModal");
+      const cancelReason = document.getElementById("cancelReason");
+      const closeModal = document.getElementById("closeModal");
+      const submitCancel = document.getElementById("submitCancel");
+      const messagesList = document.getElementById("messagesList");
+
+      // Modal controls
+      closeModal.onclick = () => {
+        cancelModal.style.display = "none";
+        cancelReason.value = "";
+      };
+
+      submitCancel.onclick = async () => {
+        const reason = cancelReason.value.trim();
+        if (!reason) return alert("Please enter a reason.");
+
+        await updateDoc(doc(db, "orders", selectedOrderId), {
+          status: "CANCELLED",
+          cancelReason: reason,
+          canceledAt: serverTimestamp(),
+        });
+
+        await addDoc(collection(db, "messages"), {
+          userId: auth.currentUser.uid,
+          type: "ORDER_CANCELLED",
+          title: "Order Cancelled",
+          body: `Your order #${selectedOrderId
+            .slice(0, 8)
+            .toUpperCase()} was cancelled. Reason: ${reason}`,
+          orderId: selectedOrderId,
+          read: false,
+          createdAt: serverTimestamp(),
+        });
+
+        cancelModal.style.display = "none";
+        cancelReason.value = "";
+        fetchOrders(auth.currentUser.uid);
+        showSection("orders");
+      };
+
+      // Auth guard
+      onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+          window.location.href = "auth.html";
+          return;
+        }
+
+        const userRef = doc(db, "users", user.uid);
+        const snap = await getDoc(userRef);
+
+        if (!snap.exists()) {
+          alert("User profile missing in Firestore");
+          return;
+        }
+
+        const data = snap.data();
+        if (accountNameEl) accountNameEl.textContent = data.fullName || "User";
+        if (accountEmailEl)
+          accountEmailEl.textContent = data.email || user.email;
+        if (accountPhoneEl)
+          accountPhoneEl.textContent = data.phone || "No phone added";
+        if (accountAddressEl) {
+          if (typeof data.address === "object" && data.address) {
+            accountAddressEl.innerHTML = `${data.address.streetAddress || ""}<br>${data.address.city || ""}<br>${data.address.postalCode || ""}<br>${data.address.country || ""}`;
+          } else {
+            accountAddressEl.textContent = data.address || "No address set";
+          }
+        }
+        if (walletBalanceEl)
+          walletBalanceEl.textContent = `KES ${data.walletBalance || 0}.00`;
+        if (profileAvatarEl) {
+          if (user.photoURL) {
+            profileAvatarEl.innerHTML = `<img src="${user.photoURL}" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+          } else {
+            profileAvatarEl.textContent = (data.fullName || "User")
+              .charAt(0)
+              .toUpperCase();
+          }
+        }
+
+        // Load data
+        fetchOrders(user.uid);
+        fetchWishlist(user.uid);
+        fetchMessages(user.uid);
+      });
+
+      // FETCH ORDERS
+      async function fetchOrders(uid) {
+        const q = query(
+          collection(db, "orders"),
+          where("userId", "==", uid),
+          orderBy("createdAt", "desc"),
+        );
+
+        const snapshot = await getDocs(q);
+
+        if (snapshot.empty) {
+          ordersList.innerHTML = "<p>No orders yet.</p>";
+          return;
+        }
+
+        ordersList.innerHTML = "";
+
+        snapshot.forEach((docSnap) => {
+          const order = docSnap.data();
+          const orderId = docSnap.id;
+
+          const orderDateObj = order.createdAt?.toDate?.();
+          const orderDate = orderDateObj?.toDateString() || "Unknown date";
+
+          let deliveryDate = "Not set";
+          if (orderDateObj) {
+            const deliveryDateObj = new Date(orderDateObj);
+            deliveryDateObj.setDate(deliveryDateObj.getDate() + 3);
+            deliveryDate = deliveryDateObj.toDateString();
+          }
+
+          const card = document.createElement("div");
+          card.className = "order-card";
+
+          card.innerHTML = `
+              <div class="order-header">
+                <div>
+                  <div class="order-ref">Order #${orderId.slice(0, 10).toUpperCase()}</div>
+                  <div class="order-date">Order Placed: ${orderDate}</div>
+                </div>
+                <button class="track-btn">TRACK ORDER</button>
+              </div>
+
+              <div class="order-items">
+                ${order.items
+                  .map(
+                    (item) => `
+                      <div class="item-row">
+                        <img src="${item.img}" />
+                        <div class="item-details">
+                          ${item.name}
+                          <small>By: ${item.brand || "Unknown"}</small>
+                          <small>Size: ${item.size || "N/A"} | Qty: ${item.quantity}</small>
+                        </div>
+                        <div>
+                          <span class="status-badge status-${order.status}">
+                            ${order.status}
+                          </span>
+                        </div>
+                        <div class="delivery">
+                          Delivery Expected by:
+                          <small>${deliveryDate}</small>
+                        </div>
+                      </div>
+                    `,
+                  )
+                  .join("")}
+
+                <div class="order-footer">
+                  <button class="cancel-btn" ${order.status === "DELIVERED" || order.status === "CANCELLED" ? "disabled" : ""}>
+                    × Cancel Order
+                  </button>
+                  <div class="total">KES ${order.total}</div>
+                </div>
+              </div>
+            `;
+
+          const cancelBtn = card.querySelector(".cancel-btn");
+          cancelBtn.onclick = () => {
+            selectedOrderId = orderId;
+            cancelModal.style.display = "flex";
+          };
+
+          ordersList.appendChild(card);
+        });
+      }
+
+      // FETCH WISHLIST
+      async function fetchWishlist(uid) {
+        const wishRef = collection(db, "wishlists", uid, "items");
+        const snap = await getDocs(wishRef);
+
+        if (snap.empty) {
+          wishlistList.innerHTML = "<div>No wishlist items found.</div>";
+          return;
+        }
+
+        wishlistList.innerHTML = "";
+
+        snap.forEach((doc) => {
+          const item = doc.data();
+          wishlistList.innerHTML += `
+              <div>
+                <strong>${item.name || "Item"}</strong> - KES ${item.price || 0}
+              </div>
+              <hr/>
+            `;
+        });
+      }
+
+      async function fetchMessages(uid) {
+        const q = query(
+          collection(db, "messages"),
+          where("userId", "==", uid),
+          orderBy("createdAt", "desc"),
+        );
+
+        const snap = await getDocs(q);
+
+        if (snap.empty) {
+          messagesList.innerHTML = "<p>No messages yet.</p>";
+          return;
+        }
+
+        messagesList.innerHTML = "";
+
+        snap.forEach((docSnap) => {
+          const msg = docSnap.data();
+
+          messagesList.innerHTML += `
+      <div class="order-card ${msg.read ? "" : "unread"}">
+        <div class="order-header">
+          <div>
+            <strong>${msg.title}</strong>
+            <div class="order-date">
+              ${msg.createdAt?.toDate().toDateString()}
+            </div>
+          </div>
+        </div>
+
+        <div class="message-body">
+          ${msg.body}
+        </div>
+
+        ${
+          msg.orderId
+            ? `
+          <button class="btn-blue" onclick="showSection('orders')">
+            View Order
+          </button>
+        `
+            : ""
+        }
+      </div>
+    `;
+        });
+      }
+
+      // EDIT PROFILE
+      editBtn.addEventListener("click", async () => {
+        const newName = prompt("Enter full name:", nameEl.textContent);
+        const newPhone = prompt("Enter phone number:", phoneEl.textContent);
+
+        if (!newName) return;
+
+        const user = auth.currentUser;
+        if (!user) return;
+
+        await updateProfile(user, { displayName: newName });
+        await updateDoc(doc(db, "users", user.uid), {
+          fullName: newName,
+          phone: newPhone || "",
+        });
+
+        nameEl.textContent = newName;
+        phoneEl.textContent = newPhone || "No phone added";
+        alert("Profile updated successfully");
+      });
+
+      // EDIT PROFILE FUNCTION
+      window.editProfile = async () => {
+        const newName = prompt("Enter full name:", accountNameEl.textContent);
+        const newPhone = prompt(
+          "Enter phone number:",
+          accountPhoneEl.textContent,
+        );
+
+        if (!newName) return;
+
+        const user = auth.currentUser;
+        if (!user) return;
+
+        await updateProfile(user, { displayName: newName });
+        await updateDoc(doc(db, "users", user.uid), {
+          fullName: newName,
+          phone: newPhone || "",
+        });
+
+        accountNameEl.textContent = newName;
+        accountPhoneEl.textContent = newPhone || "No phone added";
+        alert("Profile updated successfully");
+      };
+
+      // EDIT ADDRESS FUNCTION
+
+      // OPEN ADDRESS MODAL
+      const addressModal = document.getElementById("addressModal");
+      const addressForm = document.getElementById("addressForm");
+      const closeAddressModal = document.getElementById("closeAddressModal");
+      const saveAddressBtn = document.getElementById("saveAddressBtn");
+
+      window.editAddress = () => {
+        addressModal.style.display = "flex";
+        // Clear form fields
+        addressForm.reset();
+      };
+
+      // CLOSE MODAL
+      closeAddressModal.onclick = () => {
+        addressModal.style.display = "none";
+      };
+
+      // SAVE ADDRESS
+      saveAddressBtn.onclick = async () => {
+        const streetAddress = document
+          .getElementById("streetAddress")
+          .value.trim();
+        const city = document.getElementById("city").value.trim();
+        const postalCode = document.getElementById("postalCode").value.trim();
+        const country = document.getElementById("country").value.trim();
+
+        if (!streetAddress || !city || !postalCode || !country) {
+          return alert("Please fill in all fields");
+        }
+
+        const addressData = {
+          streetAddress,
+          city,
+          postalCode,
+          country,
+        };
+
+        const user = auth.currentUser;
+        if (!user) return;
+
+        await updateDoc(doc(db, "users", user.uid), { address: addressData });
+
+        const newAddress = `${streetAddress}<br>${city}<br>${postalCode}<br>${country}`;
+        accountAddressEl.innerHTML = newAddress;
+        addressModal.style.display = "none";
+      };
+
+      // ADD FUNDS FUNCTION
+      window.addFunds = async () => {
+        const amount = prompt("Enter amount to add (KES):", "0");
+
+        if (!amount || isNaN(amount) || amount <= 0) return;
+
+        const user = auth.currentUser;
+        if (!user) return;
+
+        const userRef = doc(db, "users", user.uid);
+        const snap = await getDoc(userRef);
+        const currentBalance = snap.data().walletBalance || 0;
+        const newBalance = currentBalance + parseFloat(amount);
+
+        await updateDoc(userRef, {
+          walletBalance: newBalance,
+        });
+
+        walletBalanceEl.textContent = `KES ${newBalance.toFixed(2)}`;
+        alert(`KES ${amount} added to your wallet!`);
+      };
+
+      // LOGOUT
+      logoutBtn.addEventListener("click", () => {
+        signOut(auth)
+          .then(() => {
+            localStorage.clear();
+            window.location.href = "auth.html";
+          })
+          .catch((err) => alert("Logout failed"));
+      });
+
+      // SIDEBAR NAV
+      const links = document.querySelectorAll(".sidebar-link");
+      const sections = document.querySelectorAll(".content-section");
+
+      function showSection(id) {
+        sections.forEach((sec) => sec.classList.remove("active"));
+        links.forEach((link) => link.classList.remove("active"));
+
+        document.getElementById(id).classList.add("active");
+        document.querySelector(`a[href="#${id}"]`).classList.add("active");
+      }
+
+      links.forEach((link) => {
+        link.addEventListener("click", (e) => {
+          e.preventDefault();
+          const id = link.getAttribute("href").replace("#", "");
+          showSection(id);
+        });
+      });
+
+      window.addEventListener("load", () => {
+        const hash = window.location.hash.replace("#", "") || "account";
+        showSection(hash);
+      });
+    </script>
+  </body>
+</html>

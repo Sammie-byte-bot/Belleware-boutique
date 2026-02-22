@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Boutique</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="fontawesome-free-7.1.0-web/css/all.css" />
+  </head>
+  <body>
+  <header id="header">
+      <!-- TOP BAR -->
+      <div class="header-top">
+        <!-- Logo -->
+        <a href="index.html" class="logo">Bellewear <span>Boutique</span></a>
+
+        <!-- Search (WhatsApp-style) -->
+        <div class="search-container">
+          <div class="search-input-wrapper">
+            <i class="fas fa-search search-input-icon"></i>
+            <input
+              type="text"
+              id="searchInput"
+              class="search-input"
+              placeholder="Search for products..."
+            />
+          </div>
+          <button id="searchBtn" class="search-btn">SEARCH</button>
+        </div>
+
+        <!-- Profile Icon + Greeting -->
+        <div class="profile-wrapper">
+          <a href="#" class="profile-link">
+            <i class="fas fa-user-circle"></i>
+            <i class="fas fa-chevron-down chevron"></i>
+          </a>
+
+          <div class="profile-dropdown">
+            <p class="dropdown-title" id="profileGreeting">Sign In</p>
+            <p class="dropdown-user-name" id="profileUserName"></p>
+            <div id="profileActions">
+              <a href="auth.html"><i class="fas fa-sign-in-alt"></i> Sign In</a>
+            </div>
+          </div>
+
+          <span class="profile-greet">Hello, <span id="userName">Guest</span></span>
+        </div>
+
+        <!-- Search Overlay -->
+        <div class="search-overlay">
+          <div class="search-box">
+            <input
+              type="text"
+              id="searchInputOverlay"
+              placeholder="Search products..."
+            />
+            <button id="searchButtonOverlay">
+              <i class="fas fa-search"></i>
+            </button>
+            <button id="closeSearch" class="close-search">&times;</button>
+            <div class="search-results"></div>
+          </div>
+        </div>
+
+        <!-- Right Icons -->
+        <div class="top-icons">
+          <!-- Cart -->
+          <a href="cart.html" class="cart-link">
+            <i class="fas fa-shopping-cart"></i>
+            <span class="cart-count">0</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- NAVIGATION BAR -->
+
+      <nav class="nav-bar">
+        <ul class="nav-links">
+          <!-- Hamburger Button to open menu -->
+          <button id="menuBtn" class="menu-btn" aria-label="Open menu">
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org"
+            >
+              <line
+                x1="3"
+                y1="6"
+                x2="21"
+                y2="6"
+                stroke="currentColor"
+                stroke-width="2"
+              />
+              <line
+                x1="3"
+                y1="12"
+                x2="21"
+                y2="12"
+                stroke="currentColor"
+                stroke-width="2"
+              />
+              <line
+                x1="3"
+                y1="18"
+                x2="21"
+                y2="18"
+                stroke="currentColor"
+                stroke-width="2"
+              />
+            </svg>
+          </button>
+
+          <!-- Main Nav Links -->
+          <li><a href="index.html">Home</a></li>
+          <li><a href="shop.html" class="active">Shop</a></li>
+          <li><a href="blog.html">Blog</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </nav>
+
+      <!-- Overlay (for background dimming) -->
+      <div id="overlay" class="overlay"></div>
+
+      <!-- Side Menu -->
+      <aside id="sideMenu" class="side-menu">
+        <div class="menu-header">
+          <span id="mobileGreeting">👤 Hello, John</span>
+          <button id="closeMenu">✕</button>
+        </div>
+
+        <div class="menu-section">
+          <h4>Shop By Department</h4>
+          <ul id="mobileCategories">
+            <!-- Categories will be populated dynamically -->
+          </ul>
+        </div>
+
+        <div class="menu-section help-settings">
+          <h4>Help & Settings</h4>
+          <div class="help-links">
+            <a href="account.html" class="help-link">
+              <i class="fas fa-user"></i>
+              <span>Your account</span>
+            </a>
+
+            <a href="#" class="help-link">
+              <i class="fas fa-headset"></i>
+              <span>Customer Service</span>
+            </a>
+          </div>
+
+          <a href="#" id="signOut" class="sign-out">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Sign out</span>
+          </a>
+        </div>
+      </aside>
+    </header>
+
+    <!-- Overlay -->
+    <div id="overlay"></div>
+
+    <!-- Overlay -->
+    <div id="overlay"></div>
+    <section id="about-header" class="header-info">
+      <h2>#Lets talk</h2>
+      <p>leave a message,We love to hear from you</p>
+    </section>
+
+    <section id="contact-details" class="section-p1">
+      <div class="details">
+        <span>Get in touch</span>
+        <h2>Visit one of our agency locations or contact us today</h2>
+        <h3>Head office</h3>
+        <div>
+          <li>
+            <i class="fas fa-map"><p>31,Juja</p></i>
+          </li>
+          <li>
+            <i class="fas fa-envelope"><p>admin@bellewear.com</p></i>
+          </li>
+          <li>
+            <i class="fas fa-phone"><p>+254117355310</p></i>
+          </li>
+          <li>
+            <i class="fas fa-clock"><p>8:00am4:00pmMonsat</p></i>
+          </li>
+        </div>
+      </div>
+    </section>
+
+    <footer class="section-p1">
+      <div class="col">
+        <a href="#" class="logo">Bellewear <span>Boutique</span></a>
+        <h4>Contact</h4>
+        <p>Address: <strong>31 Gatukuyu</strong></p>
+        <p>Phone: <strong>+254 117 355 310 / +254 737 018 962</strong></p>
+        <p>Hours: <strong>8:00am - 7:00 pm mon -sat</strong></p>
+        <div class="follow">
+          <h4>follow us</h4>
+          <div class="icon">
+            <i class="fab fa-facebook"></i>
+            <i class="fab fa-twitter"></i>
+            <i class="fab fa-instagram"></i>
+            <i class="fab fa-pinterest-p"></i>
+            <i class="fab fa-youtube"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="col">
+        <h4>About</h4>
+        <a href="#">about us</a>
+        <a href="#">Delivery information</a>
+        <a href="#">privacy policy</a>
+        <a href="#">Terms and condition</a>
+        <a href="Contact.html">Contact</a>
+      </div>
+
+      <div class="col">
+        <h4>My Account</h4>
+        <a href="#">Sign in</a>
+        <a href="cart.html">View Cart</a>
+        <a href="#">My Wishlist</a>
+        <a href="#">Track my Order</a>
+        <a href="#">Help</a>
+      </div>
+
+      <div class="col-install">
+        <h4>Install app</h4>
+        <p>From apple store or google play store</p>
+        <div class="row">
+          <img src="img/pay/app.jpg" alt="" />
+          <img src="img/pay/play.jpg" alt="" />
+        </div>
+        <p>secured payment Gateways</p>
+        <img src="img/pay/pay.png" alt="" />
+      </div>
+
+      <div class="copyright">
+        <p>©️ 2025 BELLEWEAR BOUTIQUE @ codebee productions LTD</p>
+      </div>
+    </footer>
+
+    <script type="module" src="authState.js"></script>
+    <script type="module" src="main.js"></script>
+  </body>
+</html>

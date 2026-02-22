@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>My Orders | Bellewear</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="fontawesome-free-7.1.0-web/css/all.css" />
+    <style>
+      body {
+        background: #f4f6f8;
+        font-family:
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          sans-serif;
+      }
+
+      .orders-container {
+        max-width: 980px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+      }
+
+      h2 {
+        margin-bottom: 0.2rem;
+        font-size: 2rem;
+        font-weight: 700;
+        color: #222;
+      }
+
+      .subtitle {
+        color: #888;
+        font-size: 0.95rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .order-card {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+        padding: 1.2rem;
+        margin-bottom: 1.2rem;
+      }
+
+      .order-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      .order-ref {
+        font-weight: 700;
+        font-size: 1rem;
+        color: #222;
+      }
+
+      .order-date {
+        color: #777;
+        font-size: 0.9rem;
+        margin-top: 0.2rem;
+      }
+
+      .track-btn {
+        background: #088178;
+        color: #fff;
+        padding: 0.7rem 1.2rem;
+        border-radius: 30px;
+        font-weight: 700;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .order-items {
+        margin-top: 1.2rem;
+        border-top: 1px solid #eee;
+        padding-top: 1.2rem;
+      }
+
+      .item-row {
+        display: grid;
+        grid-template-columns: 90px 1fr 250px 220px;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem 0;
+        border-bottom: 1px solid #eee;
+      }
+
+      .item-row:last-child {
+        border-bottom: none;
+      }
+
+      .item-row img {
+        width: 90px;
+        height: 90px;
+        border-radius: 10px;
+        object-fit: cover;
+      }
+
+      .item-details {
+        font-weight: 700;
+        font-size: 1rem;
+      }
+
+      .item-details small {
+        font-weight: 400;
+        display: block;
+        margin-top: 0.4rem;
+        color: #777;
+      }
+
+      .status-badge {
+        display: inline-block;
+        padding: 0.6rem 0.9rem;
+        border-radius: 999px;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+      }
+
+      .status-PLACED {
+        background: #fff3cd;
+        color: #856404;
+      }
+      .status-CONFIRMED {
+        background: #e7f3ff;
+        color: #0b5ed7;
+      }
+      .status-SHIPPED {
+        background: #e0e7ff;
+        color: #3730a3;
+      }
+      .status-DELIVERED {
+        background: #e6f4ea;
+        color: #1e7e34;
+      }
+      .status-CANCELLED {
+        background: #f8d7da;
+        color: #721c24;
+      }
+
+      .delivery {
+        text-align: right;
+        color: #333;
+        font-weight: 700;
+      }
+
+      .delivery small {
+        display: block;
+        font-weight: 400;
+        color: #777;
+      }
+
+      .order-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #eee;
+      }
+
+      .cancel-btn {
+        background: transparent;
+        border: none;
+        color: #333;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .cancel-btn:hover {
+        text-decoration: underline;
+      }
+
+      .total {
+        font-weight: 900;
+        font-size: 1.2rem;
+      }
+    </style>
+  </head>
+  <body>
+    <section id="header">
+      <!-- Logo -->
+      <a href="index.html" class="logo">Bellewear <span>Boutique</span></a>
+
+      <!-- Profile Icon -->
+      <div class="profile-wrapper">
+        <a href="#" class="profile-link">
+          <i class="fas fa-user-circle"></i>
+          <i class="fas fa-chevron-down chevron"></i>
+        </a>
+
+        <div class="profile-dropdown">
+          <p class="dropdown-title" id="profileGreeting">Sign In</p>
+          <p class="dropdown-user-name" id="profileUserName"></p>
+          <div id="profileActions">
+            <a href="auth.html"><i class="fas fa-sign-in-alt"></i> Sign In</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Greeting -->
+      <span class="profile-greet" style="white-space: nowrap; font-size: 12px"
+        >Hello, <span id="userName">Guest</span></span
+      >
+
+      <!-- Nav Links -->
+      <ul id="navbar">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="shop.html">Shop</a></li>
+        <li><a href="blog.html">Blog</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+
+      <!-- Fixed Icons -->
+      <div class="header-icons">
+        <!-- Search Icon -->
+        <a href="javascript:void(0)" class="search"
+          ><i class="fas fa-search"></i
+        ></a>
+
+        <!-- Search Overlay -->
+        <div class="search-overlay">
+          <div class="search-box">
+            <input
+              type="text"
+              id="searchInput"
+              placeholder="Search products..."
+            />
+            <button id="searchButton"><i class="fas fa-search"></i></button>
+            <button id="closeSearch" class="close-search">&times;</button>
+            <div class="search-results"></div>
+          </div>
+        </div>
+
+        <a href="cart.html" class="cart-link">
+          <i class="fas fa-shopping-cart"></i>
+          <span class="cart-count">0</span>
+        </a>
+      </div>
+    </section>
+    <main class="orders-container">
+      <h2>My Orders</h2>
+      <div class="subtitle">View and track your orders here.</div>
+      <div id="orders-list"></div>
+    </main>
+
+    <!-- Cancel Modal -->
+    <div id="cancelModal" class="modal">
+      <div class="modal-content">
+        <h3>Cancel Order</h3>
+        <p style="color: #777; margin: 0.4rem 0 0.8rem 0">
+          Tell us why you want to cancel this order.
+        </p>
+        <textarea
+          id="cancelReason"
+          placeholder="Reason for cancelling..."
+        ></textarea>
+        <div class="modal-actions">
+          <button class="btn btn-cancel" id="closeModal">Close</button>
+          <button class="btn btn-submit" id="submitCancel">Submit</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module">
+      import {
+        initializeApp,
+        getApps,
+      } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+      import {
+        getAuth,
+        onAuthStateChanged,
+      } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+      import {
+        getFirestore,
+        collection,
+        query,
+        where,
+        orderBy,
+        getDocs,
+        doc,
+        updateDoc,
+        serverTimestamp,
+      } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyD6UqMyedaoaXgqOeddQN47ADgP8joO364",
+        authDomain: "bellewear-boutique.firebaseapp.com",
+        projectId: "bellewear-boutique",
+      };
+
+      const app = getApps().length
+        ? getApps()[0]
+        : initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
+
+      const ordersList = document.getElementById("orders-list");
+
+      let selectedOrderId = null;
+
+      const cancelModal = document.getElementById("cancelModal");
+      const cancelReason = document.getElementById("cancelReason");
+      const closeModal = document.getElementById("closeModal");
+      const submitCancel = document.getElementById("submitCancel");
+
+      closeModal.onclick = () => {
+        cancelModal.style.display = "none";
+        cancelReason.value = "";
+      };
+
+      submitCancel.onclick = async () => {
+        const reason = cancelReason.value.trim();
+        if (!reason) return alert("Please enter a reason.");
+
+        await updateDoc(doc(db, "orders", selectedOrderId), {
+          status: "CANCELLED",
+          cancelReason: reason,
+          canceledAt: serverTimestamp(),
+        });
+
+        cancelModal.style.display = "none";
+        cancelReason.value = "";
+        window.location.reload(); // reload to show update
+      };
+
+      onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+          window.location.href = "auth.html";
+          return;
+        }
+
+        const q = query(
+          collection(db, "orders"),
+          where("userId", "==", user.uid),
+          orderBy("createdAt", "desc"),
+        );
+
+        const snapshot = await getDocs(q);
+
+        if (snapshot.empty) {
+          ordersList.innerHTML = "<p>No orders yet.</p>";
+          return;
+        }
+
+        snapshot.forEach((docSnap) => {
+          const order = docSnap.data();
+          const orderId = docSnap.id;
+
+          const orderDate =
+            order.createdAt?.toDate?.()?.toDateString() || "Unknown date";
+
+          const deliveryDate = order.deliveryDate
+            ? order.deliveryDate.toDate().toDateString()
+            : "Not set";
+
+          const card = document.createElement("div");
+          card.className = "order-card";
+
+          card.innerHTML = `
+            <div class="order-header">
+              <div>
+                <div class="order-ref">Order #${orderId.slice(0, 10).toUpperCase()}</div>
+                <div class="order-date">Order Placed: ${orderDate}</div>
+              </div>
+              <button class="track-btn">TRACK ORDER</button>
+            </div>
+
+            <div class="order-items">
+              ${order.items
+                .map(
+                  (item) => `
+                    <div class="item-row">
+                      <img src="${item.img}" />
+                      <div class="item-details">
+                        ${item.name}
+                        <small>By: ${item.brand || "Unknown"}</small>
+                        <small>Size: ${item.size || "N/A"} | Qty: ${item.quantity}</small>
+                      </div>
+                      <div>
+                        <span class="status-badge status-${order.status}">
+                          ${order.status}
+                        </span>
+                      </div>
+                      <div class="delivery">
+                        Delivery Expected by:
+                        <small>${deliveryDate}</small>
+                      </div>
+                    </div>
+                  `,
+                )
+                .join("")}
+
+              <div class="order-footer">
+                <button class="cancel-btn" ${order.status === "DELIVERED" || order.status === "CANCELLED" ? "disabled" : ""}>
+                  × Cancel Order
+                </button>
+                <div class="total">KES ${order.total}</div>
+              </div>
+            </div>
+          `;
+
+          const cancelBtn = card.querySelector(".cancel-btn");
+          const itemsDiv = card.querySelector(".order-items");
+
+          cancelBtn.onclick = () => {
+            selectedOrderId = orderId;
+            cancelModal.style.display = "flex";
+          };
+
+          ordersList.appendChild(card);
+        });
+      });
+    </script>
+  </body>
+</html>
