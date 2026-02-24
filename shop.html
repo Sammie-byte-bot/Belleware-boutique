@@ -180,6 +180,7 @@
     </section>
 
     <!-- ================= SHOP ================= -->
+
     <section id="product1" class="section-p1">
       <div class="shop-layout">
         <!-- ===== MODERN FILTER SIDEBAR ===== -->
@@ -220,7 +221,7 @@
                 <i class="fas fa-chevron-down toggle-icon"></i>
               </button>
               <div class="filter-body" id="filter-category">
-                <!-- Dynamic content like checkboxes or links go here -->
+                <!-- checkboxes populated dynamically from JS -->
               </div>
             </div>
 
@@ -234,7 +235,9 @@
                 </h4>
                 <i class="fas fa-chevron-down toggle-icon"></i>
               </button>
-              <div class="filter-body" id="filter-brand"></div>
+              <div class="filter-body" id="filter-brand">
+                <!-- checkboxes populated dynamically from JS -->
+              </div>
             </div>
 
             <!-- Sizes Filter -->
@@ -339,6 +342,19 @@
             <div class="skeleton-card"></div>
             <div class="skeleton-card"></div>
           </div>
+
+          <!-- ================= PAGINATION: LOAD MORE ================= -->
+          <div
+            class="pagination-wrapper"
+            style="text-align: center; margin-top: 30px"
+          >
+            <button
+              id="loadMoreBtn"
+              class="bg-[#088178] text-white font-bold py-2 px-6 rounded-lg shadow hover:bg-[#06655e] transition-all active:scale-[0.98]"
+            >
+              Load More Products
+            </button>
+          </div>
         </div>
       </div>
 
@@ -390,15 +406,29 @@
             if (isMobile) {
               section.setAttribute("data-open", "false");
               body.style.display = "none";
+              body.classList.remove("open");
             } else {
               section.setAttribute("data-open", "true");
               body.style.display = "block";
+              body.classList.add("open");
             }
 
-            header.addEventListener("click", function () {
+            header.addEventListener("click", function (e) {
+              e.preventDefault();
               const isOpen = section.getAttribute("data-open") === "true";
               section.setAttribute("data-open", isOpen ? "false" : "true");
-              body.style.display = isOpen ? "none" : "block";
+
+              // Toggle display and open class
+              if (isOpen) {
+                body.style.display = "none";
+                body.classList.remove("open");
+              } else {
+                body.style.display = "block";
+                // Small timeout to allow display:block to apply before adding open class for transition
+                setTimeout(() => {
+                  body.classList.add("open");
+                }, 10);
+              }
 
               // Rotate the chevron icon
               const icon = header.querySelector(".toggle-icon");

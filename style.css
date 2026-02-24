@@ -1833,15 +1833,23 @@ a.cart-link {
   border: 1px solid #e6eef0;
   border-radius: 8px;
   padding: 18px;
-  position: sticky;
-  top: calc(var(--header-height) + 8px);
-  max-height: calc(100vh - calc(var(--header-height) + 24px));
-  overflow: auto;
-  -webkit-overflow-scrolling: touch;
+  position: static;
+  max-height: calc(100vh - calc(var(--header-height) + 40px));
+  overflow-y: auto;
   align-self: flex-start;
   box-shadow: 0 8px 30px rgba(10, 18, 26, 0.05);
   transition: height 0.3s ease;
-  z-index: 1100;
+  z-index: 100;
+}
+
+/* Hide scrollbar for filter sidebar */
+.filters {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.filters::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
 }
 
 .filters.expanded {
@@ -1865,16 +1873,55 @@ a.cart-link {
   margin: 0;
 }
 
-/* Collapsible section head */
-.filter-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 10px;
-  cursor: pointer;
-  padding: 8px 0;
+/* ================= Filter Dropdowns ================= */
+.filters .filter-section {
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #e5e7eb; /* light gray border */
 }
+
+.filters .filter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem 0;
+  transition: all 0.3s ease-in-out;
+}
+
+.filters .filter-header h4 {
+  margin: 0;
+  font-size: 0.875rem; /* small font */
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #374151; /* dark gray */
+}
+
+.filters .filter-header .toggle-icon {
+  transition: transform 0.3s ease-in-out;
+}
+
+/* rotate icon when open */
+.filters .filter-section[data-open="true"] .toggle-icon {
+  transform: rotate(180deg);
+}
+
+.filters .filter-body {
+  padding: 0.5rem 0;
+  display: none; /* hidden by default, JS controls open/close */
+  transition:
+    max-height 0.3s ease-in-out,
+    opacity 0.3s ease-in-out;
+  overflow: hidden;
+}
+
+.filters .filter-body.show {
+  display: block;
+}
+
+/* Checkbox styling already handled by Tailwind peer-checked */
 
 .toggle-icon {
   background: transparent;
@@ -2857,13 +2904,17 @@ footer.section-p1 .copyright {
 .filter-body {
   padding-top: 8px;
   overflow: hidden;
+  max-height: 500px;
+  opacity: 1;
   transition:
     max-height 0.3s ease,
     opacity 0.3s ease;
 }
 
 .filter-section[data-open="false"] .filter-body {
-  display: none;
+  max-height: 0;
+  opacity: 0;
+  padding-top: 0;
 }
 
 /* Mobile Filter Styles - Show filter button on all mobile devices */

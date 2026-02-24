@@ -3,6 +3,7 @@ import {
   initializeApp,
   getApps,
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+
 import {
   getFirestore,
   collection,
@@ -10,6 +11,8 @@ import {
   query,
   where,
   orderBy,
+  limit,
+  startAfter,
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -86,8 +89,11 @@ function createProductCard(product) {
   return `
     <div class="pro" data-id="${product.id}">
       <div class="img-wrapper">
-        <img src="${image}" alt="${product.name}" />
-        <i class="far fa-heart wishlist" data-name="${product.name}" data-price="${product.price}" data-img="${product.images ? product.images[0] : "img/placeholder.png"}"></i>
+        <img src="${image}" alt="${product.name}" loading="lazy" decoding="async"/>
+        <i class="far fa-heart wishlist"
+           data-name="${product.name}"
+           data-price="${product.price}"
+           data-img="${image}"></i>
       </div>
 
       <div class="des">
@@ -106,7 +112,7 @@ function createProductCard(product) {
 
 // ================= NAVIGATION =================
 document.addEventListener("click", (e) => {
-  if (e.target.closest(".wishlist")) return; // allow wishlist click without navigation
+  if (e.target.closest(".wishlist")) return;
 
   const card = e.target.closest(".pro");
   if (!card) return;
@@ -122,8 +128,15 @@ let allProducts = [];
 let filteredProducts = [];
 let currentSearchQuery = "";
 
-// ================= FETCH =================
-async function loadProducts() {
+let lastVisibleDoc = null;
+let isLoading = false;
+let hasMoreProducts = true;
+
+// ================= FETCH WITH PAGINATION =================
+async function loadProducts(initial = true) {
+  if (isLoading || !hasMoreProducts) return;
+  isLoading = true;
+
   const grid = document.getElementById("productsGrid");
   const empty = document.getElementById("emptyProducts");
   const error = document.getElementById("errorProducts");
@@ -132,103 +145,53 @@ async function loadProducts() {
     empty.hidden = true;
     error.hidden = true;
 
-    const q = query(
-      collection(db, "products"),
+    const constraints = [
       where("isActive", "==", true),
       orderBy("createdAt", "desc"),
-    );
+      limit(12),
+    ];
 
+    if (!initial && lastVisibleDoc) {
+      constraints.push(startAfter(lastVisibleDoc));
+    }
+
+    const q = query(collection(db, "products"), ...constraints);
     const snap = await getDocs(q);
-    allProducts = [];
 
-    snap.forEach((doc) => {
-      const product = { id: doc.id, ...doc.data() };
-      if (validateProduct(product)) {
-        allProducts.push(product);
-      }
-    });
-
-    window.allProducts = allProducts;
-
-    // Handle category filter from URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const categoryFilter = urlParams.get("category");
-    const searchQuery = urlParams.get("q");
-
-    // Apply search filter if present
-    if (searchQuery) {
-      currentSearchQuery = searchQuery;
-      const searchTerm = searchQuery.toLowerCase();
-      allProducts = allProducts.filter((p) => {
-        const name = (p.name || "").toLowerCase();
-        const brand = (p.brand || "").toLowerCase();
-        const description = (p.description || "").toLowerCase();
-        const category = (p.category || "").toLowerCase();
-        return (
-          name.includes(searchTerm) ||
-          brand.includes(searchTerm) ||
-          description.includes(searchTerm) ||
-          category.includes(searchTerm)
-        );
-      });
-      displaySearchInfo(allProducts, searchQuery);
+    if (snap.empty) {
+      hasMoreProducts = false;
+      document.getElementById("loadMoreBtn")?.remove();
+      return;
     }
 
-    if (categoryFilter) {
-      allProducts = allProducts.filter((p) => p.category === categoryFilter);
+    lastVisibleDoc = snap.docs[snap.docs.length - 1];
+
+    const newProducts = snap.docs
+      .map((doc) => ({ id: doc.id, ...doc.data() }))
+      .filter(validateProduct);
+
+    if (initial) {
+      allProducts = newProducts;
+      grid.innerHTML = newProducts.map(createProductCard).join("");
+      // Populate filters with product data
+      populateFilters(allProducts);
+    } else {
+      allProducts = [...allProducts, ...newProducts];
+      grid.insertAdjacentHTML(
+        "beforeend",
+        newProducts.map(createProductCard).join(""),
+      );
     }
 
-    populateFilters(allProducts);
-    displayProducts(allProducts);
+    if (!allProducts.length) {
+      empty.hidden = false;
+    }
   } catch (err) {
     console.error("🔥 SHOP LOAD ERROR:", err);
     error.hidden = false;
   }
-}
 
-// ================= DISPLAY SEARCH INFO =================
-function displaySearchInfo(products, searchQuery) {
-  // Remove existing search info if present
-  const existingInfo = document.querySelector(".search-results-info");
-  if (existingInfo) {
-    existingInfo.remove();
-  }
-
-  const grid = document.getElementById("productsGrid");
-  if (!grid) return;
-
-  const info = document.createElement("div");
-  info.className = "search-results-info";
-  const resultText = products.length !== 1 ? "results" : "result";
-  info.innerHTML = `
-    <div>
-      <h3>Search Results for Your Query</h3>
-      <p>Showing items matching "<strong>${escapeHtml(searchQuery)}</strong>"</p>
-    </div>
-    <div class="results-count">
-      <span>${products.length}</span>
-      <span>${products.length} ${resultText} found</span>
-    </div>
-  `;
-
-  // Insert into the main-content wrapper before the grid so it appears above products
-  const main = document.querySelector(".main-content");
-  if (main) {
-    // ensure any existing header is removed then insert
-    main.insertBefore(info, grid);
-  } else {
-    grid.parentElement.insertBefore(info, grid);
-  }
-}
-
-// ================= ESCAPE HTML =================
-function escapeHtml(unsafe) {
-  return unsafe
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+  isLoading = false;
 }
 
 // ================= DISPLAY =================
@@ -236,45 +199,14 @@ function displayProducts(products) {
   const grid = document.getElementById("productsGrid");
   const empty = document.getElementById("emptyProducts");
 
-  grid.innerHTML = "";
-
   if (!products.length) {
+    grid.innerHTML = "";
     empty.hidden = false;
     return;
   }
 
   empty.hidden = true;
-  products.forEach((p) =>
-    grid.insertAdjacentHTML("beforeend", createProductCard(p)),
-  );
-}
-
-// ================= FILTER UI =================
-function populateFilters(products) {
-  const categories = [
-    ...new Set(products.map((p) => p.category).filter(Boolean)),
-  ];
-  const brands = [...new Set(products.map((p) => p.brand).filter(Boolean))];
-
-  const catBox = document.getElementById("filter-category");
-  const brandBox = document.getElementById("filter-brand");
-
-  catBox.innerHTML = "";
-  brandBox.innerHTML = "";
-
-  categories.forEach((cat) => {
-    catBox.insertAdjacentHTML(
-      "beforeend",
-      `<label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" value="${cat}" class="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500"> <span class="text-sm text-gray-700">${cat}</span></label>`,
-    );
-  });
-
-  brands.forEach((brand) => {
-    brandBox.insertAdjacentHTML(
-      "beforeend",
-      `<label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" value="${brand}" class="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500"> <span class="text-sm text-gray-700">${brand}</span></label>`,
-    );
-  });
+  grid.innerHTML = products.map(createProductCard).join("");
 }
 
 // ================= APPLY FILTERS =================
@@ -282,9 +214,11 @@ function applyFilters() {
   const selectedCategories = [
     ...document.querySelectorAll("#filter-category input:checked"),
   ].map((i) => i.value);
+
   const selectedBrands = [
     ...document.querySelectorAll("#filter-brand input:checked"),
   ].map((i) => i.value);
+
   const selectedSizes = [
     ...document.querySelectorAll("#filter-sizes input:checked"),
   ].map((i) => i.value);
@@ -317,51 +251,45 @@ function applyFilters() {
   displayProducts(filteredProducts);
 }
 
-// ================= COLLAPSIBLE FILTERS =================
-function toggleFilterSection(section) {
-  const sectionElement = document.querySelector(`[data-section="${section}"]`);
-  const body = sectionElement.querySelector(".filter-body");
-  const icon = sectionElement.querySelector(".toggle-icon");
-  const sidebar = document.querySelector(".filters");
+// ================= POPULATE FILTERS =================
+function populateFilters(products) {
+  // Extract unique categories
+  const categories = [
+    ...new Set(products.map((p) => p.category).filter(Boolean)),
+  ];
 
-  if (body.classList.contains("open")) {
-    body.classList.remove("open");
-    icon.className =
-      "fas fa-chevron-down toggle-icon transition-transform duration-200";
-    // Check if any filter is still open
-    const anyOpen = [...document.querySelectorAll(".filter-body")].some((b) =>
-      b.classList.contains("open"),
-    );
-    if (!anyOpen) {
-      sidebar.classList.remove("expanded");
-    }
-  } else {
-    body.classList.add("open");
-    icon.className =
-      "fas fa-chevron-up toggle-icon transition-transform duration-200";
-    sidebar.classList.add("expanded");
+  // Extract unique brands
+  const brands = [...new Set(products.map((p) => p.brand).filter(Boolean))];
+
+  // Populate Category filter
+  const categoryContainer = document.getElementById("filter-category");
+  if (categoryContainer) {
+    categoryContainer.innerHTML = categories
+      .map(
+        (category) => `
+      <label class="flex items-center gap-2 cursor-pointer py-1.5 hover:text-[#088178]">
+        <input type="checkbox" value="${category}" class="w-4 h-4 text-[#088178] rounded border-gray-300 focus:ring-[#088178]" />
+        <span class="text-sm text-gray-700">${category}</span>
+      </label>
+    `,
+      )
+      .join("");
   }
-}
 
-// ================= CLEAR ALL FILTERS =================
-function clearAllFilters() {
-  // Uncheck all category checkboxes
-  document
-    .querySelectorAll("#filter-category input[type='checkbox']")
-    .forEach((cb) => (cb.checked = false));
-  // Uncheck all brand checkboxes
-  document
-    .querySelectorAll("#filter-brand input[type='checkbox']")
-    .forEach((cb) => (cb.checked = false));
-  // Uncheck all size checkboxes
-  document
-    .querySelectorAll("#filter-sizes input[type='checkbox']")
-    .forEach((cb) => (cb.checked = false));
-  // Clear price inputs
-  document.getElementById("price-min").value = "";
-  document.getElementById("price-max").value = "";
-  // Apply filters to reset display
-  applyFilters();
+  // Populate Brand filter
+  const brandContainer = document.getElementById("filter-brand");
+  if (brandContainer) {
+    brandContainer.innerHTML = brands
+      .map(
+        (brand) => `
+      <label class="flex items-center gap-2 cursor-pointer py-1.5 hover:text-[#088178]">
+        <input type="checkbox" value="${brand}" class="w-4 h-4 text-[#088178] rounded border-gray-300 focus:ring-[#088178]" />
+        <span class="text-sm text-gray-700">${brand}</span>
+      </label>
+    `,
+      )
+      .join("");
+  }
 }
 
 // ================= INIT =================
@@ -369,12 +297,12 @@ document.addEventListener("DOMContentLoaded", () => {
   loadProducts();
 
   document
-    .getElementById("apply-price-filter")
-    ?.addEventListener("click", applyFilters);
+    .getElementById("loadMoreBtn")
+    ?.addEventListener("click", () => loadProducts(false));
 
   document
-    .getElementById("clear-all-filters")
-    ?.addEventListener("click", clearAllFilters);
+    .getElementById("apply-price-filter")
+    ?.addEventListener("click", applyFilters);
 
   document.addEventListener("change", (e) => {
     if (
@@ -386,39 +314,48 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Initialize collapsible sections as collapsed
-  document.querySelectorAll(".filter-body").forEach((body) => {
-    body.style.maxHeight = "0px";
-  });
+  const clearBtn = document.getElementById("clear-all-filters");
 
-  // Add event listeners for collapsible sections
-  document.querySelectorAll(".filter-header").forEach((header) => {
-    header.addEventListener("click", function () {
-      const section = this.parentElement.dataset.section;
-      toggleFilterSection(section);
-    });
-  });
-
-  // Listen for search events from header (triggered by main.js)
-  window.addEventListener("shop:search", (event) => {
-    const { q } = event.detail;
-    if (q) {
-      currentSearchQuery = q;
-      const searchTerm = q.toLowerCase();
-      filteredProducts = allProducts.filter((p) => {
-        const name = (p.name || "").toLowerCase();
-        const brand = (p.brand || "").toLowerCase();
-        const description = (p.description || "").toLowerCase();
-        const category = (p.category || "").toLowerCase();
-        return (
-          name.includes(searchTerm) ||
-          brand.includes(searchTerm) ||
-          description.includes(searchTerm) ||
-          category.includes(searchTerm)
-        );
+  clearBtn.addEventListener("click", () => {
+    // 1️⃣ Uncheck all checkboxes
+    document
+      .querySelectorAll(
+        "#filter-category input, #filter-brand input, #filter-sizes input",
+      )
+      .forEach((input) => {
+        input.checked = false;
       });
-      displaySearchInfo(filteredProducts, q);
-      displayProducts(filteredProducts);
-    }
+
+    // 2️⃣ Reset price inputs
+    const priceMinInput = document.getElementById("price-min");
+    const priceMaxInput = document.getElementById("price-max");
+
+    if (priceMinInput) priceMinInput.value = "";
+    if (priceMaxInput) priceMaxInput.value = "";
+
+    // 3️⃣ Reset filtered products
+    filteredProducts = [...allProducts];
+
+    // 4️⃣ Re-display products
+    displayProducts(filteredProducts);
+
+    // 5️⃣ Restore pagination button
+    const loadMoreBtn = document.getElementById("loadMoreBtn");
+    if (loadMoreBtn) loadMoreBtn.classList.remove("hidden");
   });
 });
+
+// Hide pagination when filters are active
+const loadBtn = document.getElementById("loadMoreBtn");
+
+if (
+  selectedCategories.length ||
+  selectedBrands.length ||
+  selectedSizes.length ||
+  priceMin > 0 ||
+  priceMax < Infinity
+) {
+  loadBtn?.classList.add("hidden");
+} else {
+  loadBtn?.classList.remove("hidden");
+}
