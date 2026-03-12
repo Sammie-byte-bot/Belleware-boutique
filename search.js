@@ -1,14 +1,5 @@
 // ================= FIREBASE IMPORTS =================
-import {
-  getFirestore,
-  collection,
-  getDocs,
-  query,
-  where,
-  orderBy,
-  limit,
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { db } from "./firebase.js";
+import { db, collection, getDocs, query, where, orderBy } from "./firebase.js";
 
 // ================= CACHE =================
 let productCache = null;

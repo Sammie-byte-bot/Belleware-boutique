@@ -22,7 +22,7 @@ async function getReviewEligibility(userId, productId) {
   const q = query(
     ordersRef,
     where("userId", "==", userId),
-    where("status", "==", "delivered"),
+    where("status", "==", "DELIVERED"),
   );
 
   const ordersSnap = await getDocs(q);
@@ -143,28 +143,47 @@ function openReviewModal(orderId, productId) {
  * Submit review to Firestore
  */
 async function submitReview(orderId, productId, overlay) {
-  const rating = Number(overlay.dataset.rating);
-  const comment = overlay.querySelector("#review-comment").value.trim();
+  try {
+    const rating = Number(overlay.dataset.rating);
+    const comment = overlay.querySelector("#review-comment").value.trim();
 
-  if (!rating || rating < 1 || rating > 5) {
-    alert("Please select a rating");
-    return;
+    if (!rating || rating < 1 || rating > 5) {
+      alert("Please select a rating");
+      return;
+    }
+
+    const user = auth.currentUser;
+    if (!user) {
+      alert("Please sign in to submit a review");
+      return;
+    }
+
+    // Get user's name or email for the review
+    const userName = user.email
+      ? user.email.split("@")[0].trim()
+      : "Verified Buyer";
+
+    const reviewData = {
+      productId: productId,
+      userId: user.uid,
+      userName: userName,
+      orderId: orderId,
+      rating: rating,
+      comment: comment,
+      createdAt: serverTimestamp(),
+    };
+
+    await addDoc(collection(db, "reviews"), reviewData);
+
+    overlay.remove();
+    document.getElementById("review-btn")?.remove();
+
+    alert("Review submitted successfully!");
+
+    // Reload the page to show the new review
+    location.reload();
+  } catch (error) {
+    console.error("Error submitting review:", error);
+    alert("Failed to submit review: " + error.message);
   }
-
-  const user = auth.currentUser;
-  if (!user) return;
-
-  await addDoc(collection(db, "reviews"), {
-    productId,
-    userId: user.uid,
-    orderId,
-    rating,
-    comment,
-    createdAt: serverTimestamp(),
-  });
-
-  overlay.remove();
-  document.getElementById("review-btn")?.remove();
-
-  alert("Review submitted successfully!");
 }

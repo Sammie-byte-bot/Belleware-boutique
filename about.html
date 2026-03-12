@@ -14,7 +14,21 @@
         <!-- Logo -->
         <a href="index.html" class="logo">Bellewear <span>Boutique</span></a>
 
-        <!-- Profile Icon -->
+        <!-- Search (WhatsApp-style) -->
+        <div class="search-container">
+          <div class="search-input-wrapper">
+            <i class="fas fa-search search-input-icon"></i>
+            <input
+              type="text"
+              id="searchInput"
+              class="search-input"
+              placeholder="Search for products..."
+            />
+          </div>
+          <button id="searchBtn" class="search-btn">SEARCH</button>
+        </div>
+
+        <!-- Profile Icon + Greeting -->
         <div class="profile-wrapper">
           <a href="#" class="profile-link">
             <i class="fas fa-user-circle"></i>
@@ -28,20 +42,10 @@
               <a href="auth.html"><i class="fas fa-sign-in-alt"></i> Sign In</a>
             </div>
           </div>
-        </div>
 
-        <!-- Greeting -->
-        <span class="profile-greet" style="white-space: nowrap; font-size: 12px"
-          >Hello, <span id="userName">Guest</span></span
-        >
-
-        <!-- Search -->
-        <div class="search-container">
-          <input
-            type="text"
-            id="searchInput"
-            placeholder="Search for products..."
-          />
+          <span class="profile-greet"
+            >Hello, <span id="userName">Guest</span></span
+          >
         </div>
 
         <!-- Search Overlay -->
@@ -158,11 +162,6 @@
       </aside>
     </header>
 
-    <!-- Overlay -->
-    <div id="overlay"></div>
-
-    <!-- Overlay -->
-    <div id="overlay"></div>
     <section id="about-header" class="header-info">
       <h2>#Know us</h2>
       <p>About our business & products</p>

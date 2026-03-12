@@ -2,7 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
     <title>Boutique | Shop</title>
 
     <link rel="stylesheet" href="style.css" />
@@ -16,6 +19,8 @@
 
   <body>
     <!-- ================= HEADER ================= -->
+
+    <!-- HEADER -->
     <header id="header">
       <!-- TOP BAR -->
       <div class="header-top">
@@ -124,8 +129,8 @@
 
           <!-- Main Nav Links -->
           <li><a href="index.html">Home</a></li>
-          <li><a href="shop.html" class="active">Shop</a></li>
           <li><a href="blog.html">Blog</a></li>
+          <li><a href="shop.html" class="active">Shop</a></li>
           <li><a href="about.html">About</a></li>
           <li><a href="contact.html">Contact</a></li>
         </ul>
@@ -137,7 +142,7 @@
       <!-- Side Menu -->
       <aside id="sideMenu" class="side-menu">
         <div class="menu-header">
-          <span id="mobileGreeting">👤 Hello, John</span>
+          <span id="mobileGreeting">👤 Hello, guest</span>
           <button id="closeMenu">✕</button>
         </div>
 
@@ -170,28 +175,32 @@
       </aside>
     </header>
 
-    <!-- Overlay -->
-    <div id="overlay"></div>
-
     <!-- ================= PAGE HEADER ================= -->
     <section id="page-header" class="page-header-with-filter">
       <h2>#Stay Home</h2>
       <p>Order via Bellewear boutique and receive it safe and secure</p>
     </section>
 
+    <section id="search-suggestions" class="section-p1">
+      <div class="search-suggestions-content"></div>
+    </section>
+
     <!-- ================= SHOP ================= -->
 
     <section id="product1" class="section-p1">
+      <!-- Mobile Filter Toggle Button (visible only on mobile) -->
+      <button
+        id="filter-toggle-btn"
+        class="filter-toggle-btn mobile-filter-btn"
+      >
+        <i class="fas fa-filter"></i>
+        <span>Filters</span>
+        <i class="fas fa-chevron-down toggle-icon"></i>
+      </button>
+
       <div class="shop-layout">
         <!-- ===== MODERN FILTER SIDEBAR ===== -->
         <aside class="filters" id="filters-sidebar">
-          <!-- Mobile Filter Toggle Button -->
-          <button id="filter-toggle-btn" class="filter-toggle-btn">
-            <i class="fas fa-filter"></i>
-            <span>Filters</span>
-            <i class="fas fa-chevron-down toggle-icon"></i>
-          </button>
-
           <!-- Filter Content (collapsible on mobile) -->
           <div id="filter-content" class="filter-content">
             <h2 class="text-xl font-bold text-gray-900 mb-6 tracking-tight">
@@ -343,17 +352,14 @@
             <div class="skeleton-card"></div>
           </div>
 
-          <!-- ================= PAGINATION: LOAD MORE ================= -->
-          <div
-            class="pagination-wrapper"
-            style="text-align: center; margin-top: 30px"
-          >
-            <button
-              id="loadMoreBtn"
-              class="bg-[#088178] text-white font-bold py-2 px-6 rounded-lg shadow hover:bg-[#06655e] transition-all active:scale-[0.98]"
-            >
-              Load More Products
-            </button>
+          <!-- ================= PAGINATION: EBAY-STYLE ================= -->
+          <div class="pagination-wrapper">
+            <div class="pagination-info" id="paginationInfo">
+              <!-- Will be populated by JS: "Showing 1-12 of 48 products" -->
+            </div>
+            <div class="pagination-container" id="paginationContainer">
+              <!-- Will be populated by JS: First, Prev, Page Numbers, Next, Last -->
+            </div>
           </div>
         </div>
       </div>
@@ -464,6 +470,41 @@
             }
           });
         });
+
+        // Mobile Filter Sidebar Toggle - slide in from left
+        const filtersSidebar = document.getElementById("filters-sidebar");
+
+        if (filterToggleBtn && filtersSidebar) {
+          filterToggleBtn.addEventListener("click", function () {
+            // Toggle the sidebar sliding in from left
+            filtersSidebar.classList.toggle("active");
+
+            // Add/remove overlay when filter is open on mobile
+            let overlay = document.getElementById("filter-overlay");
+
+            if (filtersSidebar.classList.contains("active")) {
+              // Create overlay if it doesn't exist
+              if (!overlay) {
+                overlay = document.createElement("div");
+                overlay.id = "filter-overlay";
+                overlay.style.cssText =
+                  "position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9998;";
+                document.body.appendChild(overlay);
+
+                // Close filter when clicking overlay
+                overlay.addEventListener("click", function () {
+                  filtersSidebar.classList.remove("active");
+                  overlay.remove();
+                });
+              }
+            } else {
+              // Remove overlay when filter is closed
+              if (overlay) {
+                overlay.remove();
+              }
+            }
+          });
+        }
       });
     </script>
   </body>

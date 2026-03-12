@@ -1,7 +1,22 @@
 // firebase.js
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  getCountFromServer,
+  query,
+  where,
+  orderBy,
+  limit,
+  startAfter,
+  doc,
+  getDoc,
+  addDoc,
+  serverTimestamp,
+  updateDoc,
+} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyD6UqMyedaoaXgqOeddQN47ADgP8joO364",
@@ -18,3 +33,20 @@ const app = initializeApp(firebaseConfig);
 // EXPORT these exactly
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+
+// Export Firestore functions for use in other modules
+export {
+  collection,
+  getDocs,
+  getCountFromServer,
+  query,
+  where,
+  orderBy,
+  limit,
+  startAfter,
+  doc,
+  getDoc,
+  addDoc,
+  serverTimestamp,
+  updateDoc,
+};

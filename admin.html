@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Bellewear Boutique | Admin Dashboard</title>
 
     <!-- Tailwind -->
@@ -411,7 +411,7 @@
       .content-main {
         padding: 1rem;
         
-       
+        
       }
       .page-title {
         font-weight: 700;
@@ -855,6 +855,18 @@ tbody tr:not(:last-child) {
   height: 300px !important;
 }
 
+/* Hide scrollbar but keep scrollable for product modal */
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+.scrollbar-hide {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
 
       
     </style>
@@ -942,9 +954,9 @@ tbody tr:not(:last-child) {
     </aside>
 
     <!-- MAIN -->
-    <main class="flex-1 flex flex-col overflow-visible">
+<main class="flex-1 flex flex-col overflow-y-auto">
       <!-- HEADER -->
-      <header class="h-16 topbar px-6 flex items-center justify-between">
+<header class="h-16 topbar px-6 flex items-center justify-between sticky top-0 z-40">
         <!-- Left: Section Title -->
         <div class="flex items-center gap-4">
           <button
@@ -1194,129 +1206,7 @@ tbody tr:not(:last-child) {
                 Add Product
               </button>
             </div>
-            <div id="product-modal" class="fixed inset-0 bg-black/50 flex justify-center items-center z-50 hidden">
-  <div class="bg-white rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 relative">
-    <button onclick="toggleModal('product-modal')" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-2xl font-bold">&times;</button>
-    <h2 id="modal-title" class="text-xl font-semibold mb-4">Add Product</h2>
 
-    <form id="product-form" class="space-y-4">
-      <input type="hidden" id="p-id" />
-
-      <div class="grid grid-cols-1 gap-4">
-        <input type="text" id="p-name" placeholder="Product Name" class="input-field" required />
-        <input type="text" id="p-brand" placeholder="Brand" class="input-field" />
-        <input type="text" id="p-category" placeholder="Category" class="input-field" />
-        <input type="number" id="p-price" placeholder="Price" class="input-field" required />
-        <input type="number" id="p-oldPrice" placeholder="Old Price (optional)" class="input-field" />
-        <input type="number" id="p-stock" placeholder="Stock Quantity" class="input-field" required />
-
-        <textarea id="p-description" placeholder="Description" class="input-field resize-none h-20"></textarea>
-
-        <div>
-          <label class="block mb-1 font-medium">Sizes:</label>
-          <div class="flex gap-2 flex-wrap">
-            <label><input type="checkbox" class="p-size" value="S" /> S</label>
-            <label><input type="checkbox" class="p-size" value="M" /> M</label>
-            <label><input type="checkbox" class="p-size" value="L" /> L</label>
-            <label><input type="checkbox" class="p-size" value="XL" /> XL</label>
-          </div>
-        </div>
-
-        <div>
-          <label class="block mb-1 font-medium">Images (max 3):</label>
-          <input type="file" id="p-images" multiple accept="image/*" class="input-field" />
-          <div id="previewContainer" class="flex gap-2 mt-2 flex-wrap"></div>
-        </div>
-      </div>
-
-      <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-lg w-full hover:bg-indigo-700 transition">Save Product</button>
-    </form>
-  </div>
-</div>
-
-<style>
-  .input-field {
-    width: 100%;
-    padding: 0.5rem 0.75rem;
-    border: 1px solid #ccc;
-    border-radius: 0.5rem;
-    outline: none;
-  }
-  .input-field:focus {
-    border-color: #6366f1;
-    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
-  }
-
-  /* Scrollable image preview container */
-#previewContainer {
-  display: flex;
-  gap: 0.5rem;
-  overflow-x: auto;
-  padding-bottom: 0.25rem;
-}
-
-/* Thin custom scrollbar */
-#previewContainer::-webkit-scrollbar {
-  height: 6px; /* horizontal scrollbar height */
-}
-
-#previewContainer::-webkit-scrollbar-track {
-  background: #f0f0f0;
-  border-radius: 3px;
-}
-
-#previewContainer::-webkit-scrollbar-thumb {
-  background: #6366f1; /* Indigo 600, matches button color */
-  border-radius: 3px;
-}
-
-#previewContainer::-webkit-scrollbar-thumb:hover {
-  background: #4f46e5; /* Slightly darker on hover */
-}
-
-/* Modern input/textarea styling */
-#product-modal input,
-#product-modal textarea {
-  width: 100%;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid #ccc;
-  border-radius: 0.5rem;
-  outline: none;
-  font-size: 0.95rem;
-  font-family: 'Inter', sans-serif;
-  background-color: #fafafa;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-#product-modal input::placeholder,
-#product-modal textarea::placeholder {
-  color: #6b7280; /* Gray-500 for formal look */
-  font-style: italic;
-}
-
-#product-modal input:focus,
-#product-modal textarea:focus {
-  border-color: #6366f1; /* Indigo 600 */
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
-  background-color: #fff;
-}
-
-.order-actions {
-  display: flex;
-  gap: 0.6rem;
-  margin-top: 1rem;
-  align-items: center;
-}
-
-.status-select {
-  padding: 0.7rem 0.8rem;
-  border-radius: 8px;
-  border: 1px solid #ddd;
-  font-weight: 700;
-}
-
-
-</style>
 
           </div>
 
@@ -1608,90 +1498,183 @@ tbody tr:not(:last-child) {
     <!-- PRODUCT MODAL -->
     <div
       id="product-modal"
-      class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+      class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
     >
-      <div class="bg-white p-8 rounded-xl w-full max-w-md relative">
-        <button
-          class="absolute top-3 right-3 text-gray-500 hover:text-gray-900 font-bold"
-          onclick="toggleModal('product-modal')"
-        >
-          ✕
-        </button>
-        <h3 class="font-bold mb-4 text-center" id="modal-title">Add Product</h3>
-        <form id="product-form" class="space-y-4">
-          <input type="hidden" id="p-id" />
 
-          <label class="block font-semibold">Product Name</label>
-          <input
-            id="p-name"
-            placeholder="Name"
-            class="w-full border px-4 py-2 rounded"
-          />
+<div class="bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f0f23] text-[#e0e0e0] rounded-2xl w-full max-w-2xl max-h-[85vh] shadow-2xl border border-[#2a2a4a]/50 font-sans relative overflow-hidden">
+    <!-- Decorative gradient orbs -->
+    <div class="absolute -top-20 -right-20 w-40 h-40 bg-indigo-600/20 rounded-full blur-3xl"></div>
+    <div class="absolute -bottom-20 -left-20 w-40 h-40 bg-purple-600/20 rounded-full blur-3xl"></div>
+    
+    <!-- Close Button -->
+    <button class="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 transition-all" onclick="toggleModal('product-modal')">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+    </button>
 
-          <label class="block font-semibold">Category</label>
-          <input
-            id="p-category"
-            placeholder="Category"
-            class="w-full border px-4 py-2 rounded"
-          />
+    <!-- Scrollable Content Area - Hidden Scrollbar -->
+    <div class="p-6 overflow-y-auto max-h-[85vh] scrollbar-hide">
+        <div class="flex items-center gap-3 mb-6 border-b border-white/10 pb-4">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
+                <i class="fas fa-plus text-white text-sm"></i>
+            </div>
+            <h3 class="text-xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent" id="modal-title">Create New Product</h3>
+        </div>
 
-          <label class="block font-semibold">Price</label>
-          <input
-            id="p-price"
-            type="number"
-            placeholder="Price"
-            class="w-full border px-4 py-2 rounded"
-          />
+        <form id="product-form" class="space-y-5">
+            <input type="hidden" id="p-id" />
 
-          <label class="block font-semibold">Stock</label>
-          <input
-            id="p-stock"
-            type="number"
-            placeholder="Stock"
-            class="w-full border px-4 py-2 rounded"
-          />
+            <!-- Product Name -->
+            <div class="space-y-2">
+                <label class="block text-xs font-bold uppercase tracking-wider text-indigo-300/80">Product Name</label>
+                <input id="p-name" placeholder="Enter product name..." class="w-full bg-white/5 border border-white/10 text-white px-4 py-3.5 rounded-xl focus:border-indigo-500 focus:bg-white/10 outline-none transition-all placeholder:text-gray-500 backdrop-blur-sm" />
+            </div>
 
-          <label class="block font-semibold">Product Images</label>
-          <div id="p-image-preview-container" class="flex gap-2 mb-2"></div>
-          <input
-            id="p-image"
-            type="file"
-            accept="image/*"
-            multiple
-            class="w-full border px-4 py-2 rounded"
-          />
+            <!-- Category & Brand Row -->
+            <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-2">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-indigo-300/80">Category</label>
+                    <input id="p-category" placeholder="Category" class="w-full bg-white/5 border border-white/10 text-white px-4 py-3.5 rounded-xl focus:border-indigo-500 focus:bg-white/10 outline-none transition-all placeholder:text-gray-500 backdrop-blur-sm" />
+                </div>
+                <div class="space-y-2">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-indigo-300/80">Brand</label>
+                    <input id="p-brand" placeholder="Brand name" class="w-full bg-white/5 border border-white/10 text-white px-4 py-3.5 rounded-xl focus:border-indigo-500 focus:bg-white/10 outline-none transition-all placeholder:text-gray-500 backdrop-blur-sm" />
+                </div>
+            </div>
 
-          <!-- Inside your existing #product-modal form, before submit button -->
+            <!-- Pricing & Stock Row -->
+            <div class="grid grid-cols-3 gap-4">
+                <div class="space-y-2">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-indigo-300/80">Price</label>
+                    <input id="p-price" type="number" placeholder="0.00" class="w-full bg-white/5 border border-white/10 text-white px-4 py-3.5 rounded-xl focus:border-indigo-500 focus:bg-white/10 outline-none transition-all placeholder:text-gray-500 backdrop-blur-sm" />
+                </div>
+                <div class="space-y-2">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-indigo-300/80">Old Price</label>
+                    <input id="p-oldPrice" type="number" placeholder="0.00" class="w-full bg-white/5 border border-white/10 text-white px-4 py-3.5 rounded-xl focus:border-indigo-500 focus:bg-white/10 outline-none transition-all placeholder:text-gray-500 backdrop-blur-sm" />
+                </div>
+                <div class="space-y-2">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-indigo-300/80">Stock</label>
+                    <input id="p-stock" type="number" placeholder="Qty" class="w-full bg-white/5 border border-white/10 text-white px-4 py-3.5 rounded-xl focus:border-indigo-500 focus:bg-white/10 outline-none transition-all placeholder:text-gray-500 backdrop-blur-sm" />
+                </div>
+            </div>
 
-<!-- Brand -->
-<input type="text" id="p-brand" placeholder="Brand (e.g., Demin)" class="px-4 py-2 rounded-lg border border-gray-300 w-full mb-2">
+            <!-- Sizes Selection -->
+            <div class="space-y-2">
+                <label class="block text-xs font-bold uppercase tracking-wider text-indigo-300/80">Available Sizes</label>
+                
+                <!-- Letter Sizes (S, M, L, XL) - Default for clothing -->
+                <div id="sizes-letter" class="flex gap-3 bg-white/5 p-4 rounded-xl border border-white/10">
+                    <label class="flex-1 flex items-center justify-center gap-2 cursor-pointer text-sm py-2 px-3 rounded-lg bg-white/5 hover:bg-white/10 transition-all border border-white/5 hover:border-indigo-500/50">
+                        <input type="checkbox" class="p-size rounded bg-[#2a2a2a] border-none text-indigo-500 focus:ring-2 focus:ring-indigo-500/50" value="S"> <span class="text-gray-300">S</span>
+                    </label>
+                    <label class="flex-1 flex items-center justify-center gap-2 cursor-pointer text-sm py-2 px-3 rounded-lg bg-white/5 hover:bg-white/10 transition-all border border-white/5 hover:border-indigo-500/50">
+                        <input type="checkbox" class="p-size rounded bg-[#2a2a2a] border-none text-indigo-500 focus:ring-2 focus:ring-indigo-500/50" value="M"> <span class="text-gray-300">M</span>
+                    </label>
+                    <label class="flex-1 flex items-center justify-center gap-2 cursor-pointer text-sm py-2 px-3 rounded-lg bg-white/5 hover:bg-white/10 transition-all border border-white/5 hover:border-indigo-500/50">
+                        <input type="checkbox" class="p-size rounded bg-[#2a2a2a] border-none text-indigo-500 focus:ring-2 focus:ring-indigo-500/50" value="L"> <span class="text-gray-300">L</span>
+                    </label>
+                    <label class="flex-1 flex items-center justify-center gap-2 cursor-pointer text-sm py-2 px-3 rounded-lg bg-white/5 hover:bg-white/10 transition-all border border-white/5 hover:border-indigo-500/50">
+                        <input type="checkbox" class="p-size rounded bg-[#2a2a2a] border-none text-indigo-500 focus:ring-2 focus:ring-indigo-500/50" value="XL"> <span class="text-gray-300">XL</span>
+                    </label>
+                </div>
+                
+                <!-- Numeric Sizes (23-45) - For shoes -->
+                <div id="sizes-numeric" class="hidden flex gap-2 bg-white/5 p-4 rounded-xl border border-white/10 flex-wrap">
+                    <div class="grid grid-cols-5 gap-2 w-full">
+                        <label class="flex items-center justify-center gap-1 cursor-pointer text-xs py-2 px-2 rounded-lg bg-white/5 hover:bg-white/10 transition-all border border-white/5 hover:border-indigo-500/50">
+                            <input type="checkbox" class="p-size-numeric rounded bg-[#2a2a2a] border-none text-indigo-500 focus:ring-2 focus:ring-indigo-500/50" value="23"> <span class="text-gray-300">23</span>
+                        </label>
+                        <label class="flex items-center justify-center gap-1 cursor-pointer text-xs py-2 px-2 rounded-lg bg-white/5 hover:bg-white/10 transition-all border border-white/5 hover:border-indigo-500/50">
+                            <input type="checkbox" class="p-size-numeric rounded bg-[#2a2a2a] border-none text-indigo-500 focus:ring-2 focus:ring-indigo-500/50" value="24"> <span class="text-gray-300">24</span>
+                        </label>
+                        <label class="flex items-center justify-center gap-1 cursor-pointer text-xs py-2 px-2 rounded-lg bg-white/5 hover:bg-white/10 transition-all border border-white/5 hover:border-indigo-500/50">
+                            <input type="checkbox" class="p-size-numeric rounded bg-[#2a2a2a] border-none text-indigo-500 focus:ring-2 focus:ring-indigo-500/50" value="25"> <span class="text-gray-300">25</span>
+                        </label>
+                        <label class="flex items-center justify-center gap-1 cursor-pointer text-xs py-2 px-2 rounded-lg bg-white/5 hover:bg-white/10 transition-all border border-white/5 hover:border-indigo-500/50">
+                            <input type="checkbox" class="p-size-numeric rounded bg-[#2a2a2a] border-none text-indigo-500 focus:ring-2 focus:ring-indigo-500/50" value="26"> <span class="text-gray-300">26</span>
+                        </label>
+                        <label class="flex items-center justify-center gap-1 cursor-pointer text-xs py-2 px-2 rounded-lg bg-white/5 hover:bg-white/10 transition-all border border-white/5 hover:border-indigo-500/50">
+                            <input type="checkbox" class="p-size-numeric rounded bg-[#2a2a2a] border-none text-indigo-500 focus:ring-2 focus:ring-indigo-500/50" value="27"> <span class="text-gray-300">27</span>
+                        </label>
+                        <label class="flex items-center justify-center gap-1 cursor-pointer text-xs py-2 px-2 rounded-lg bg-white/5 hover:bg-white/10 transition-all border border-white/5 hover:border-indigo-500/50">
+                            <input type="checkbox" class="p-size-numeric rounded bg-[#2a2a2a] border-none text-indigo-500 focus:ring-2 focus:ring-indigo-500/50" value="28"> <span class="text-gray-300">28</span>
+                        </label>
+                        <label class="flex items-center justify-center gap-1 cursor-pointer text-xs py-2 px-2 rounded-lg bg-white/5 hover:bg-white/10 transition-all border border-white/5 hover:border-indigo-500/50">
+                            <input type="checkbox" class="p-size-numeric rounded bg-[#2a2a2a] border-none text-indigo-500 focus:ring-2 focus:ring-indigo-500/50" value="29"> <span class="text-gray-300">29</span>
+                        </label>
+                        <label class="flex items-center justify-center gap-1 cursor-pointer text-xs py-2 px-2 rounded-lg bg-white/5 hover:bg-white/10 transition-all border border-white/5 hover:border-indigo-500/50">
+                            <input type="checkbox" class="p-size-numeric rounded bg-[#2a2a2a] border-none text-indigo-500 focus:ring-2 focus:ring-indigo-500/50" value="30"> <span class="text-gray-300">30</span>
+                        </label>
+                        <label class="flex items-center justify-center gap-1 cursor-pointer text-xs py-2 px-2 rounded-lg bg-white/5 hover:bg-white/10 transition-all border border-white/5 hover:border-indigo-500/50">
+                            <input type="checkbox" class="p-size-numeric rounded bg-[#2a2a2a] border-none text-indigo-500 focus:ring-2 focus:ring-indigo-500/50" value="31"> <span class="text-gray-300">31</span>
+                        </label>
+                        <label class="flex items-center justify-center gap-1 cursor-pointer text-xs py-2 px-2 rounded-lg bg-white/5 hover:bg-white/10 transition-all border border-white/5 hover:border-indigo-500/50">
+                            <input type="checkbox" class="p-size-numeric rounded bg-[#2a2a2a] border-none text-indigo-500 focus:ring-2 focus:ring-indigo-500/50" value="32"> <span class="text-gray-300">32</span>
+                        </label>
+                        <label class="flex items-center justify-center gap-1 cursor-pointer text-xs py-2 px-2 rounded-lg bg-white/5 hover:bg-white/10 transition-all border border-white/5 hover:border-indigo-500/50">
+                            <input type="checkbox" class="p-size-numeric rounded bg-[#2a2a2a] border-none text-indigo-500 focus:ring-2 focus:ring-indigo-500/50" value="33"> <span class="text-gray-300">33</span>
+                        </label>
+                        <label class="flex items-center justify-center gap-1 cursor-pointer text-xs py-2 px-2 rounded-lg bg-white/5 hover:bg-white/10 transition-all border border-white/5 hover:border-indigo-500/50">
+                            <input type="checkbox" class="p-size-numeric rounded bg-[#2a2a2a] border-none text-indigo-500 focus:ring-2 focus:ring-indigo-500/50" value="34"> <span class="text-gray-300">34</span>
+                        </label>
+                        <label class="flex items-center justify-center gap-1 cursor-pointer text-xs py-2 px-2 rounded-lg bg-white/5 hover:bg-white/10 transition-all border border-white/5 hover:border-indigo-500/50">
+                            <input type="checkbox" class="p-size-numeric rounded bg-[#2a2a2a] border-none text-indigo-500 focus:ring-2 focus:ring-indigo-500/50" value="35"> <span class="text-gray-300">35</span>
+                        </label>
+                        <label class="flex items-center justify-center gap-1 cursor-pointer text-xs py-2 px-2 rounded-lg bg-white/5 hover:bg-white/10 transition-all border border-white/5 hover:border-indigo-500/50">
+                            <input type="checkbox" class="p-size-numeric rounded bg-[#2a2a2a] border-none text-indigo-500 focus:ring-2 focus:ring-indigo-500/50" value="36"> <span class="text-gray-300">36</span>
+                        </label>
+                        <label class="flex items-center justify-center gap-1 cursor-pointer text-xs py-2 px-2 rounded-lg bg-white/5 hover:bg-white/10 transition-all border border-white/5 hover:border-indigo-500/50">
+                            <input type="checkbox" class="p-size-numeric rounded bg-[#2a2a2a] border-none text-indigo-500 focus:ring-2 focus:ring-indigo-500/50" value="37"> <span class="text-gray-300">37</span>
+                        </label>
+                        <label class="flex items-center justify-center gap-1 cursor-pointer text-xs py-2 px-2 rounded-lg bg-white/5 hover:bg-white/10 transition-all border border-white/5 hover:border-indigo-500/50">
+                            <input type="checkbox" class="p-size-numeric rounded bg-[#2a2a2a] border-none text-indigo-500 focus:ring-2 focus:ring-indigo-500/50" value="38"> <span class="text-gray-300">38</span>
+                        </label>
+                        <label class="flex items-center justify-center gap-1 cursor-pointer text-xs py-2 px-2 rounded-lg bg-white/5 hover:bg-white/10 transition-all border border-white/5 hover:border-indigo-500/50">
+                            <input type="checkbox" class="p-size-numeric rounded bg-[#2a2a2a] border-none text-indigo-500 focus:ring-2 focus:ring-indigo-500/50" value="39"> <span class="text-gray-300">39</span>
+                        </label>
+                        <label class="flex items-center justify-center gap-1 cursor-pointer text-xs py-2 px-2 rounded-lg bg-white/5 hover:bg-white/10 transition-all border border-white/5 hover-500/50">
+                            <input type="checkbox" class="p-size-numeric rounded bg:border-indigo-[#2a2a2a] border-none text-indigo-500 focus:ring-2 focus:ring-indigo-500/50" value="40"> <span class="text-gray-300">40</span>
+                        </label>
+                        <label class="flex items-center justify-center gap-1 cursor-pointer text-xs py-2 px-2 rounded-lg bg-white/5 hover:bg-white/10 transition-all border border-white/5 hover:border-indigo-500/50">
+                            <input type="checkbox" class="p-size-numeric rounded bg-[#2a2a2a] border-none text-indigo-500 focus:ring-2 focus:ring-indigo-500/50" value="41"> <span class="text-gray-300">41</span>
+                        </label>
+                        <label class="flex items-center justify-center gap-1 cursor-pointer text-xs py-2 px-2 rounded-lg bg-white/5 hover:bg-white/10 transition-all border border-white/5 hover:border-indigo-500/50">
+                            <input type="checkbox" class="p-size-numeric rounded bg-[#2a2a2a] border-none text-indigo-500 focus:ring-2 focus:ring-indigo-500/50" value="42"> <span class="text-gray-300">42</span>
+                        </label>
+                        <label class="flex items-center justify-center gap-1 cursor-pointer text-xs py-2 px-2 rounded-lg bg-white/5 hover:bg-white/10 transition-all border border-white/5 hover:border-indigo-500/50">
+                            <input type="checkbox" class="p-size-numeric rounded bg-[#2a2a2a] border-none text-indigo-500 focus:ring-2 focus:ring-indigo-500/50" value="43"> <span class="text-gray-300">43</span>
+                        </label>
+                        <label class="flex items-center justify-center gap-1 cursor-pointer text-xs py-2 px-2 rounded-lg bg-white/5 hover:bg-white/10 transition-all border border-white/5 hover:border-indigo-500/50">
+                            <input type="checkbox" class="p-size-numeric rounded bg-[#2a2a2a] border-none text-indigo-500 focus:ring-2 focus:ring-indigo-500/50" value="44"> <span class="text-gray-300">44</span>
+                        </label>
+                        <label class="flex items-center justify-center gap-1 cursor-pointer text-xs py-2 px-2 rounded-lg bg-white/5 hover:bg-white/10 transition-all border border-white/5 hover:border-indigo-500/50">
+                            <input type="checkbox" class="p-size-numeric rounded bg-[#2a2a2a] border-none text-indigo-500 focus:ring-2 focus:ring-indigo-500/50" value="45"> <span class="text-gray-300">45</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
 
-<!-- Old Price -->
-<input type="number" id="p-oldPrice" placeholder="Old Price" class="px-4 py-2 rounded-lg border border-gray-300 w-full mb-2">
+            <!-- Media/Images Section -->
+            <div class="bg-gradient-to-br from-[#1a1a3a]/50 to-[#0f0f2a]/50 p-5 rounded-2xl border border-white/10 space-y-4 backdrop-blur-sm">
+                <label class="block text-xs font-bold uppercase tracking-wider text-indigo-300/80">Product Media</label>
+                <div id="p-image-preview-container" class="flex gap-2 mb-2 flex-wrap"></div>
+                <input id="p-image" type="file" accept="image/*" multiple class="w-full text-sm text-gray-400 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer transition-all" />
+                
+                <textarea id="p-description" placeholder="Product description..." rows="3" class="w-full bg-white/5 border border-white/10 text-white px-4 py-3 rounded-xl focus:border-indigo-500 focus:bg-white/10 outline-none transition-all placeholder:text-gray-500 backdrop-blur-sm resize-none"></textarea>
+            </div>
 
-<!-- Sizes (checkboxes) -->
-<div class="flex gap-2 mb-2">
-  <span class="text-sm text-gray-600">Sizes:</span>
-  <label><input type="checkbox" class="p-size" value="S"> S</label>
-  <label><input type="checkbox" class="p-size" value="M"> M</label>
-  <label><input type="checkbox" class="p-size" value="L"> L</label>
-  <label><input type="checkbox" class="p-size" value="XL"> XL</label>
-  <label><input type="checkbox" class="p-size" value="XXL"> XXL</label>
+            <!-- Footer Actions -->
+            <div class="flex justify-end items-center gap-4 pt-4 border-t border-white/10">
+                <button type="button" class="px-5 py-2.5 text-gray-400 hover:text-white font-medium text-sm rounded-lg hover:bg-white/5 transition-all" onclick="toggleModal('product-modal')">Cancel</button>
+                <button type="submit" class="px-8 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl font-bold transition-all shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:scale-[1.02] active:scale-[0.98]">
+                    Save Product
+                </button>
+            </div>
+        </form>
+    </div>
 </div>
 
-<!-- Description -->
-<textarea id="p-description" placeholder="Product description..." rows="3" class="px-4 py-2 rounded-lg border border-gray-300 w-full"></textarea>
-
-
-          <button
-            type="submit"
-            class="w-full bg-indigo-600 text-white py-2 rounded"
-          >
-            Save
-          </button>
-        </form>
-      </div>
-    </div>
 
     <!-- LOADER -->
     <div

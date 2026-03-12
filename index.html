@@ -2,11 +2,10 @@
   <html lang="en">
     <head>
       <meta charset="UTF-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
       <title>Boutique</title>
     <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="fontawesome-free-7.1.0-web/css/all.css" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com">
     <style>
       /* overlay blur */
 .modal {
@@ -316,21 +315,7 @@
           <span class="profile-greet">Hello, <span id="userName">Guest</span></span>
         </div>
 
-        <!-- Search Overlay -->
-        <div class="search-overlay">
-          <div class="search-box">
-            <input
-              type="text"
-              id="searchInputOverlay"
-              placeholder="Search products..."
-            />
-            <button id="searchButtonOverlay">
-              <i class="fas fa-search"></i>
-            </button>
-            <button id="closeSearch" class="close-search">&times;</button>
-            <div class="search-results"></div>
-          </div>
-        </div>
+
 
         <!-- Right Icons -->
         <div class="top-icons">
@@ -474,7 +459,7 @@
 <div id="reviewModal" class="modal hidden">
   <div class="modal-content">
 
-    <span class="close" id="closeReviewModal">&times;</span>
+    <span class="close" id="closeReviewModalECT">&times;</span>
 
     <!-- HEADER -->
     <div id="reviewModalHeader" class="modal-header"></div>
@@ -486,7 +471,12 @@
 </section>
 
 
+      <section id="search-suggestions" class="section-p1">
+        <div class="search-suggestions-content"></div>
+      </section>
+
       <section id="feature" class="section-p1">
+        <h2>Why Bellewear?</h2>
         <div class="fe-box">
           <img src="img/features/f1.png" alt="" />
           <h6>free shipping</h6>
@@ -664,4 +654,3 @@
       <script type="module" src="index.js"></script>
     </body>
   </html>
-</doctype>

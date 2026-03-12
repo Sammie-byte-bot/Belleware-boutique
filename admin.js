@@ -1897,18 +1897,27 @@ function initDashboard(user) {
       <div class="space-y-2">
         ${
           order.items
-            ?.map(
-              (i) => `
-          <div class="flex justify-between p-3 rounded-lg text-sm" style="background: linear-gradient(135deg, var(--glass), rgba(255,255,255,0.02))">
-            <div>
-              <div class="font-medium">${i.name}</div>
-              <div class="text-gray-500">Size: ${i.size || "-"}</div>
-              <div class="text-gray-500">Color: ${i.color || "-"}</div>
+            ?.map((i) => {
+              // Get product image - check multiple possible sources
+              const productImg =
+                i.img ||
+                i.image ||
+                i.productImage ||
+                "https://via.placeholder.com/60?text=No+Image";
+              return `
+          <div class="flex items-center justify-between p-3 rounded-lg text-sm" style="background: linear-gradient(135deg, var(--glass), rgba(255,255,255,0.02))">
+            <div class="flex items-center gap-3">
+              <img src="${productImg}" alt="${i.name}" class="w-14 h-14 rounded-lg object-cover border border-gray-200 shadow-sm" />
+              <div class="flex-1">
+                <div class="font-medium">${i.name}</div>
+                <div class="text-gray-500">Size: ${i.size || "-"}</div>
+                <div class="text-gray-500">Color: ${i.color || "-"}</div>
+              </div>
             </div>
             <div class="font-medium">x${i.quantity}</div>
           </div>
-        `,
-            )
+        `;
+            })
             .join("") || "—"
         }
       </div>
@@ -1960,8 +1969,50 @@ function initDashboard(user) {
 
   // ======= ELEMENT REFERENCES =======
   const productForm = document.getElementById("product-form");
-  const imageInput = document.getElementById("p-images");
-  const previewContainer = document.getElementById("previewContainer");
+  const imageInput = document.getElementById("p-image");
+  const previewContainer = document.getElementById("p-image-preview-container");
+
+  // ======= CATEGORY-BASED SIZE SWITCHING =======
+  const categoryInput = document.getElementById("p-category");
+  const sizesLetter = document.getElementById("sizes-letter");
+  const sizesNumeric = document.getElementById("sizes-numeric");
+
+  if (categoryInput && sizesLetter && sizesNumeric) {
+    categoryInput.addEventListener("input", function () {
+      const categoryValue = this.value.toLowerCase();
+      // Show numeric sizes for shoes, letter sizes for everything else
+      if (categoryValue.includes("shoe")) {
+        sizesLetter.classList.add("hidden");
+        sizesNumeric.classList.remove("hidden");
+      } else {
+        sizesLetter.classList.remove("hidden");
+        sizesNumeric.classList.add("hidden");
+      }
+    });
+  }
+
+  // Reset sizes visibility when modal opens (for new products)
+  const originalToggleModal = window.toggleModal;
+  window.toggleModal = function (id) {
+    originalToggleModal(id);
+    if (
+      id === "product-modal" &&
+      categoryInput &&
+      sizesLetter &&
+      sizesNumeric
+    ) {
+      // Reset category input and sizes when opening for new product
+      if (!document.getElementById("p-id").value) {
+        categoryInput.value = "";
+        sizesLetter.classList.remove("hidden");
+        sizesNumeric.classList.add("hidden");
+        // Uncheck all size checkboxes
+        document
+          .querySelectorAll(".p-size, .p-size-numeric")
+          .forEach((cb) => (cb.checked = false));
+      }
+    }
+  };
 
   // ======= IMAGE PREVIEW SETUP =======
   if (imageInput && previewContainer) {
@@ -1996,10 +2047,11 @@ function initDashboard(user) {
       const stock = parseInt(document.getElementById("p-stock").value);
       const brand = document.getElementById("p-brand").value || "-";
       const description = document.getElementById("p-description").value || "";
+      // Get sizes from either letter or numeric checkboxes depending on what's visible
       const sizes =
-        Array.from(document.querySelectorAll(".p-size:checked")).map(
-          (el) => el.value,
-        ) || [];
+        Array.from(
+          document.querySelectorAll(".p-size:checked, .p-size-numeric:checked"),
+        ).map((el) => el.value) || [];
       const files = imageInput ? Array.from(imageInput.files).slice(0, 3) : [];
 
       if (!name || isNaN(price) || isNaN(stock))
@@ -2261,13 +2313,11 @@ const notifBtn = document.getElementById("notifBtn");
 const notifDropdown = document.getElementById("notifDropdown");
 const notifCount = document.getElementById("notifCount");
 const notifList = document.getElementById("notifList");
-// Use a known public notification sound; handle load error to avoid noisy 404s
-const notificationSound = new Audio(
-  "https://assets.mixkit.co/sfx/preview/mixkit-bell-notification-933.mp3",
-);
-notificationSound.addEventListener("error", (e) => {
-  console.warn("Notification sound failed to load:", e);
-});
+// Use a known public notification sound; preload it for faster playback
+const notificationSound = new Audio("img/ring.wav");
+
+// Preload the audio to start loading immediately
+notificationSound.preload = "auto";
 // Assuming 'db' is defined and initialized elsewhere in your application
 // const db = getFirestore(app);
 

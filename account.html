@@ -28,10 +28,10 @@
 
       .account-page {
         display: flex;
-        height: 80vh;
+        min-height: calc(100vh - var(--header-height));
         gap: 2rem;
         max-width: 1200px;
-        margin: 2rem auto;
+        margin: var(--header-height) auto 2rem auto;
         padding: 0 1rem;
       }
 
@@ -44,10 +44,10 @@
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        height: 80vh;
+        height: calc(100vh - var(--header-height) - 40px);
         position: fixed;
         left: 1in;
-        top: 120px; /* Adjust based on header height */
+        top: calc(var(--header-height) + 20px);
       }
 
       .sidebar-link {
@@ -1146,5 +1146,6 @@
         showSection(hash);
       });
     </script>
+    <script type="module" src="main.js"></script>
   </body>
 </html>

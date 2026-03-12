@@ -1,10 +1,13 @@
-// =======================
+// =====================================================
 // FIREBASE SETUP
-// =======================
+// =====================================================
+// Modular Firebase imports (tree-shaking friendly)
+
 import {
   initializeApp,
   getApps,
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+
 import {
   getFirestore,
   collection,
@@ -12,18 +15,24 @@ import {
   where,
   getDocs,
   orderBy,
-  limit,
   doc,
   getDoc,
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
 import {
   getAuth,
   onAuthStateChanged,
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+// Timestamp used when creating reviews
 import { serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+// =====================================================
+// FIREBASE CONFIGURATION
+// =====================================================
+
 const firebaseConfig = {
-  apiKey: "AIzaSyD6UqMyedaoaXgqOeddQN47ADgP8joO364",
+  apiKey: "YOUR_KEY",
   authDomain: "bellewear-boutique.firebaseapp.com",
   projectId: "bellewear-boutique",
   storageBucket: "bellewear-boutique.firebasestorage.app",
@@ -31,13 +40,16 @@ const firebaseConfig = {
   appId: "1:795858464616:web:0bbf307b3da145766ff0dd",
 };
 
+// Prevent multiple firebase initializations
 const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-// =======================
+// =====================================================
 // DOM ELEMENTS
-// =======================
+// =====================================================
+
 const productImage = document.getElementById("productImage");
 const productName = document.getElementById("productName");
 const productBrand = document.getElementById("productBrand");
@@ -47,20 +59,27 @@ const productDiscount = document.getElementById("productDiscount");
 const productDescription = document.getElementById("productDescription");
 const productRating = document.getElementById("productRating");
 const stockWarning = document.getElementById("stockWarning");
+
 const thumbnails = document.querySelector(".thumbnails");
+
 const sizeVariant = document.getElementById("sizeVariant");
 const colorVariant = document.getElementById("colorVariant");
+
 const increaseQty = document.getElementById("increaseQty");
 const decreaseQty = document.getElementById("decreaseQty");
 const quantityValue = document.getElementById("quantityValue");
+
 const addToCartBtn = document.getElementById("addToCart");
 const addToWishlistBtn = document.getElementById("addToWishlist");
+
 const cartCountEl = document.querySelector(".cart-count");
+
 const reviewsContainer = document.getElementById("reviewsContainer");
 
-// =======================
+// =====================================================
 // GET PRODUCT ID FROM URL
-// =======================
+// =====================================================
+
 const params = new URLSearchParams(window.location.search);
 const productId = params.get("id");
 
@@ -69,11 +88,13 @@ if (!productId) {
   throw new Error("No product ID in URL");
 }
 
-// =======================
-// SHOW LOADER
-// =======================
+// =====================================================
+// LOADER CONTROLS
+// =====================================================
+
 function showProductLoader() {
   const loader = document.getElementById("productLoader");
+
   if (loader) {
     loader.style.display = "flex";
     document.body.classList.add("product-loading");
@@ -82,561 +103,409 @@ function showProductLoader() {
 
 function hideProductLoader() {
   const loader = document.getElementById("productLoader");
-  if (loader) {
-    loader.classList.add("fade-out");
-    setTimeout(() => {
-      loader.style.display = "none";
-      document.body.classList.remove("product-loading");
-    }, 500);
+
+  if (!loader) return;
+
+  loader.classList.add("fade-out");
+
+  setTimeout(() => {
+    loader.style.display = "none";
+    document.body.classList.remove("product-loading");
+  }, 500);
+}
+
+showProductLoader();
+
+// =====================================================
+// LOAD PRODUCT DATA
+// =====================================================
+
+async function loadProductFromFirestore() {
+  try {
+    const docSnap = await getDoc(doc(db, "products", productId));
+
+    if (!docSnap.exists()) {
+      document.body.innerHTML = "<h2>Product not found</h2>";
+      return;
+    }
+
+    const product = docSnap.data();
+
+    loadProduct(product);
+
+    // Load reviews asynchronously (non-blocking)
+    loadProductReviews(productId);
+
+    // Update recently viewed products
+    updateRecentlyViewed(productId);
+  } catch (error) {
+    console.error("Failed to load product:", error);
+    alert("Failed to load product");
+  } finally {
+    hideProductLoader();
   }
 }
 
-// Show loader immediately
-showProductLoader();
+loadProductFromFirestore();
 
-// =======================
-// LOAD PRODUCT FROM FIRESTORE
-// =======================
-getDoc(doc(db, "products", productId))
-  .then((docSnap) => {
-    if (!docSnap.exists()) {
-      document.body.innerHTML = "<h2>Product not found</h2>";
-      hideProductLoader();
-      return;
-    }
-    const product = docSnap.data();
-    loadProduct(product);
-    hideProductLoader();
-  })
-  .catch((err) => {
-    console.error(err);
-    alert("Failed to load product");
-    hideProductLoader();
-  });
+// =====================================================
+// RENDER PRODUCT DATA
+// =====================================================
 
-// =======================
-// LOAD PRODUCT FUNCTION
-// =======================
 function loadProduct(product) {
-  // BASIC INFO
   productName.textContent = product.name || "No Name";
   productBrand.textContent = product.brand || "-";
   productPrice.textContent = `Ksh ${product.price || 0}`;
   productDescription.textContent = product.description || "";
 
-  // OLD PRICE + DISCOUNT
+  // =====================
+  // DISCOUNT CALCULATION
+  // =====================
+
   if (product.oldPrice && product.price) {
     productOldPrice.textContent = `Ksh ${product.oldPrice}`;
-    productDiscount.textContent = `${Math.round(
-      ((product.oldPrice - product.price) / product.oldPrice) * 100,
-    )}% OFF`;
+
+    productDiscount.textContent = `${Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100)}% OFF`;
   } else {
     productOldPrice.textContent = "";
     productDiscount.textContent = "";
   }
 
+  // =====================
   // STOCK WARNING
+  // =====================
+
   if (product.stock !== undefined && product.stock <= 5) {
     stockWarning.textContent = `Only ${product.stock} left in stock`;
   } else {
     stockWarning.textContent = "";
   }
 
-  // IMAGES
+  // =====================================================
+  // PRODUCT IMAGES
+  // =====================================================
+
   const images =
     Array.isArray(product.images) && product.images.length
       ? product.images
       : ["img/products/default.jpg"];
 
-  // Show skeleton loader
-  const skeletonLoader = document.querySelector(".skeleton-loader");
-  if (skeletonLoader) {
-    skeletonLoader.style.display = "block";
-  }
-
-  productImage.onload = () => {
-    // Hide skeleton loader when image loads
-    if (skeletonLoader) {
-      skeletonLoader.style.display = "none";
-    }
-  };
-
   productImage.src = images[0];
+
   thumbnails.innerHTML = "";
+
   images.forEach((img, i) => {
     const thumb = document.createElement("img");
+
     thumb.src = img;
+
+    // Lazy load thumbnails
+    thumb.loading = "lazy";
+
     if (i === 0) thumb.classList.add("active");
+
     thumb.onclick = () => {
-      // Show skeleton loader for thumbnail change
-      if (skeletonLoader) {
-        skeletonLoader.style.display = "block";
-      }
       productImage.src = img;
+
       document
         .querySelectorAll(".thumbnails img")
         .forEach((t) => t.classList.remove("active"));
+
       thumb.classList.add("active");
     };
+
     thumbnails.appendChild(thumb);
   });
 
-  // RATING
+  // =====================================================
+  // PRODUCT RATING
+  // =====================================================
+
   productRating.innerHTML = "";
+
   const rating = product.rating || 0;
+
   for (let i = 0; i < rating; i++) {
     const star = document.createElement("i");
     star.className = "fas fa-star";
+
     productRating.appendChild(star);
   }
 
-  // SIZES
+  // =====================================================
+  // PRODUCT VARIANTS
+  // =====================================================
+
   const sizeSelect = document.createElement("select");
   sizeSelect.innerHTML = `<option value="">Select size</option>`;
-  (Array.isArray(product.sizes) ? product.sizes : []).forEach((size) => {
+
+  (product.sizes || []).forEach((size) => {
     sizeSelect.innerHTML += `<option value="${size}">${size}</option>`;
   });
+
   sizeVariant.innerHTML = "";
   sizeVariant.appendChild(sizeSelect);
 
-  // COLORS
   const colorSelect = document.createElement("select");
   colorSelect.innerHTML = `<option value="">Select color</option>`;
-  (Array.isArray(product.colors) ? product.colors : []).forEach((color) => {
+
+  (product.colors || []).forEach((color) => {
     colorSelect.innerHTML += `<option value="${color}">${color}</option>`;
   });
+
   colorVariant.innerHTML = "";
   colorVariant.appendChild(colorSelect);
 
-  // QUANTITY
+  // =====================================================
+  // QUANTITY CONTROLLER
+  // =====================================================
+
   let qty = 1;
+
   quantityValue.textContent = qty;
+
   increaseQty.onclick = () => {
     qty++;
     quantityValue.textContent = qty;
+    currentQuantity = qty;
   };
+
   decreaseQty.onclick = () => {
     if (qty > 1) qty--;
     quantityValue.textContent = qty;
+    currentQuantity = qty;
   };
-
-  // CART
-  addToCartBtn.onclick = () => {
-    if (!sizeSelect.value || !colorSelect.value) {
-      alert("Select size & color");
-      return;
-    }
-    const item = {
-      id: productId,
-      name: product.name,
-      price: product.price,
-      img: images[0],
-      size: sizeSelect.value,
-      color: colorSelect.value,
-      quantity: qty,
-    };
-    // Use global addToCart from main.js
-    if (typeof addToCart === "function") {
-      addToCart(item);
-    } else {
-      // Fallback if main.js not loaded
-      let cart = JSON.parse(localStorage.getItem(getCartKey())) || [];
-      const existing = cart.find(
-        (p) =>
-          p.id === item.id && p.size === item.size && p.color === item.color,
-      );
-      if (existing) {
-        existing.quantity += qty;
-      } else {
-        cart.push(item);
-      }
-      localStorage.setItem(getCartKey(), JSON.stringify(cart));
-      if (cartCountEl) {
-        const total = cart.reduce(
-          (sum, item) => sum + (Number(item.quantity) || 0),
-          0,
-        );
-        cartCountEl.textContent = total;
-      }
-      alert("Added to cart");
-    }
-  };
-
-  // WISHLIST
-  addToWishlistBtn.onclick = () => {
-    // Use global addToWishlist from main.js
-    if (typeof addToWishlist === "function") {
-      addToWishlist(product);
-    } else {
-      // Fallback
-      let wishlist = JSON.parse(localStorage.getItem(getWishlistKey())) || [];
-      if (!wishlist.some((p) => p.id === productId)) {
-        wishlist.push(product);
-        localStorage.setItem(getWishlistKey(), JSON.stringify(wishlist));
-        alert("Saved to wishlist");
-      } else {
-        alert("Already in wishlist");
-      }
-    }
-  };
-
-  // REVIEWS
-  loadProductReviews(productId);
 }
 
-// =======================
-// LOAD PRODUCT REVIEWS FUNCTION
-// =======================
+// =====================================================
+// LOAD PRODUCT REVIEWS (OPTIMIZED)
+// =====================================================
+// CRITICAL FIX:
+// Previously each review fetched a user document.
+// That caused N+1 Firestore queries.
+// Now we use stored reviewer name inside the review document.
+
 async function loadProductReviews(productId) {
   try {
     const reviewsQuery = query(
       collection(db, "reviews"),
       where("productId", "==", productId),
     );
+
     const reviewsSnap = await getDocs(reviewsQuery);
 
+    reviewsContainer.innerHTML = "";
+
+    if (reviewsSnap.empty) {
+      // Render empty state
+      renderEmptyRatings();
+      reviewsContainer.innerHTML =
+        "<p class='no-reviews'>No reviews yet. Be the first to review!</p>";
+      return;
+    }
+
+    // Collect all reviews and calculate ratings
     const reviews = [];
+    const ratingCounts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
     let totalRating = 0;
-    const ratingCounts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
 
     reviewsSnap.forEach((doc) => {
       const review = doc.data();
       reviews.push(review);
-      totalRating += review.rating || 0;
-      ratingCounts[review.rating] = (ratingCounts[review.rating] || 0) + 1;
+
+      // Count ratings for distribution
+      const rating = Math.round(review.rating || 0);
+      if (rating >= 1 && rating <= 5) {
+        ratingCounts[rating]++;
+        totalRating += rating;
+      }
     });
 
-    const avgRating =
-      reviews.length > 0 ? (totalRating / reviews.length).toFixed(1) : 0;
+    // Calculate average rating
+    const totalReviews = reviews.length;
+    const averageRating =
+      totalReviews > 0 ? (totalRating / totalReviews).toFixed(1) : 0;
 
-    // Update overall rating
-    document.getElementById("avgRating").textContent = avgRating;
-    document.getElementById("totalRatings").textContent =
-      `${reviews.length} verified ratings`;
+    // Render the professional ratings display
+    renderRatingsSummary(averageRating, totalReviews, ratingCounts);
 
-    // Update reviews section header with count
-    const reviewsHeader = document.querySelector(".reviews h3");
-    if (reviewsHeader) {
-      reviewsHeader.textContent = `Product Review (${reviews.length})`;
-    }
-
-    const avgStarsEl = document.getElementById("avgStars");
-    avgStarsEl.innerHTML = "";
-    const fullStars = Math.floor(avgRating);
-    const hasHalf = avgRating % 1 >= 0.5;
-    for (let i = 0; i < fullStars; i++) {
-      const star = document.createElement("i");
-      star.className = "fas fa-star";
-      avgStarsEl.appendChild(star);
-    }
-    if (hasHalf) {
-      const star = document.createElement("i");
-      star.className = "fas fa-star-half-alt";
-      avgStarsEl.appendChild(star);
-    }
-    for (let i = fullStars + (hasHalf ? 1 : 0); i < 5; i++) {
-      const star = document.createElement("i");
-      star.className = "far fa-star";
-      avgStarsEl.appendChild(star);
-    }
-
-    // Rating distribution
-    const distributionEl = document.getElementById("ratingDistribution");
-    distributionEl.innerHTML = "";
-    for (let star = 5; star >= 1; star--) {
-      const count = ratingCounts[star];
-      const percentage =
-        reviews.length > 0 ? ((count / reviews.length) * 100).toFixed(0) : 0;
-      const bar = document.createElement("div");
-      bar.className = "rating-bar";
-      const barWidth = count === 0 ? `${star * 20}%` : "100%";
-      const fillWidth = count === 0 ? "0%" : `${percentage}%`;
-      bar.innerHTML = `
-        <span>${star} ★</span>
-        <div class="bar" style="width: ${barWidth};">
-          <div class="fill" style="width: ${fillWidth};"></div>
-        </div>
-        <span>${count}</span>
-      `;
-      distributionEl.appendChild(bar);
-    }
-
-    // Individual reviews
-    reviewsContainer.innerHTML = "";
-    if (reviews.length === 0) {
-      reviewsContainer.innerHTML =
-        "<p>No reviews yet. Be the first to review!</p>";
-      return;
-    }
-
-    reviews.forEach(async (review) => {
+    // Render individual reviews
+    for (const review of reviews) {
       const reviewEl = document.createElement("div");
+
       reviewEl.className = "review-item";
 
       const date =
         review.createdAt?.toDate?.().toLocaleDateString() || "Unknown";
 
-      // Fetch user name from auth or users collection
-      let userName = "Verified Buyer";
-      try {
-        const userDoc = await getDoc(doc(db, "users", review.userId));
-        if (userDoc.exists()) {
-          const userData = userDoc.data();
-          userName = userData.displayName || userData.email || "Verified Buyer";
-        }
-      } catch (err) {
-        console.error("Failed to fetch user name:", err);
-      }
+      let userName = review.userName || "Verified Buyer";
+
+      userName = userName || "Verified Buyer";
+
+      // Generate star icons
+      const stars = Array.from({ length: 5 }, (_, i) => {
+        return i < review.rating
+          ? '<i class="fas fa-star"></i>'
+          : '<i class="far fa-star"></i>';
+      }).join("");
 
       reviewEl.innerHTML = `
-    <p class="review-user">
-      <strong>${userName}</strong>
-      <span class="verified-badge">✔ Verified Buyer</span>
-    </p>
+        <div class="review-header">
+          <div class="review-top-right">
+            <span class="review-date">${date}</span>
+          </div>
+          <div class="review-user-info">
+            <strong class="customer-name">${userName}</strong>
+          </div>
+        </div>
 
-    <div class="review-stars">
-      ${Array.from({ length: 5 }, (_, i) =>
-        i < review.rating ? "★" : "☆",
-      ).join("")}
-    </div>
+        <div class="review-stars">
+          ${stars}
+        </div>
 
-    <p class="review-comment">${review.comment || ""}</p>
+        <p class="review-comment">${review.comment || ""}</p>
 
-    <span class="review-date">${date}</span>
-  `;
+        <div class="review-footer">
+          <span class="verified-purchase"><i class="fas fa-check-circle"></i> Verified Purchase</span>
+        </div>
+      `;
 
       reviewsContainer.appendChild(reviewEl);
-    });
+    }
   } catch (error) {
     console.error("Failed to load reviews:", error);
+    renderEmptyRatings();
     reviewsContainer.innerHTML = "<p>Failed to load reviews.</p>";
   }
 }
-// ================= REVIEW FUNCTIONS =================;
-// Function to open review modal for an order
 
-// Function to check for pending reviews on delivered orders
-async function checkForPendingReviews(uid) {
-  try {
-    const ordersQuery = query(
-      collection(db, "orders"),
-      where("userId", "==", uid),
-      where("status", "==", "DELIVERED"),
-    );
+// =====================================================
+// RENDER RATINGS SUMMARY (Professional E-commerce Style)
+// =====================================================
 
-    const ordersSnap = await getDocs(ordersQuery);
-    if (ordersSnap.empty) return;
+function renderRatingsSummary(averageRating, totalReviews, ratingCounts) {
+  const avgRatingEl = document.getElementById("avgRating");
+  const avgStarsEl = document.getElementById("avgStars");
+  const totalRatingsEl = document.getElementById("totalRatings");
+  const ratingDistEl = document.getElementById("ratingDistribution");
 
-    for (const orderDoc of ordersSnap.docs) {
-      const orderId = orderDoc.id;
+  // Update average rating number
+  avgRatingEl.textContent = averageRating;
 
-      // Check if reviews already exist for this order
-      const reviewsQuery = query(
-        collection(db, "reviews"),
-        where("userId", "==", uid),
-        where("orderId", "==", orderId),
-      );
+  // Generate star visualization
+  const fullStars = Math.floor(averageRating);
+  const hasHalfStar = averageRating % 1 >= 0.5;
+  const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
 
-      const reviewsSnap = await getDocs(reviewsQuery);
-
-      if (reviewsSnap.empty) {
-        openReviewModal(orderId);
-        break;
-      }
-    }
-  } catch (error) {
-    console.error("Error checking for pending reviews:", error);
+  let starsHtml = "";
+  for (let i = 0; i < fullStars; i++) {
+    starsHtml += '<i class="fas fa-star"></i>';
   }
-}
-
-// Function to submit reviews
-async function submitReviews(orderId, items) {
-  try {
-    const user = auth.currentUser;
-    if (!user) return;
-
-    for (let i = 0; i < items.length; i++) {
-      const rating = document.getElementById(`rating-${i}`).value;
-      const review = document.getElementById(`review-${i}`).value.trim();
-
-      if (!rating) {
-        alert(`Please select a rating for ${items[i].name}`);
-        return;
-      }
-
-      await addDoc(collection(db, "reviews"), {
-        productId: items[i].productId || items[i].id,
-        userId: user.uid,
-        fullName: user.displayName || user.email || "Anonymous",
-        orderId: orderId,
-        rating: parseInt(rating),
-        comment: review,
-        createdAt: serverTimestamp(),
-      });
-    }
-
-    document.getElementById("reviewModal").classList.remove("show");
-    alert("Reviews submitted successfully!");
-  } catch (error) {
-    console.error("Error submitting reviews:", error);
-    alert("Error submitting reviews");
+  if (hasHalfStar) {
+    starsHtml += '<i class="fas fa-star-half-alt"></i>';
   }
-}
-
-// ================= AUTH CHECK =================
-onAuthStateChanged(auth, async (user) => {
-  if (user) {
-    setTimeout(() => checkForPendingReviews(user.uid), 1000);
+  for (let i = 0; i < emptyStars; i++) {
+    starsHtml += '<i class="far fa-star"></i>';
   }
-});
+  avgStarsEl.innerHTML = starsHtml;
 
-// ================= MODAL CLOSE =================
-document.addEventListener("DOMContentLoaded", () => {
-  const closeModal = document.getElementById("closeReviewModal");
-  if (closeModal) {
-    closeModal.onclick = () => {
-      document.getElementById("reviewModal").classList.remove("show");
-    };
-  }
+  // Update total ratings text
+  totalRatingsEl.textContent = `${totalReviews} verified rating${totalReviews !== 1 ? "s" : ""}`;
 
-  window.onclick = (event) => {
-    const modal = document.getElementById("reviewModal");
-    if (event.target === modal) {
-      modal.classList.remove("show");
-    }
-  };
-});
+  // Generate rating distribution bars
+  let distributionHtml = "";
+  for (let stars = 5; stars >= 1; stars--) {
+    const count = ratingCounts[stars] || 0;
+    const percentage =
+      totalReviews > 0 ? Math.round((count / totalReviews) * 100) : 0;
 
-// ================= INIT =================
-// No init needed for product page
-
-// =======================
-// CART & WISHLIST KEYS
-// =======================
-function getCartKey() {
-  return window.currentUser ? `cart_${window.currentUser.uid}` : "cart_guest";
-}
-function getWishlistKey() {
-  return window.currentUser
-    ? `wishlist_${window.currentUser.uid}`
-    : "wishlist_guest";
-}
-
-/**
- * Load and render orders
- */
-async function loadOrders() {
-  const ordersContainer = document.getElementById("ordersContainer");
-
-  try {
-    ordersContainer.innerHTML = "<p>Loading orders...</p>";
-
-    const ordersQuery = query(
-      collection(db, "orders"),
-      orderBy("createdAt", "desc"),
-    );
-
-    const ordersSnap = await getDocs(ordersQuery);
-
-    ordersContainer.innerHTML = "";
-
-    if (ordersSnap.empty) {
-      ordersContainer.innerHTML = `
-        <div class="no-orders">
-          <p>No orders found.</p>
+    distributionHtml += `
+      <div class="rating-bar">
+        <span>${stars} star${stars !== 1 ? "s" : ""}</span>
+        <div class="bar">
+          <div class="fill" style="width: ${percentage}%"></div>
         </div>
-      `;
-      return;
-    }
-
-    ordersSnap.forEach((doc) => {
-      const order = doc.data();
-      const orderId = doc.id;
-
-      const orderDate = order.createdAt?.toDate?.().toLocaleDateString() || "—";
-
-      const isVerified = order.status === "DELIVERED";
-
-      const orderDiv = document.createElement("div");
-      orderDiv.className = "order-card";
-
-      orderDiv.innerHTML = `
-        <div class="order-header">
-          <div class="order-customer">
-            <span class="customer-name">
-              ${order.fullName || "Customer"}
-            </span>
-            ${
-              isVerified
-                ? `<span class="verified-badge">✔ Verified Buyer</span>`
-                : ""
-            }
-          </div>
-
-          <span class="order-date">${orderDate}</span>
-        </div>
-
-        <div class="order-body">
-          <p><strong>Order ID:</strong> ${orderId}</p>
-          <p><strong>Status:</strong> ${order.status || "PENDING"}</p>
-          <p><strong>Total:</strong> Ksh ${order.totalAmount || 0}</p>
-        </div>
-      `;
-
-      ordersContainer.appendChild(orderDiv);
-    });
-  } catch (error) {
-    console.error("Failed to load orders:", error);
-    ordersContainer.innerHTML = `
-      <div class="error-message">
-        <p>Failed to load orders. Please try again.</p>
+        <span>${percentage}%</span>
       </div>
     `;
   }
+  ratingDistEl.innerHTML = distributionHtml;
 }
 
-// =======================
-// RECENTLY VIEWED PRODUCTS
-// =======================
+// =====================================================
+// RENDER EMPTY RATINGS STATE
+// =====================================================
+
+function renderEmptyRatings() {
+  const avgRatingEl = document.getElementById("avgRating");
+  const avgStarsEl = document.getElementById("avgStars");
+  const totalRatingsEl = document.getElementById("totalRatings");
+  const ratingDistEl = document.getElementById("ratingDistribution");
+
+  avgRatingEl.textContent = "0";
+  avgStarsEl.innerHTML =
+    '<i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i>';
+  totalRatingsEl.textContent = "No verified ratings yet";
+  ratingDistEl.innerHTML = "";
+}
+
+// =====================================================
+// RECENTLY VIEWED PRODUCTS (OPTIMIZED)
+// =====================================================
+// Previous version fetched products one by one.
+// Now we fetch them in ONE Firestore query.
+
 function updateRecentlyViewed(currentProductId) {
   let viewed = JSON.parse(localStorage.getItem("recentlyViewed")) || [];
 
-  // Remove current product if already exists
   viewed = viewed.filter((id) => id !== currentProductId);
-  // Add current product to the front
+
   viewed.unshift(currentProductId);
-  // Limit to 5 products
+
   if (viewed.length > 5) viewed = viewed.slice(0, 5);
 
   localStorage.setItem("recentlyViewed", JSON.stringify(viewed));
+
   renderRecentlyViewed(currentProductId, viewed);
 }
 
-function renderRecentlyViewed(currentProductId, viewedIds) {
+async function renderRecentlyViewed(currentProductId, viewedIds) {
   const container = document.getElementById("recentlyViewedContainer");
+
+  if (!container) return;
+
   container.innerHTML = "";
 
-  // Fetch all viewed product docs from Firestore
-  viewedIds.forEach(async (id) => {
-    if (id === currentProductId) return; // skip current product
+  const ids = viewedIds.filter((id) => id !== currentProductId);
 
-    try {
-      const docSnap = await getDoc(doc(db, "products", id));
-      if (!docSnap.exists()) return;
+  if (!ids.length) return;
 
-      const p = docSnap.data();
+  try {
+    const productsQuery = query(
+      collection(db, "products"),
+      where("__name__", "in", ids),
+    );
 
-      // Create card element
+    const snap = await getDocs(productsQuery);
+
+    snap.forEach((doc) => {
+      const p = doc.data();
+      const id = doc.id;
+
       const card = document.createElement("div");
+
       card.className =
         "recent-card flex-shrink-0 w-40 border rounded-lg p-2 hover:shadow-md cursor-pointer";
 
       card.innerHTML = `
-        <img src="${
-          p.images?.[0] || "img/products/default.jpg"
-        }" class="w-full h-40 object-cover rounded"/>
+        <img src="${p.images?.[0] || "img/products/default.jpg"}"
+             class="w-full h-40 object-cover rounded"
+             loading="lazy"/>
+
         <h4 class="text-sm font-semibold mt-2 truncate">${p.name}</h4>
+
         <p class="text-xs text-gray-500">${p.brand || ""}</p>
+
         <p class="text-sm font-bold mt-1">Ksh ${p.price}</p>
       `;
 
@@ -645,11 +514,299 @@ function renderRecentlyViewed(currentProductId, viewedIds) {
       };
 
       container.appendChild(card);
-    } catch (err) {
-      console.error("Failed to fetch recently viewed product:", err);
+    });
+  } catch (err) {
+    console.error("Failed to fetch recently viewed:", err);
+  }
+}
+
+// =====================================================
+// AUTH STATE LISTENER
+// =====================================================
+
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    console.log("User logged in:", user.uid);
+  }
+});
+
+// =====================================================
+// CART & WISHLIST KEYS
+// =====================================================
+
+function getCartKey() {
+  return window.currentUser ? `cart_${window.currentUser.uid}` : "cart_guest";
+}
+
+function getWishlistKey() {
+  return window.currentUser
+    ? `wishlist_${window.currentUser.uid}`
+    : "wishlist_guest";
+}
+
+// =====================================================
+// GLOBAL PRODUCT DATA
+// =====================================================
+
+let currentProductData = null;
+let currentQuantity = 1;
+
+// =====================================================
+// TOAST NOTIFICATION
+// =====================================================
+
+function showToast(message) {
+  // Remove existing toast if any
+  const existingToast = document.querySelector(".toast");
+  if (existingToast) existingToast.remove();
+
+  const toast = document.createElement("div");
+  toast.className = "toast";
+  toast.textContent = message;
+  document.body.appendChild(toast);
+
+  // Trigger animation
+  setTimeout(() => toast.classList.add("show"), 150);
+
+  // Remove after animation
+  setTimeout(() => {
+    toast.classList.remove("show");
+    setTimeout(() => toast.remove(), 2300);
+  }, 2500);
+}
+
+// =====================================================
+// ADD TO CART HANDLER
+// =====================================================
+
+function handleAddToCart() {
+  if (!currentProductData) {
+    showToast("Product not loaded yet. Please wait.");
+    return;
+  }
+
+  // Get selected size
+  const sizeSelect = sizeVariant.querySelector("select");
+  const selectedSize = sizeSelect ? sizeSelect.value : "";
+
+  // Get selected color
+  const colorSelect = colorVariant.querySelector("select");
+  const selectedColor = colorSelect ? colorSelect.value : "";
+
+  // Check if size is required (if product has sizes)
+  const hasSizes =
+    currentProductData.sizes && currentProductData.sizes.length > 0;
+  if (hasSizes && !selectedSize) {
+    showToast("Please select a size");
+    sizeSelect.focus();
+    return;
+  }
+
+  // Check if color is required (if product has colors)
+  const hasColors =
+    currentProductData.colors && currentProductData.colors.length > 0;
+  if (hasColors && !selectedColor) {
+    showToast("Please select a color");
+    colorSelect.focus();
+    return;
+  }
+
+  // Get the first image
+  const images = currentProductData.images || [];
+  const productImageSrc =
+    images.length > 0 ? images[0] : "img/products/default.jpg";
+
+  // Create cart item
+  const cartItem = {
+    id: productId,
+    name: currentProductData.name || "Unnamed Product",
+    price: Number(currentProductData.price) || 0,
+    img: productImageSrc,
+    size: selectedSize,
+    color: selectedColor,
+    quantity: currentQuantity,
+  };
+
+  // Add to cart using localStorage directly
+  const cartKey = getCartKey();
+  let cart = JSON.parse(localStorage.getItem(cartKey)) || [];
+
+  const existingIndex = cart.findIndex(
+    (item) =>
+      item.id === cartItem.id &&
+      item.size === cartItem.size &&
+      item.color === cartItem.color,
+  );
+
+  if (existingIndex >= 0) {
+    cart[existingIndex].quantity += currentQuantity;
+  } else {
+    cart.push(cartItem);
+  }
+
+  localStorage.setItem(cartKey, JSON.stringify(cart));
+  showToast(`${currentProductData.name} added to cart!`);
+
+  // Update cart count in header
+  const cartCountEl = document.querySelector(".cart-count");
+  if (cartCountEl) {
+    const total = cart.reduce((sum, item) => sum + item.quantity, 0);
+    cartCountEl.textContent = total;
+  }
+}
+
+// =====================================================
+// BUY NOW HANDLER
+// =====================================================
+
+function handleBuyNow() {
+  if (!currentProductData) {
+    showToast("Product not loaded yet. Please wait.");
+    return;
+  }
+
+  // Get selected size
+  const sizeSelect = sizeVariant.querySelector("select");
+  const selectedSize = sizeSelect ? sizeSelect.value : "";
+
+  // Get selected color
+  const colorSelect = colorVariant.querySelector("select");
+  const selectedColor = colorSelect ? colorSelect.value : "";
+
+  // Check if size is required
+  const hasSizes =
+    currentProductData.sizes && currentProductData.sizes.length > 0;
+  if (hasSizes && !selectedSize) {
+    showToast("Please select a size");
+    sizeSelect.focus();
+    return;
+  }
+
+  // Check if color is required
+  const hasColors =
+    currentProductData.colors && currentProductData.colors.length > 0;
+  if (hasColors && !selectedColor) {
+    showToast("Please select a color");
+    colorSelect.focus();
+    return;
+  }
+
+  // Get the first image
+  const images = currentProductData.images || [];
+  const productImageSrc =
+    images.length > 0 ? images[0] : "img/products/default.jpg";
+
+  // Create cart item
+  const cartItem = {
+    id: productId,
+    name: currentProductData.name || "Unnamed Product",
+    price: Number(currentProductData.price) || 0,
+    img: productImageSrc,
+    size: selectedSize,
+    color: selectedColor,
+    quantity: currentQuantity,
+  };
+
+  // Add to cart and redirect to checkout
+  const cartKey = getCartKey();
+  let cart = JSON.parse(localStorage.getItem(cartKey)) || [];
+
+  const existingIndex = cart.findIndex(
+    (item) =>
+      item.id === cartItem.id &&
+      item.size === cartItem.size &&
+      item.color === cartItem.color,
+  );
+
+  if (existingIndex >= 0) {
+    cart[existingIndex].quantity += currentQuantity;
+  } else {
+    cart.push(cartItem);
+  }
+
+  localStorage.setItem(cartKey, JSON.stringify(cart));
+
+  // Calculate totals
+  const subtotal = cart.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0,
+  );
+  const deliveryFee = 150;
+  const total = subtotal + deliveryFee;
+
+  // Store pending order
+  const pendingOrder = {
+    items: cart,
+    subtotal,
+    deliveryFee,
+    total,
+    createdAt: Date.now(),
+    status: "CHECKOUT",
+  };
+
+  localStorage.setItem("pendingOrder", JSON.stringify(pendingOrder));
+
+  // Redirect to checkout
+  window.location.href = "checkout.html";
+}
+
+// =====================================================
+// EVENT LISTENERS FOR CART BUTTONS
+// =====================================================
+
+// Add to Cart button
+if (addToCartBtn) {
+  addToCartBtn.addEventListener("click", handleAddToCart);
+}
+
+// Buy Now button
+const buyNowBtn = document.querySelector(".buy-now");
+if (buyNowBtn) {
+  buyNowBtn.addEventListener("click", handleBuyNow);
+}
+
+// Wishlist button
+if (addToWishlistBtn) {
+  addToWishlistBtn.addEventListener("click", () => {
+    if (!currentProductData) {
+      showToast("Product not loaded yet. Please wait.");
+      return;
+    }
+
+    const images = currentProductData.images || [];
+    const productImageSrc =
+      images.length > 0 ? images[0] : "img/products/default.jpg";
+
+    const wishlistItem = {
+      id: productId,
+      name: currentProductData.name || "Unnamed Product",
+      price: Number(currentProductData.price) || 0,
+      img: productImageSrc,
+    };
+
+    // Get wishlist
+    const wishlistKey = getWishlistKey();
+    let wishlist = JSON.parse(localStorage.getItem(wishlistKey)) || [];
+
+    const exists = wishlist.some((item) => item.name === wishlistItem.name);
+
+    if (exists) {
+      showToast(`${currentProductData.name} is already in your wishlist!`);
+    } else {
+      wishlist.push(wishlistItem);
+      localStorage.setItem(wishlistKey, JSON.stringify(wishlist));
+      showToast(`${currentProductData.name} added to wishlist!`);
     }
   });
 }
 
-// Call it at the end of loadProduct
-updateRecentlyViewed(productId);
+// =====================================================
+// UPDATE LOADPRODUCT TO STORE DATA
+// =====================================================
+
+// Store product data when loaded for use in cart functions
+const originalLoadProduct = loadProduct;
+loadProduct = function (product) {
+  currentProductData = product;
+  originalLoadProduct(product);
+};
