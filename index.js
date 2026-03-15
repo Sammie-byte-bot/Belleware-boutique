@@ -1,53 +1,47 @@
-// ================= FIREBASE =================
+// Dynamic Firebase Hero Carousel
+// Step 4: Fetch top products → populate slides with real data + animations
+
 import {
-  initializeApp,
-  getApps,
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import {
-  getFirestore,
+  auth,
+  db,
   collection,
-  getDocs,
   query,
   where,
   orderBy,
   limit,
+  getDocs,
   doc,
   getDoc,
   addDoc,
   serverTimestamp,
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import {
-  getAuth,
-  onAuthStateChanged,
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+} from "./firebase.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyD6UqMyedaoaXgqOeddQN47ADgP8joO364",
-  authDomain: "bellewear-boutique.firebaseapp.com",
-  projectId: "bellewear-boutique",
-  storageBucket: "bellewear-boutique.firebasestorage.app",
-  messagingSenderId: "795858464616",
-  appId: "1:795858464616:web:0bbf307b3da145766ff0dd",
+// Slide categories mapping (matches data-product-category)
+const SLIDE_CATEGORIES = [
+  "watches",
+  "hoodies",
+  "caps",
+  "shoes",
+  "sneakers",
+  "slides",
+  "shirts",
+  "t-shirts",
+];
+
+// Static images for carousel slides by category
+const CATEGORY_IMAGES = {
+  watches: "img/watches.jpg",
+  hoodies: "img/hoodies.jpg",
+  caps: "img/caps.jpg",
+  shoes: "img/shoes.jpg",
+  sneakers: "img/shoes1.jpg",
+  slides: "img/slides.jpg",
+  shirts: "img/shirts.jpg",
+  "t-shirts": "img/t-shirts.jpg",
 };
 
-const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-// ================= VALIDATION =================
-function validateProduct(p) {
-  if (!p?.id) return false;
-  if (!p.name) return false;
-
-  const price = Number(p.price);
-  if (!Number.isFinite(price) || price <= 0) return false;
-
-  if (!Array.isArray(p.images) || !p.images.length) return false;
-
-  return true;
-}
-
-// ================= UI HELPERS =================
+// ================= HELPERS (copied exactly from shop.js for identical cards) =================
 function renderStars(rating = 0) {
   const r = Math.max(0, Math.min(5, Math.round(Number(rating))));
   return Array.from(
@@ -60,179 +54,225 @@ function renderPrice(product) {
   const price = Number(product.price);
   const oldPrice = Number(product.oldPrice);
 
-  if (Number.isFinite(oldPrice) && oldPrice > price) {
+  if (Number.isFinite(oldPrice) && oldPrice > price && price > 0) {
     const discount = Math.floor(((oldPrice - price) / oldPrice) * 100);
     if (discount >= 1) {
       return `
-        <div class="price-row">
+        <div class="price-section">
           <div class="old-price">Ksh ${oldPrice}</div>
-          <div class="discount-badge"><i class="fas fa-tag"></i><span class="discount-percent">${discount}%</span></div>
+          <div class="discount">${discount}% OFF</div>
           <div class="current-price">Ksh ${price}</div>
         </div>
       `;
     }
   }
 
-  return `<h4>Ksh ${price}</h4>`;
+  return `<div class="current-price">Ksh ${price}</div>`;
 }
 
-// ================= PRODUCT CARD =================
-function createProductCard(product) {
-  const image =
-    Array.isArray(product.images) && product.images.length
-      ? product.images[0]
-      : "img/placeholder.png";
+// ================= INIT =================
+document.addEventListener("DOMContentLoaded", initDynamicCarousel);
 
+async function initDynamicCarousel() {
+  console.log("🚀 Initializing Dynamic Hero Carousel...");
+
+  // Show skeletons immediately
+  showCarouselSkeletons();
+
+  try {
+    // Fetch top 8 products (best sellers)
+    const products = await fetchHeroProducts();
+
+    if (products.length === 0) {
+      console.warn("No products found, using static fallback");
+      hideSkeletons(); // Hide skeletons for static
+      return;
+    }
+
+    // DISABLED: Keep static HTML text (per user request)
+    // await populateCarouselSlides(products);
+
+    // Start/enhance carousel animations after load
+    enhanceCarouselAnimations();
+
+    console.log(`✅ Loaded ${products.length}/8 dynamic products`);
+  } catch (error) {
+    console.error("❌ Carousel load failed:", error);
+    // Fallback: hide skeletons (static content visible)
+    hideSkeletons();
+  }
+}
+
+// ================= FETCH PRODUCTS =================
+async function fetchHeroProducts() {
+  try {
+    // Query: top 8 active products (newest/best sellers)
+    const q = query(
+      collection(db, "products"),
+      where("isActive", "==", true),
+      orderBy("createdAt", "desc"),
+      limit(8),
+    );
+
+    const snapshot = await getDocs(q);
+    let products = snapshot.docs
+      .map((doc) => ({ id: doc.id, ...doc.data() }))
+      .filter(validateProduct);
+
+    // Fallback sort by revenue if createdAt missing
+    products.sort((a, b) => (b.revenue || 0) - (a.revenue || 0));
+
+    return products.slice(0, 8);
+  } catch (error) {
+    console.error("Firebase fetch failed:", error);
+    return [];
+  }
+}
+
+// ================= POPULATE SLIDES =================
+async function populateCarouselSlides(products) {
+  const slides = document.querySelectorAll(".carousel-slide");
+
+  slides.forEach((slide, index) => {
+    const category = slide.dataset.productCategory;
+
+    // Find best matching product by category
+    const product =
+      products.find(
+        (p) =>
+          p.category?.toLowerCase() === category ||
+          p.name?.toLowerCase().includes(category),
+      ) || products[index % products.length]; // Fallback to index
+
+    if (product) {
+      populateSlide(slide, product, category);
+    }
+  });
+
+  // Smooth reveal after population
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  hideSkeletons();
+
+  // Preload all new images
+  preloadSlideImages();
+}
+
+function populateSlide(slide, product, category) {
+  const img = slide.querySelector("img");
+  const headline = slide.querySelector(".overlay-headline");
+  const sub = slide.querySelector(".overlay-sub");
+  const shopBtns = slide.querySelectorAll(".cta-btn");
+
+  // Use static category image first, fallback to product/dynamic
+  const staticImg = CATEGORY_IMAGES[category] || slide.dataset.fallbackImg;
+  const newImg = staticImg; // Prioritize static image
+  if (img && newImg !== img.src) {
+    img.src = newImg;
+    img.alt = product?.name || category.toUpperCase();
+  }
+
+  // Update headline/subtitle
+  if (headline)
+    headline.textContent =
+      product.name?.toUpperCase() || category.toUpperCase();
+  if (sub)
+    sub.textContent =
+      product.description?.substring(0, 60) + "..." ||
+      `${category.toUpperCase()} collection`;
+
+  // Update CTAs with product/category links
+  shopBtns.forEach((btn) => {
+    if (btn.classList.contains("cta-btn")) {
+      btn.href = `shop.html?category=${encodeURIComponent(product.category || category)}`;
+    }
+  });
+
+  // Add loaded class for animations
+  slide.classList.add("product-loaded");
+}
+
+// ================= SKELETONS =================
+function showCarouselSkeletons() {
+  document.querySelectorAll(".carousel-slide").forEach((slide) => {
+    const skeleton = slide.querySelector(".carousel-skeleton");
+    if (skeleton) skeleton.style.display = "block";
+    slide.classList.add("loading");
+  });
+}
+
+function hideSkeletons() {
+  document.querySelectorAll(".carousel-slide").forEach((slide) => {
+    const skeleton = slide.querySelector(".carousel-skeleton");
+    if (skeleton) skeleton.style.display = "none";
+    slide.classList.remove("loading");
+    slide.classList.add("loaded");
+  });
+}
+
+// ================= PRELOAD IMAGES =================
+function preloadSlideImages() {
+  const images = Array.from(document.querySelectorAll(".carousel-slide img"))
+    .map((img) => img.src)
+    .filter(Boolean);
+
+  images.forEach((src) => {
+    const img = new Image();
+    img.src = src;
+  });
+}
+
+// ================= ANIMATIONS =================
+function enhanceCarouselAnimations() {
+  const carousel = document.querySelector(".jumia-carousel");
+  if (!carousel) return;
+
+  // Fade-in on load animations
+  document
+    .querySelectorAll(".carousel-slide.product-loaded")
+    .forEach((slide) => {
+      setTimeout(() => (slide.style.opacity = "1"), 100);
+    });
+}
+
+// ================= UTILS =================
+function validateProduct(p) {
+  return (
+    p.id &&
+    p.name &&
+    Number.isFinite(Number(p.price)) &&
+    Number(p.price) > 0 &&
+    Array.isArray(p.images) &&
+    p.images.length > 0
+  );
+}
+
+// Identical product card creator (now matches shop.js exactly)
+function createProductCard(product) {
+  const image = product.images?.[0] || "img/placeholder.png";
   return `
     <div class="pro" data-id="${product.id}">
       <div class="img-wrapper">
-        <img src="${image}" alt="${product.name}" />
-        <i class="far fa-heart wishlist" data-name="${product.name}" data-price="${product.price}" data-img="${product.images ? product.images[0] : "img/placeholder.png"}"></i>
+        <img src="${image}" alt="${product.name}" loading="lazy"/>
+        <i class="far fa-heart wishlist" data-name="${product.name}" data-price="${product.price}" data-img="${image}"></i>
       </div>
-
       <div class="des">
         <h5>${product.name}</h5>
-        <span>${product.brand || ""}</span>
-
-        <div class="star">
-          ${renderStars(product.rating)}
-        </div>
-
+        <span>${product.brand || product.category || ""}</span>
+        <div class="star">${renderStars(product.rating)}</div>
         ${renderPrice(product)}
+        <div class="Cart"><i class="fas fa-shopping-cart"></i></div>
       </div>
     </div>
   `;
 }
 
-// ================= NAVIGATION =================
-// Only handle click if not clicking on an anchor tag (let native anchor navigation work)
-document.addEventListener("click", (e) => {
-  // If clicking on an anchor tag, let the browser handle it natively
-  if (e.target.closest("a")) return;
-
-  const card = e.target.closest(".pro");
-  if (!card) return;
-
-  e.preventDefault(); // Prevent default navigation
-
-  const productId = card.dataset.id;
-  window.location.href = `product.html?id=${productId}`;
-});
-
-// ================= PRELOAD IMAGES =================
-function preloadImages(images) {
-  return Promise.allSettled(
-    images.map((src) => {
-      return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = () => resolve(src);
-        img.onerror = () => reject(src);
-        img.src = src;
-      });
-    }),
-  );
-}
-
-// ================= LOAD PRODUCTS =================
-async function loadProducts() {
-  try {
-    console.log("🚀 Starting product load...");
-
-    // ---------- 1️⃣ LOAD ALL ACTIVE PRODUCTS ----------
-    console.log("📦 Loading products from Firestore...");
-    const productsSnap = await getDocs(
-      query(collection(db, "products"), where("isActive", "==", true)),
-    );
-
-    console.log("📦 Found", productsSnap.size, "product documents");
-
-    const productsMap = new Map();
-
-    productsSnap.forEach((doc) => {
-      const product = { id: doc.id, ...doc.data() };
-      if (validateProduct(product)) {
-        productsMap.set(product.id, product);
-      }
-    });
-
-    console.log("✅ Valid products:", productsMap.size);
-
-    // ---------- 2️⃣ LOAD BEST SELLING (FROM ADMIN SYNC) ----------
-    console.log("🏆 Loading best selling stats...");
-    const statsSnap = await getDocs(
-      query(
-        collection(db, "productStats"),
-        orderBy("revenue", "desc"),
-        limit(8),
-      ),
-    );
-
-    console.log("🏆 Found", statsSnap.size, "stats documents");
-
-    const bestSelling = [];
-
-    statsSnap.forEach((statDoc) => {
-      const product = productsMap.get(statDoc.id);
-      if (product) bestSelling.push(product);
-    });
-
-    // ---------- 3️⃣ NEW ARRIVALS ----------
-    const newArrivals = [...productsMap.values()]
-      .sort(
-        (a, b) =>
-          (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0),
-      )
-      .slice(0, 10);
-
-    console.log(
-      "🆕 Best selling:",
-      bestSelling.length,
-      "New arrivals:",
-      newArrivals.length,
-    );
-
-    // ---------- 4️⃣ PRELOAD ALL IMAGES ----------
-    const allImages = [...bestSelling, ...newArrivals]
-      .flatMap((p) => p.images || [])
-      .filter(Boolean);
-
-    console.log("🖼️ Preloading", allImages.length, "images...");
-
-    if (allImages.length > 0) {
-      await preloadImages(allImages);
-      console.log("✅ Images preloaded");
-    }
-
-    // ---------- 5️⃣ SHOW CONTENT ----------
-    console.log("🎭 Showing content...");
-    document.body.classList.remove("loading");
-    console.log("✅ Content visible");
-
-    // ---------- 6️⃣ RENDER PRODUCTS ----------
-    displayProducts(bestSelling, "bestSellingContainer");
-    displayProducts(newArrivals, "newArrivalsContainer");
-
-    console.log("✅ Products rendered successfully");
-  } catch (err) {
-    console.error("🔥 INDEX LOAD FAILED:", err);
-    // Show content even on error
-    document.body.classList.remove("loading");
-  }
-}
-
-// ================= DISPLAY =================
 function displayProducts(products, containerId) {
   const container = document.getElementById(containerId);
   if (!container) {
-    console.warn(`Missing container: ${containerId}`);
+    console.warn(`Container missing: ${containerId}`);
     return;
   }
-
-  container.innerHTML = "";
-
-  products.forEach((p) => {
-    container.insertAdjacentHTML("beforeend", createProductCard(p));
-  });
+  container.innerHTML = products.map(createProductCard).join("");
 }
 
 // ================= REVIEW FUNCTIONS =================
@@ -434,5 +474,55 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 });
 
+// ================= MAIN PRODUCT LOAD =================
+async function loadIndexProducts() {
+  try {
+    console.log("🏆 Loading index products...");
+
+    const q = query(
+      collection(db, "products"),
+      where("isActive", "==", true),
+      orderBy("createdAt", "desc"),
+      limit(20),
+    );
+
+    const snapshot = await getDocs(q);
+    let allProducts = snapshot.docs
+      .map((doc) => ({ id: doc.id, ...doc.data() }))
+      .filter((p) => Number.isFinite(Number(p.price)) && p.price > 0);
+
+    // Best selling (sort by revenue fallback to newest)
+    const bestSelling = [...allProducts]
+      .sort((a, b) => (b.revenue || 0) - (a.revenue || 0))
+      .slice(0, 10);
+
+    // New arrivals (newest)
+    const newArrivals = allProducts.slice(0, 10);
+
+    console.log(`🆕 Best: ${bestSelling.length}, New: ${newArrivals.length}`);
+
+    // Preload images
+    const allImages = [...bestSelling, ...newArrivals]
+      .flatMap((p) => p.images || [])
+      .filter(Boolean);
+    allImages.forEach((src) => {
+      new Image().src = src;
+    });
+
+    // Show content
+    document.body.classList.remove("loading");
+
+    // Display
+    displayProducts(bestSelling, "bestSellingContainer");
+    displayProducts(newArrivals, "newArrivalsContainer");
+  } catch (err) {
+    console.error("🔥 INDEX LOAD FAILED:", err);
+    document.body.classList.remove("loading");
+  }
+}
+
 // ================= INIT =================
-document.addEventListener("DOMContentLoaded", loadProducts);
+document.addEventListener("DOMContentLoaded", () => {
+  initDynamicCarousel();
+  loadIndexProducts();
+});
