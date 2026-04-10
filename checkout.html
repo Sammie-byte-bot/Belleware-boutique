@@ -398,6 +398,7 @@
       const paymentRadios = document.querySelectorAll('input[name="payment"]');
       const mpesaDetails = document.getElementById("mpesa-details");
       const cardDetails = document.getElementById("card-details");
+      const placeOrderBtn = document.getElementById("place-order");
 
       function renderOrderItems() {
         let subtotal = 0;
@@ -506,12 +507,34 @@
         }
       }
 
+      async function verifyUserAccount(user) {
+        try {
+          const userRef = doc(db, "users", user.uid);
+          const userSnap = await getDoc(userRef);
+          if (!userSnap.exists()) {
+            alert("Please complete your account before checkout.");
+            window.location.href = "auth.html";
+            return false;
+          }
+          return true;
+        } catch (error) {
+          console.error("Error verifying user account:", error);
+          alert("Unable to verify account. Please login again.");
+          window.location.href = "auth.html";
+          return false;
+        }
+      }
+
       onAuthStateChanged(auth, async (user) => {
         if (!user) {
           alert("Please login first");
           window.location.href = "auth.html";
           return;
         }
+
+        const hasAccount = await verifyUserAccount(user);
+        if (!hasAccount) return;
+
         currentUser = user;
 
         // Pre-fill user data
@@ -606,6 +629,11 @@
           }
 
           try {
+            if (placeOrderBtn) {
+              placeOrderBtn.disabled = true;
+              placeOrderBtn.textContent = "Placing order...";
+            }
+
             const subtotal = pendingOrder.items.reduce(
               (sum, item) => sum + item.price * item.quantity,
               0,
@@ -652,8 +680,19 @@
           } catch (err) {
             console.error("ORDER WRITE FAILED:", err);
             alert("Order failed to save");
+            if (placeOrderBtn) {
+              placeOrderBtn.disabled = false;
+              placeOrderBtn.textContent = "Place Order";
+            }
           }
         });
+
+      const goToOrdersButton = document.getElementById("go-to-orders");
+      if (goToOrdersButton) {
+        goToOrdersButton.addEventListener("click", () => {
+          window.location.href = "account.html";
+        });
+      }
     </script>
   </body>
 </html>

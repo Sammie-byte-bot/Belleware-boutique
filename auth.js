@@ -10,6 +10,8 @@ import {
   signInWithEmailAndPassword,
   GoogleAuthProvider,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   updateProfile,
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
@@ -40,6 +42,22 @@ const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
+let googlePopupPending = false;
+
+async function processGoogleRedirectResult() {
+  try {
+    const result = await getRedirectResult(auth);
+    if (!result || !result.user) return;
+
+    const user = result.user;
+    localStorage.setItem("userName", user.displayName || user.email);
+    window.location.href = "index.html";
+  } catch (err) {
+    console.warn("Google redirect result error", err);
+  }
+}
+
+processGoogleRedirectResult();
 
 /* =========================
    DOM ELEMENTS
@@ -117,7 +135,7 @@ form.addEventListener("submit", async (e) => {
       userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
-        password
+        password,
       );
 
       const user = userCredential.user;
@@ -185,6 +203,8 @@ form.addEventListener("submit", async (e) => {
    GOOGLE SIGN IN
 ========================= */
 googleBtn.addEventListener("click", async () => {
+  if (googlePopupPending) return;
+  googlePopupPending = true;
   try {
     const result = await signInWithPopup(auth, googleProvider);
     const user = result.user;
@@ -218,7 +238,18 @@ googleBtn.addEventListener("click", async () => {
       window.location.href = "index.html";
     }, 1500);
   } catch (err) {
+    const message = err?.message || "Google sign-in failed";
+    if (
+      message.includes("Pending promise was never set") ||
+      message.includes("popup blocked") ||
+      message.includes("operation-not-supported-in-this-environment")
+    ) {
+      await signInWithRedirect(auth, googleProvider);
+      return;
+    }
     authMessage.style.color = "red";
-    authMessage.textContent = err.message;
+    authMessage.textContent = message;
+  } finally {
+    googlePopupPending = false;
   }
 });

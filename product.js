@@ -76,6 +76,9 @@ const cartCountEl = document.querySelector(".cart-count");
 
 const reviewsContainer = document.getElementById("reviewsContainer");
 
+let currentProductData = null;
+let currentQuantity = 1;
+
 // =====================================================
 // GET PRODUCT ID FROM URL
 // =====================================================
@@ -131,13 +134,19 @@ async function loadProductFromFirestore() {
 
     const product = docSnap.data();
 
+    // Preload main product image for faster display
+    if (Array.isArray(product.images) && product.images.length > 0) {
+      const img = new Image();
+      img.src = product.images[0];
+    }
+
     loadProduct(product);
 
     // Load reviews asynchronously (non-blocking)
-    loadProductReviews(productId);
-
-    // Update recently viewed products
-    updateRecentlyViewed(productId);
+    setTimeout(() => {
+      loadProductReviews(productId);
+      updateRecentlyViewed(productId);
+    }, 100);
   } catch (error) {
     console.error("Failed to load product:", error);
     alert("Failed to load product");
@@ -157,6 +166,9 @@ function loadProduct(product) {
   productBrand.textContent = product.brand || "-";
   productPrice.textContent = `Ksh ${product.price || 0}`;
   productDescription.textContent = product.description || "";
+
+  // Store loaded product for cart/wishlist actions
+  currentProductData = product;
 
   // =====================
   // DISCOUNT CALCULATION
@@ -190,7 +202,10 @@ function loadProduct(product) {
       ? product.images
       : ["img/products/default.jpg"];
 
+  // Set main image with optimization
   productImage.src = images[0];
+  productImage.loading = "lazy";
+  productImage.decoding = "async";
 
   thumbnails.innerHTML = "";
 
@@ -198,19 +213,17 @@ function loadProduct(product) {
     const thumb = document.createElement("img");
 
     thumb.src = img;
-
-    // Lazy load thumbnails
     thumb.loading = "lazy";
+    thumb.decoding = "async";
 
     if (i === 0) thumb.classList.add("active");
 
     thumb.onclick = () => {
-      productImage.src = img;
-
       document
         .querySelectorAll(".thumbnails img")
         .forEach((t) => t.classList.remove("active"));
 
+      productImage.src = img;
       thumb.classList.add("active");
     };
 
@@ -525,6 +538,7 @@ async function renderRecentlyViewed(currentProductId, viewedIds) {
 // =====================================================
 
 onAuthStateChanged(auth, (user) => {
+  window.currentUser = user || null;
   if (user) {
     console.log("User logged in:", user.uid);
   }
@@ -543,13 +557,6 @@ function getWishlistKey() {
     ? `wishlist_${window.currentUser.uid}`
     : "wishlist_guest";
 }
-
-// =====================================================
-// GLOBAL PRODUCT DATA
-// =====================================================
-
-let currentProductData = null;
-let currentQuantity = 1;
 
 // =====================================================
 // TOAST NOTIFICATION
@@ -776,11 +783,19 @@ if (addToWishlistBtn) {
     const images = currentProductData.images || [];
     const productImageSrc =
       images.length > 0 ? images[0] : "img/products/default.jpg";
+    const currentPrice = Number(currentProductData.price) || 0;
+    const oldPriceValue = Number(currentProductData.oldPrice) || 0;
+    const discountValue =
+      oldPriceValue > currentPrice
+        ? Math.floor(((oldPriceValue - currentPrice) / oldPriceValue) * 100)
+        : 0;
 
     const wishlistItem = {
       id: productId,
       name: currentProductData.name || "Unnamed Product",
-      price: Number(currentProductData.price) || 0,
+      price: currentPrice,
+      oldPrice: oldPriceValue || null,
+      discount: discountValue,
       img: productImageSrc,
     };
 
@@ -788,7 +803,7 @@ if (addToWishlistBtn) {
     const wishlistKey = getWishlistKey();
     let wishlist = JSON.parse(localStorage.getItem(wishlistKey)) || [];
 
-    const exists = wishlist.some((item) => item.name === wishlistItem.name);
+    const exists = wishlist.some((item) => item.id === wishlistItem.id);
 
     if (exists) {
       showToast(`${currentProductData.name} is already in your wishlist!`);
@@ -808,5 +823,6 @@ if (addToWishlistBtn) {
 const originalLoadProduct = loadProduct;
 loadProduct = function (product) {
   currentProductData = product;
+  window.currentProductData = product;
   originalLoadProduct(product);
 };

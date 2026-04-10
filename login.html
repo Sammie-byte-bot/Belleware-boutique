@@ -117,11 +117,16 @@
     </div>
 
     <script type="module">
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+      import {
+        initializeApp,
+        getApps,
+      } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
       import {
         getAuth,
         signInWithEmailAndPassword,
         signInWithPopup,
+        signInWithRedirect,
+        getRedirectResult,
         GoogleAuthProvider,
         setPersistence,
         browserLocalPersistence,
@@ -141,11 +146,41 @@
         appId: "1:795858464616:web:0bbf307b3da145766ff0dd",
       };
 
-      const app = initializeApp(firebaseConfig);
+      const app = getApps().length
+        ? getApps()[0]
+        : initializeApp(firebaseConfig);
       const auth = getAuth(app);
       const db = getFirestore(app);
+      const googleProvider = new GoogleAuthProvider();
+      let googlePopupPending = false;
 
       await setPersistence(auth, browserLocalPersistence);
+
+      async function processGoogleRedirectResult() {
+        try {
+          const result = await getRedirectResult(auth);
+          if (!result || !result.user) return;
+
+          const user = result.user;
+          const isAdmin = await checkIsAdmin(user);
+
+          if (!isAdmin) {
+            await auth.signOut();
+            const errorMsg = document.getElementById("errorMsg");
+            if (errorMsg) {
+              errorMsg.textContent = "Access denied. Admins only.";
+              errorMsg.classList.remove("hidden");
+            }
+            return;
+          }
+
+          window.location.replace("admin.html");
+        } catch (err) {
+          console.warn("Google redirect result error", err);
+        }
+      }
+
+      await processGoogleRedirectResult();
 
       // Verify that the signed-in user is an admin (checks custom claims)
       async function checkIsAdmin(user) {
@@ -166,6 +201,7 @@
       const statusMsg = document.getElementById("statusMsg");
       const btnText = document.getElementById("btnText");
       const spinner = document.getElementById("spinner");
+      const googleBtn = document.getElementById("googleBtn");
 
       document.getElementById("togglePass").onclick = () => {
         passwordInput.type =
@@ -208,12 +244,15 @@
         }
       });
 
-      document.getElementById("googleBtn").onclick = async () => {
+      googleBtn.onclick = async () => {
+        if (googlePopupPending) return;
+        googlePopupPending = true;
+        googleBtn.disabled = true;
         errorMsg.classList.add("hidden");
         statusMsg.classList.add("hidden");
 
         try {
-          const result = await signInWithPopup(auth, new GoogleAuthProvider());
+          const result = await signInWithPopup(auth, googleProvider);
           const user = result.user;
 
           const isAdmin = await checkIsAdmin(user);
@@ -227,8 +266,19 @@
 
           window.location.replace("admin.html");
         } catch (err) {
+          console.warn("Google sign-in error", err);
+          if (
+            err?.message?.includes("Pending promise was never set") ||
+            err?.code === "auth/operation-not-supported-in-this-environment"
+          ) {
+            await signInWithRedirect(auth, googleProvider);
+            return;
+          }
           errorMsg.textContent = "Google sign-in failed";
           errorMsg.classList.remove("hidden");
+        } finally {
+          googlePopupPending = false;
+          googleBtn.disabled = false;
         }
       };
     </script>

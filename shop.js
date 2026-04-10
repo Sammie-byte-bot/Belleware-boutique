@@ -3,13 +3,14 @@ import {
   db,
   collection,
   getDocs,
-  getCountFromServer,
   query,
   where,
   orderBy,
   limit,
   startAfter,
 } from "./firebase.js";
+
+console.log("shop.js loaded", document.readyState);
 
 // ================= VALIDATION =================
 function validateProduct(p) {
@@ -21,8 +22,7 @@ function validateProduct(p) {
   const price = Number(p.price);
   if (!Number.isFinite(price) || price <= 0) errors.push("Invalid price");
 
-  if (!Array.isArray(p.images) || !p.images.length) errors.push("No images");
-
+  // Allow missing images because we can render a placeholder instead
   if (p.stock !== undefined && Number(p.stock) <= 0)
     errors.push("Out of stock");
 
@@ -66,9 +66,12 @@ function renderPrice(product) {
 // ================= CARD =================
 function createProductCard(product) {
   const image =
-    Array.isArray(product.images) && product.images.length
-      ? product.images[0]
-      : "img/placeholder.png";
+    (Array.isArray(product.images) &&
+      product.images.length &&
+      product.images[0]) ||
+    product.images ||
+    product.image ||
+    "img/placeholder.png";
 
   return `
     <div class="pro" data-id="${product.id}">
@@ -123,10 +126,14 @@ let hasMoreProducts = true;
 // Store all documents for offset-based pagination
 let allDocs = [];
 
+console.log("shop.js loaded", document.readyState);
+
 // ================= FETCH WITH PAGINATION =================
 async function loadProducts(page = 1, isInitialLoad = false) {
   if (isLoading) return;
   isLoading = true;
+
+  console.log(`loadProducts(page=${page}, isInitialLoad=${isInitialLoad})`);
 
   const grid = document.getElementById("productsGrid");
   const empty = document.getElementById("emptyProducts");
@@ -150,46 +157,58 @@ async function loadProducts(page = 1, isInitialLoad = false) {
       `;
     }
 
-    // Get total count of active products
-    const countQuery = query(
-      collection(db, "products"),
-      where("isActive", "==", true),
-    );
-    const countSnapshot = await getCountFromServer(countQuery);
-    totalProducts = countSnapshot.data().count;
-
-    // Calculate offset
-    const offset = (page - 1) * productsPerPage;
-    const remainingProducts = totalProducts - offset;
-
-    if (remainingProducts <= 0) {
-      hasMoreProducts = false;
-      renderPagination();
-      return;
-    }
-
-    // Determine how many products to fetch
-    const productsToFetch = Math.min(productsPerPage, remainingProducts);
-
     // Fetch products using offset emulation (skip)
     let products = [];
 
     if (isInitialLoad || allDocs.length === 0) {
-      // First load - fetch all products and cache them
-      const allProductsQuery = query(
+      // First load - fetch active products and cache them
+      const activeProductsQuery = query(
         collection(db, "products"),
         where("isActive", "==", true),
         orderBy("createdAt", "desc"),
       );
 
-      const snap = await getDocs(allProductsQuery);
+      let snap;
+      try {
+        snap = await getDocs(activeProductsQuery);
+        allDocs = snap.docs
+          .map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }))
+          .filter(validateProduct);
+      } catch (error) {
+        console.warn(
+          "Active products fetch failed, falling back to all products:",
+          error,
+        );
+        const fallbackQuery = query(
+          collection(db, "products"),
+          orderBy("createdAt", "desc"),
+        );
+        snap = await getDocs(fallbackQuery);
+        allDocs = snap.docs
+          .map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }))
+          .filter(validateProduct);
+      }
 
-      allDocs = snap.docs
-        .map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }))
-        .filter(validateProduct);
+      if (allDocs.length === 0) {
+        // Fallback: show any products if none are explicitly active
+        const fallbackQuery = query(
+          collection(db, "products"),
+          orderBy("createdAt", "desc"),
+        );
+        snap = await getDocs(fallbackQuery);
+        allDocs = snap.docs
+          .map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }))
+          .filter(validateProduct);
+      }
 
       totalProducts = allDocs.length;
     }
@@ -225,9 +244,9 @@ async function loadProducts(page = 1, isInitialLoad = false) {
     console.error("🔥 SHOP LOAD ERROR:", err);
     error.hidden = false;
     grid.innerHTML = "";
+  } finally {
+    isLoading = false;
   }
-
-  isLoading = false;
 }
 
 // ================= DISPLAY =================
@@ -528,8 +547,8 @@ function populateFilters(products) {
 }
 
 // ================= INIT =================
-document.addEventListener("DOMContentLoaded", () => {
-  // Initial load with page 1
+function initShopPage() {
+  console.log("shop.js initShopPage()", document.readyState);
   loadProducts(1, true);
 
   // Check URL for search query parameter
@@ -597,4 +616,10 @@ document.addEventListener("DOMContentLoaded", () => {
     currentPage = 1;
     loadProducts(1, true);
   });
-});
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initShopPage);
+} else {
+  initShopPage();
+}

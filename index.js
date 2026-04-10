@@ -14,8 +14,11 @@ import {
   getDoc,
   addDoc,
   serverTimestamp,
+  fetchBestSellingProductsFromAdmin,
 } from "./firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+
+console.log("index.js loaded", document.readyState);
 
 // Slide categories mapping (matches data-product-category)
 const SLIDE_CATEGORIES = [
@@ -39,6 +42,11 @@ const CATEGORY_IMAGES = {
   slides: "img/slides.jpg",
   shirts: "img/shirts.jpg",
   "t-shirts": "img/t-shirts.jpg",
+};
+
+const carouselState = {
+  currentIndex: 0,
+  slides: [],
 };
 
 // ================= HELPERS (copied exactly from shop.js for identical cards) =================
@@ -73,6 +81,8 @@ function renderPrice(product) {
 // ================= INIT =================
 document.addEventListener("DOMContentLoaded", initDynamicCarousel);
 
+document.addEventListener("DOMContentLoaded", initCarouselControls);
+
 async function initDynamicCarousel() {
   console.log("🚀 Initializing Dynamic Hero Carousel...");
 
@@ -93,6 +103,7 @@ async function initDynamicCarousel() {
     // await populateCarouselSlides(products);
 
     // Start/enhance carousel animations after load
+    hideSkeletons();
     enhanceCarouselAnimations();
 
     console.log(`✅ Loaded ${products.length}/8 dynamic products`);
@@ -107,17 +118,30 @@ async function initDynamicCarousel() {
 async function fetchHeroProducts() {
   try {
     // Query: top 8 active products (newest/best sellers)
-    const q = query(
+    let q = query(
       collection(db, "products"),
       where("isActive", "==", true),
       orderBy("createdAt", "desc"),
       limit(8),
     );
 
-    const snapshot = await getDocs(q);
+    let snapshot = await getDocs(q);
     let products = snapshot.docs
       .map((doc) => ({ id: doc.id, ...doc.data() }))
       .filter(validateProduct);
+
+    if (!products.length) {
+      // Fallback: if no active products are marked, load any products instead
+      q = query(
+        collection(db, "products"),
+        orderBy("createdAt", "desc"),
+        limit(8),
+      );
+      snapshot = await getDocs(q);
+      products = snapshot.docs
+        .map((doc) => ({ id: doc.id, ...doc.data() }))
+        .filter(validateProduct);
+    }
 
     // Fallback sort by revenue if createdAt missing
     products.sort((a, b) => (b.revenue || 0) - (a.revenue || 0));
@@ -125,7 +149,22 @@ async function fetchHeroProducts() {
     return products.slice(0, 8);
   } catch (error) {
     console.error("Firebase fetch failed:", error);
-    return [];
+    try {
+      const fallbackQuery = query(
+        collection(db, "products"),
+        orderBy("createdAt", "desc"),
+        limit(8),
+      );
+      const fallbackSnapshot = await getDocs(fallbackQuery);
+      const fallbackProducts = fallbackSnapshot.docs
+        .map((doc) => ({ id: doc.id, ...doc.data() }))
+        .filter(validateProduct);
+      fallbackProducts.sort((a, b) => (b.revenue || 0) - (a.revenue || 0));
+      return fallbackProducts.slice(0, 8);
+    } catch (fallbackError) {
+      console.error("Firebase fallback fetch failed:", fallbackError);
+      return [];
+    }
   }
 }
 
@@ -201,11 +240,136 @@ function showCarouselSkeletons() {
 }
 
 function hideSkeletons() {
-  document.querySelectorAll(".carousel-slide").forEach((slide) => {
+  const slides = document.querySelectorAll(".carousel-slide");
+  slides.forEach((slide) => {
     const skeleton = slide.querySelector(".carousel-skeleton");
     if (skeleton) skeleton.style.display = "none";
     slide.classList.remove("loading");
     slide.classList.add("loaded");
+  });
+
+  activateCarouselSlide(carouselState.currentIndex);
+}
+
+function initCarouselControls() {
+  carouselState.slides = Array.from(
+    document.querySelectorAll(".carousel-slide"),
+  );
+  if (!carouselState.slides.length) return;
+
+  const prevBtn = document.querySelector(".carousel-prev");
+  const nextBtn = document.querySelector(".carousel-next");
+  const dotsContainer = document.querySelector(".carousel-dots");
+  const carousel = document.querySelector(".carousel-wrapper");
+
+  renderCarouselDots(carouselState.slides.length);
+  activateCarouselSlide(carouselState.currentIndex);
+
+  // Click handlers for previous button
+  if (prevBtn) {
+    prevBtn.addEventListener("click", () => {
+      const nextIndex =
+        (carouselState.currentIndex - 1 + carouselState.slides.length) %
+        carouselState.slides.length;
+      activateCarouselSlide(nextIndex);
+    });
+  }
+
+  // Click handlers for next button
+  if (nextBtn) {
+    nextBtn.addEventListener("click", () => {
+      const nextIndex =
+        (carouselState.currentIndex + 1) % carouselState.slides.length;
+      activateCarouselSlide(nextIndex);
+    });
+  }
+
+  // Click handlers for dots
+  if (dotsContainer) {
+    dotsContainer.addEventListener("click", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      const index = Number(target.dataset.index);
+      if (!Number.isNaN(index)) {
+        activateCarouselSlide(index);
+      }
+    });
+  }
+
+  // Touch/Swipe handling for mobile
+  if (carousel) {
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    carousel.addEventListener(
+      "touchstart",
+      (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+      },
+      false,
+    );
+
+    carousel.addEventListener(
+      "touchend",
+      (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+      },
+      false,
+    );
+
+    function handleSwipe() {
+      const swipeThreshold = 50; // Minimum distance for a swipe
+      const diff = touchStartX - touchEndX;
+
+      if (Math.abs(diff) > swipeThreshold) {
+        if (diff > 0) {
+          // Swiped left - show next slide
+          const nextIndex =
+            (carouselState.currentIndex + 1) % carouselState.slides.length;
+          activateCarouselSlide(nextIndex);
+        } else {
+          // Swiped right - show previous slide
+          const nextIndex =
+            (carouselState.currentIndex - 1 + carouselState.slides.length) %
+            carouselState.slides.length;
+          activateCarouselSlide(nextIndex);
+        }
+      }
+    }
+  }
+}
+
+function renderCarouselDots(count) {
+  const dotsContainer = document.querySelector(".carousel-dots");
+  if (!dotsContainer) return;
+
+  dotsContainer.innerHTML = Array.from({ length: count })
+    .map(
+      (_item, index) =>
+        `<button class="carousel-dot" data-index="${index}" aria-label="Slide ${
+          index + 1
+        }"></button>`,
+    )
+    .join("");
+}
+
+function activateCarouselSlide(index = 0) {
+  const slides =
+    carouselState.slides.length > 0
+      ? carouselState.slides
+      : Array.from(document.querySelectorAll(".carousel-slide"));
+  if (!slides.length) return;
+
+  const normalizedIndex = Math.max(0, Math.min(index, slides.length - 1));
+  carouselState.currentIndex = normalizedIndex;
+
+  slides.forEach((slide, slideIndex) => {
+    slide.classList.toggle("active", slideIndex === normalizedIndex);
+  });
+
+  document.querySelectorAll(".carousel-dot").forEach((dot, dotIndex) => {
+    dot.classList.toggle("active", dotIndex === normalizedIndex);
   });
 }
 
@@ -236,19 +400,24 @@ function enhanceCarouselAnimations() {
 
 // ================= UTILS =================
 function validateProduct(p) {
-  return (
-    p.id &&
-    p.name &&
-    Number.isFinite(Number(p.price)) &&
-    Number(p.price) > 0 &&
-    Array.isArray(p.images) &&
-    p.images.length > 0
-  );
+  const price = Number(p.price);
+  const hasImage =
+    (Array.isArray(p.images) && p.images.length > 0) ||
+    (typeof p.images === "string" && p.images.trim() !== "") ||
+    (typeof p.image === "string" && p.image.trim() !== "");
+
+  return p.id && p.name && Number.isFinite(price) && price > 0 && hasImage;
 }
 
 // Identical product card creator (now matches shop.js exactly)
 function createProductCard(product) {
-  const image = product.images?.[0] || "img/placeholder.png";
+  const image =
+    (Array.isArray(product.images) &&
+      product.images.length &&
+      product.images[0]) ||
+    product.images ||
+    product.image ||
+    "img/placeholder.png";
   return `
     <div class="pro" data-id="${product.id}">
       <div class="img-wrapper">
@@ -274,6 +443,20 @@ function displayProducts(products, containerId) {
   }
   container.innerHTML = products.map(createProductCard).join("");
 }
+
+// ================= PRODUCT CARD NAVIGATION =================
+
+document.addEventListener("click", (e) => {
+  if (e.target.closest(".wishlist")) return;
+
+  const card = e.target.closest(".pro");
+  if (!card) return;
+
+  const productId = card.dataset.id;
+  if (productId) {
+    window.location.href = `product.html?id=${encodeURIComponent(productId)}`;
+  }
+});
 
 // ================= REVIEW FUNCTIONS =================
 // Function to open review modal for an order
@@ -479,25 +662,61 @@ async function loadIndexProducts() {
   try {
     console.log("🏆 Loading index products...");
 
-    const q = query(
+    // ================= FETCH BEST SELLING FROM ADMIN DASHBOARD =================
+    let bestSelling = [];
+    const adminStats = await fetchBestSellingProductsFromAdmin();
+
+    if (adminStats && adminStats.length > 0) {
+      console.log("✅ Using best selling products from admin dashboard");
+      // Best selling products from admin dashboard
+      bestSelling = adminStats;
+    } else {
+      console.log(
+        "⚠️ No admin stats found, calculating from products collection",
+      );
+      // Fallback: calculate from products directly (by newest)
+      let q = query(
+        collection(db, "products"),
+        where("isActive", "==", true),
+        orderBy("createdAt", "desc"),
+        limit(10),
+      );
+
+      let snapshot = await getDocs(q);
+      let allProducts = snapshot.docs
+        .map((doc) => ({ id: doc.id, ...doc.data() }))
+        .filter((p) => Number.isFinite(Number(p.price)) && p.price > 0);
+
+      if (allProducts.length > 0) {
+        bestSelling = allProducts;
+      }
+    }
+
+    // ================= FETCH NEW ARRIVALS =================
+    let q = query(
       collection(db, "products"),
       where("isActive", "==", true),
       orderBy("createdAt", "desc"),
-      limit(20),
+      limit(10),
     );
 
-    const snapshot = await getDocs(q);
-    let allProducts = snapshot.docs
+    let snapshot = await getDocs(q);
+    let newArrivals = snapshot.docs
       .map((doc) => ({ id: doc.id, ...doc.data() }))
       .filter((p) => Number.isFinite(Number(p.price)) && p.price > 0);
 
-    // Best selling (sort by revenue fallback to newest)
-    const bestSelling = [...allProducts]
-      .sort((a, b) => (b.revenue || 0) - (a.revenue || 0))
-      .slice(0, 10);
-
-    // New arrivals (newest)
-    const newArrivals = allProducts.slice(0, 10);
+    if (newArrivals.length === 0) {
+      console.warn("No active products found, falling back to all products");
+      q = query(
+        collection(db, "products"),
+        orderBy("createdAt", "desc"),
+        limit(10),
+      );
+      snapshot = await getDocs(q);
+      newArrivals = snapshot.docs
+        .map((doc) => ({ id: doc.id, ...doc.data() }))
+        .filter((p) => Number.isFinite(Number(p.price)) && p.price > 0);
+    }
 
     console.log(`🆕 Best: ${bestSelling.length}, New: ${newArrivals.length}`);
 
@@ -522,7 +741,14 @@ async function loadIndexProducts() {
 }
 
 // ================= INIT =================
-document.addEventListener("DOMContentLoaded", () => {
+function initIndexPage() {
+  console.log("index.js initIndexPage()", document.readyState);
   initDynamicCarousel();
   loadIndexProducts();
-});
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initIndexPage);
+} else {
+  initIndexPage();
+}

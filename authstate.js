@@ -9,6 +9,8 @@ import {
   signInWithEmailAndPassword,
   GoogleAuthProvider,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
 const firebaseConfig = {
@@ -23,6 +25,21 @@ const firebaseConfig = {
 const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
+
+async function processGoogleRedirectResult() {
+  try {
+    const result = await getRedirectResult(auth);
+    if (!result || !result.user) return;
+
+    const user = result.user;
+    localStorage.setItem("userName", user.displayName || user.email);
+    window.location.href = "index.html";
+  } catch (err) {
+    console.warn("Google redirect result error", err);
+  }
+}
+
+processGoogleRedirectResult();
 
 const form = document.getElementById("authForm");
 const emailInput = document.getElementById("email");
@@ -81,7 +98,7 @@ form.addEventListener("submit", async (e) => {
       userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
-        password
+        password,
       );
       await userCredential.user.updateProfile({
         displayName: `${firstName} ${lastName}`,
@@ -90,7 +107,7 @@ form.addEventListener("submit", async (e) => {
 
     localStorage.setItem(
       "userName",
-      userCredential.user.displayName || userCredential.user.email
+      userCredential.user.displayName || userCredential.user.email,
     );
     window.location.href = "index.html"; // redirect
   } catch (err) {
@@ -99,13 +116,27 @@ form.addEventListener("submit", async (e) => {
 });
 
 // Google Sign-In
+let googlePopupPending = false;
 googleBtn.addEventListener("click", async () => {
+  if (googlePopupPending) return;
+  googlePopupPending = true;
   try {
     const result = await signInWithPopup(auth, googleProvider);
     const user = result.user;
     localStorage.setItem("userName", user.displayName || user.email);
     window.location.href = "index.html"; // redirect
   } catch (err) {
-    authMessage.textContent = err.message;
+    const message = err?.message || "Google sign-in failed";
+    if (
+      message.includes("Pending promise was never set") ||
+      message.includes("popup blocked") ||
+      message.includes("operation-not-supported-in-this-environment")
+    ) {
+      await signInWithRedirect(auth, googleProvider);
+      return;
+    }
+    authMessage.textContent = message;
+  } finally {
+    googlePopupPending = false;
   }
 });
