@@ -1,0 +1,23 @@
+# ============================================================
+# robots.txt — BELLEWEAR BOUTIQUE
+# Website : https://belleware-boutique.vercel.app
+# Updated : 2025-05-10
+#
+# This file tells search engines (Google, Bing, etc.)
+# which pages they are allowed to crawl and index.
+# ============================================================
+
+# --- Allow ALL search engine bots to crawl everything ---
+User-agent: *
+Allow: /
+
+# --- Block private/system pages from being indexed ---
+Disallow: /login.html
+Disallow: /auth.html
+Disallow: /account.html
+Disallow: /cart.html
+Disallow: /admin/
+Disallow: /checkout/
+
+# --- Point Google to your sitemap ---
+Sitemap: https://belleware-boutique.vercel.app/sitemap.xml
