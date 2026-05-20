@@ -1,246 +1,98 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  ============================================================
-  SITEMAP — BELLEWEAR BOUTIQUE
-  Website : https://belleware-boutique.vercel.app
-  Generated: 2025-05-10
-  Standard : https://www.sitemaps.org/schemas/sitemap/0.9
-
-  HOW TO USE:
-  1. Place this file in your project ROOT folder as: sitemap.xml
-  2. Deploy to Vercel so it is live at:
-     https://belleware-boutique.vercel.app/sitemap.xml
-  3. Go to Google Search Console → Sitemaps → Submit:
-     https://belleware-boutique.vercel.app/sitemap.xml
-
-  FIELD REFERENCE:
-  <loc>          → Full URL of the page (required)
-  <lastmod>      → Date page was last updated (YYYY-MM-DD)
-  <changefreq>   → How often Google should re-check the page
-                   Values: always | hourly | daily | weekly | monthly | yearly | never
-  <priority>     → Importance from 0.0 to 1.0 (1.0 = most important)
-                   This is relative to OTHER pages on YOUR site only.
-  ============================================================
--->
-
-<urlset
-  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="
-    http://www.sitemaps.org/schemas/sitemap/0.9
-    http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
-
-
-  <!-- ======================================================
-       CORE PAGES — Highest priority, crawled most often
-       ====================================================== -->
-
-  <!-- Homepage -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Core Pages -->
   <url>
     <loc>https://belleware-boutique.vercel.app/</loc>
-    <lastmod>2025-05-10</lastmod>
+    <lastmod>2025-05-20</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
-
-  <!-- Homepage (explicit index.html — covers both versions) -->
-  <url>
-    <loc>https://belleware-boutique.vercel.app/index.html</loc>
-    <lastmod>2025-05-10</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>1.0</priority>
-  </url>
-
-  <!-- Shop — Main product listing page -->
   <url>
     <loc>https://belleware-boutique.vercel.app/shop.html</loc>
-    <lastmod>2025-05-10</lastmod>
+    <lastmod>2025-05-20</lastmod>
     <changefreq>daily</changefreq>
-    <priority>0.95</priority>
-  </url>
-
-
-  <!-- ======================================================
-       SHOP BY CATEGORY — Product category pages
-       ====================================================== -->
-
-  <!-- Watches -->
-  <url>
-    <loc>https://belleware-boutique.vercel.app/shop.html?category=watches</loc>
-    <lastmod>2025-05-10</lastmod>
-    <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
-
-  <!-- Hoodies -->
-  <url>
-    <loc>https://belleware-boutique.vercel.app/shop.html?category=hoodies</loc>
-    <lastmod>2025-05-10</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-
-  <!-- Caps -->
-  <url>
-    <loc>https://belleware-boutique.vercel.app/shop.html?category=caps</loc>
-    <lastmod>2025-05-10</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-
-  <!-- Shoes -->
-  <url>
-    <loc>https://belleware-boutique.vercel.app/shop.html?category=shoes</loc>
-    <lastmod>2025-05-10</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-
-  <!-- Sneakers -->
-  <url>
-    <loc>https://belleware-boutique.vercel.app/shop.html?category=sneakers</loc>
-    <lastmod>2025-05-10</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-
-  <!-- Slides -->
-  <url>
-    <loc>https://belleware-boutique.vercel.app/shop.html?category=slides</loc>
-    <lastmod>2025-05-10</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-  </url>
-
-  <!-- Shirts -->
-  <url>
-    <loc>https://belleware-boutique.vercel.app/shop.html?category=shirts</loc>
-    <lastmod>2025-05-10</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-  </url>
-
-  <!-- T-Shirts -->
-  <url>
-    <loc>https://belleware-boutique.vercel.app/shop.html?category=t-shirts</loc>
-    <lastmod>2025-05-10</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-  </url>
-
-
-  <!-- ======================================================
-       BLOG PAGES — Content marketing, updated less often
-       ====================================================== -->
-
-  <!-- Blog listing page -->
   <url>
     <loc>https://belleware-boutique.vercel.app/blog.html</loc>
-    <lastmod>2025-05-10</lastmod>
+    <lastmod>2025-05-20</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.75</priority>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://belleware-boutique.vercel.app/about.html</loc>
+    <lastmod>2025-05-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://belleware-boutique.vercel.app/contact.html</loc>
+    <lastmod>2025-05-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
   </url>
 
-  <!-- Blog Post 1: Cotton Jersey Zip Up Hoodies (Jan 13) -->
+  <!-- Categories -->
+  <url>
+    <loc>https://belleware-boutique.vercel.app/shop.html?category=watches</loc>
+    <lastmod>2025-05-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://belleware-boutique.vercel.app/shop.html?category=hoodies</loc>
+    <lastmod>2025-05-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://belleware-boutique.vercel.app/shop.html?category=caps</loc>
+    <lastmod>2025-05-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://belleware-boutique.vercel.app/shop.html?category=shoes</loc>
+    <lastmod>2025-05-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://belleware-boutique.vercel.app/shop.html?category=sneakers</loc>
+    <lastmod>2025-05-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Blog Posts -->
   <url>
     <loc>https://belleware-boutique.vercel.app/blog/cotton-jersey-zip-up-hoodies.html</loc>
     <lastmod>2025-01-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
-
-  <!-- Blog Post 2: Must Have Items For A Skater Girl (Feb 09) -->
   <url>
     <loc>https://belleware-boutique.vercel.app/blog/must-have-items-skater-girl.html</loc>
     <lastmod>2025-02-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
-
-  <!-- Blog Post 3: How To Style A Quiff (Mar 03) -->
   <url>
     <loc>https://belleware-boutique.vercel.app/blog/how-to-style-a-quiff.html</loc>
     <lastmod>2025-03-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
-
-  <!-- Blog Post 4: Runway Inspired Trends (May 01) -->
   <url>
     <loc>https://belleware-boutique.vercel.app/blog/runway-inspired-trends.html</loc>
     <lastmod>2025-05-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
-
-  <!-- Blog Post 5: AW20 Menswear Trends (May 17) -->
   <url>
     <loc>https://belleware-boutique.vercel.app/blog/aw20-menswear-trends.html</loc>
     <lastmod>2025-05-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
-
-
-  <!-- ======================================================
-       INFORMATIONAL PAGES — About, Contact, Policies
-       ====================================================== -->
-
-  <!-- About Us -->
-  <url>
-    <loc>https://belleware-boutique.vercel.app/about.html</loc>
-    <lastmod>2025-05-10</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <!-- Contact -->
-  <url>
-    <loc>https://belleware-boutique.vercel.app/contact.html</loc>
-    <lastmod>2025-05-10</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.65</priority>
-  </url>
-
-  <!-- Contact (capital C version — your site has both) -->
-  <url>
-    <loc>https://belleware-boutique.vercel.app/Contact.html</loc>
-    <lastmod>2025-05-10</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.65</priority>
-  </url>
-
-
-  <!-- ======================================================
-       ACCOUNT & AUTH PAGES
-       Note: These are lower priority — Google does not need
-       to index login/cart pages for SEO, but including them
-       helps Google understand your site structure.
-       ====================================================== -->
-
-  <!-- Sign In / Auth -->
-  <url>
-    <loc>https://belleware-boutique.vercel.app/auth.html</loc>
-    <lastmod>2025-05-10</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
-
-  <!-- Shopping Cart -->
-  <url>
-    <loc>https://belleware-boutique.vercel.app/cart.html</loc>
-    <lastmod>2025-05-10</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
-
-  <!-- My Account -->
-  <url>
-    <loc>https://belleware-boutique.vercel.app/account.html</loc>
-    <lastmod>2025-05-10</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
-
-
 </urlset>
