@@ -3,7 +3,7 @@ import {
   initializeApp,
   getApps,
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 import {
   getFirestore,
   collection,
@@ -53,6 +53,9 @@ export {
   serverTimestamp,
   updateDoc,
 };
+
+// Export Auth functions
+export { onAuthStateChanged };
 
 // ================= BEST SELLING PRODUCTS FROM ADMIN DASHBOARD =================
 export async function fetchBestSellingProductsFromAdmin() {

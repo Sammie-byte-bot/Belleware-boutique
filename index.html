@@ -157,44 +157,6 @@
 .btn-submit:hover {
   background: #0b5ed7;
 }
-    /* Header layout */
-    .header-top {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 16px;
-      flex-wrap: nowrap;
-    }
-
-    .header-top .logo {
-      flex: 0 0 auto;
-      font-size: 20px;
-      text-decoration: none;
-    }
-
-    .profile-wrapper {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      flex: 0 0 auto;
-    }
-
-    .profile-greet {
-      display: inline-block;
-      white-space: nowrap;
-      font-size: 14px;
-      font-weight: 600;
-      color: #222;
-      margin-left: 6px;
-      flex: 0 0 auto;
-    }
-
-    .top-icons {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex: 0 0 auto;
-    }
 
     /* WhatsApp-like search input + button */
     .search-container {
@@ -259,16 +221,6 @@
     }
 
     .search-btn:hover { filter: brightness(0.95); transform: translateY(-1px); }
-
-    /* Ensure button remains visible on narrow screens (iPhone X ~375px) */
-    @media (max-width: 420px) {
-      .header-top { gap: 8px; padding: 8px 10px; flex-wrap: wrap; align-items: center; }
-      .search-input { padding: 8px 10px 8px 36px; font-size: 13px; }
-      .logo { order: 0; flex: 0 0 auto; }
-      .profile-wrapper, .top-icons { order: 1; flex: 0 0 auto; }
-      .search-container { order: 2; flex: 1 1 100%; min-width: 0; margin-top: 8px; }
-      .search-btn { padding: 8px 10px; }
-    }
 
     </style>
     </head>
@@ -370,9 +322,6 @@
           <!-- Main Nav Links -->
           <li><a href="index.html" class="active">Home</a></li>
           <li><a href="shop.html">Shop</a></li>
-          <li><a href="blog.html">Blog</a></li>
-          <li><a href="about.html">About</a></li>
-          <li><a href="contact.html">Contact</a></li>
         </ul>
       </nav>
 
@@ -391,6 +340,24 @@
           <ul id="mobileCategories">
             <!-- Categories will be populated dynamically -->
           </ul>
+        </div>
+
+        <div class="menu-section">
+          <h4>Other Pages</h4>
+          <div class="help-links">
+            <a href="blog.html" class="help-link">
+              <i class="fas fa-pencil-alt"></i>
+              <span>Blog</span>
+            </a>
+            <a href="about.html" class="help-link">
+              <i class="fas fa-info-circle"></i>
+              <span>About</span>
+            </a>
+            <a href="contact.html" class="help-link">
+              <i class="fas fa-envelope"></i>
+              <span>Contact</span>
+            </a>
+          </div>
         </div>
 
         <div class="menu-section help-settings">

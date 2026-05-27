@@ -47,6 +47,8 @@ const CATEGORY_IMAGES = {
 const carouselState = {
   currentIndex: 0,
   slides: [],
+  autoplayInterval: 5000, // ms between slides
+  autoplayId: null,
 };
 
 // ================= HELPERS (copied exactly from shop.js for identical cards) =================
@@ -264,6 +266,8 @@ function initCarouselControls() {
 
   renderCarouselDots(carouselState.slides.length);
   activateCarouselSlide(carouselState.currentIndex);
+  // Start autoplay when controls initialize
+  startAutoplay();
 
   // Click handlers for previous button
   if (prevBtn) {
@@ -272,6 +276,8 @@ function initCarouselControls() {
         (carouselState.currentIndex - 1 + carouselState.slides.length) %
         carouselState.slides.length;
       activateCarouselSlide(nextIndex);
+      // restart autoplay after manual interaction
+      startAutoplay();
     });
   }
 
@@ -281,6 +287,8 @@ function initCarouselControls() {
       const nextIndex =
         (carouselState.currentIndex + 1) % carouselState.slides.length;
       activateCarouselSlide(nextIndex);
+      // restart autoplay after manual interaction
+      startAutoplay();
     });
   }
 
@@ -292,6 +300,7 @@ function initCarouselControls() {
       const index = Number(target.dataset.index);
       if (!Number.isNaN(index)) {
         activateCarouselSlide(index);
+        startAutoplay();
       }
     });
   }
@@ -314,6 +323,8 @@ function initCarouselControls() {
       (e) => {
         touchEndX = e.changedTouches[0].screenX;
         handleSwipe();
+        // resume autoplay after touch
+        startAutoplay();
       },
       false,
     );
@@ -328,17 +339,51 @@ function initCarouselControls() {
           const nextIndex =
             (carouselState.currentIndex + 1) % carouselState.slides.length;
           activateCarouselSlide(nextIndex);
+          startAutoplay();
         } else {
           // Swiped right - show previous slide
           const nextIndex =
             (carouselState.currentIndex - 1 + carouselState.slides.length) %
             carouselState.slides.length;
           activateCarouselSlide(nextIndex);
+          startAutoplay();
         }
       }
     }
   }
 }
+
+// AUTOPLAY helpers
+function startAutoplay() {
+  try {
+    stopAutoplay();
+    if (!carouselState.slides || carouselState.slides.length === 0) return;
+    carouselState.autoplayId = setInterval(() => {
+      const nextIndex =
+        (carouselState.currentIndex + 1) % carouselState.slides.length;
+      activateCarouselSlide(nextIndex);
+    }, carouselState.autoplayInterval);
+  } catch (e) {
+    console.error("Autoplay start failed", e);
+  }
+}
+
+function stopAutoplay() {
+  if (carouselState.autoplayId) {
+    clearInterval(carouselState.autoplayId);
+    carouselState.autoplayId = null;
+  }
+}
+
+// Pause/resume on pointer interactions
+document.addEventListener("DOMContentLoaded", () => {
+  const carouselEl = document.querySelector(".carousel-wrapper");
+  if (!carouselEl) return;
+  carouselEl.addEventListener("mouseenter", stopAutoplay);
+  carouselEl.addEventListener("mouseleave", startAutoplay);
+  carouselEl.addEventListener("touchstart", stopAutoplay, { passive: true });
+  carouselEl.addEventListener("touchend", startAutoplay, { passive: true });
+});
 
 function renderCarouselDots(count) {
   const dotsContainer = document.querySelector(".carousel-dots");

@@ -380,12 +380,42 @@
       const deliveryFee = supportedAreas[defaultArea];
 
       const rawOrder = localStorage.getItem("pendingOrder");
-      if (!rawOrder) {
-        alert("No pending order found");
-        window.location.href = "cart.html";
+      let pendingOrder = rawOrder ? JSON.parse(rawOrder) : null;
+
+      function getCartStorageKey(userId) {
+        return userId ? `cart_${userId}` : "cart_guest";
       }
 
-      const pendingOrder = JSON.parse(rawOrder);
+      function buildPendingOrderFromCart(cartItems) {
+        const subtotal = cartItems.reduce(
+          (sum, item) =>
+            sum + (Number(item.price) || 0) * (Number(item.quantity) || 1),
+          0,
+        );
+        return {
+          items: cartItems,
+          subtotal,
+          deliveryFee,
+          total: subtotal + deliveryFee,
+          createdAt: Date.now(),
+          status: "CHECKOUT",
+        };
+      }
+
+      async function ensurePendingOrder(user) {
+        if (pendingOrder) return true;
+
+        const cartKey = getCartStorageKey(user?.uid);
+        const cartItems = JSON.parse(localStorage.getItem(cartKey)) || [];
+
+        if (!cartItems.length) {
+          return false;
+        }
+
+        pendingOrder = buildPendingOrderFromCart(cartItems);
+        localStorage.setItem("pendingOrder", JSON.stringify(pendingOrder));
+        return true;
+      }
 
       const orderItemsContainer = document.getElementById("order-items");
       const subtotalEl = document.getElementById("subtotal");
@@ -426,10 +456,20 @@
         grandTotalEl.textContent = subtotal + deliveryFee;
       }
 
-      renderOrderItems();
-
       let currentUser = null;
       let currentStep = 1;
+
+      async function initializeCheckoutForUser(user) {
+        const hasOrder = await ensurePendingOrder(user);
+        if (!hasOrder) {
+          alert("No pending order found");
+          window.location.href = "cart.html";
+          return false;
+        }
+
+        renderOrderItems();
+        return true;
+      }
 
       // Multi-step navigation functions
       function showStep(step) {
@@ -539,6 +579,8 @@
 
         // Pre-fill user data
         await prefillUserData(user);
+
+        await initializeCheckoutForUser(user);
       });
 
       // Handle delivery area change

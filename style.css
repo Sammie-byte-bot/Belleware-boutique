@@ -39,6 +39,24 @@
   --radius-xl: 24px;
 }
 
+@media (max-width: 768px) {
+  :root {
+    --header-height: 120px;
+  }
+}
+
+@media (max-width: 600px) {
+  :root {
+    --header-height: 110px;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --header-height: 100px;
+  }
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -572,16 +590,33 @@ nav.nav-bar {
 .menu-header {
   position: sticky;
   top: 0;
-  background-color: white;
+  background: linear-gradient(180deg, #111111 0%, #181818 100%);
+  color: #f4f1e7;
   z-index: 1001;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #eee;
-  padding: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 24px 20px;
   margin: 0;
-  font-weight: bold;
   box-sizing: border-box;
+}
+
+.menu-header span {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+}
+
+.menu-header span::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #d4af37;
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.35);
 }
 
 #closeMenu {
@@ -589,27 +624,108 @@ nav.nav-bar {
   border: none;
   font-size: 24px;
   cursor: pointer;
+  color: #f4f1e7;
 }
 
 .menu-section {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .menu-section h4 {
-  color: #555;
-  margin-bottom: 10px;
+  color: #1f2937;
+  margin-bottom: 12px;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
 }
 
 .menu-section a {
   display: block;
-  padding: 10px 0;
+  padding: 12px 0;
   text-decoration: none;
   color: #333;
   border-bottom: 1px solid #f4f4f4;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-weight: 500;
+  font-weight: 600;
+}
+
+.mobile-cat-btn {
+  width: 100%;
+  text-align: left;
+  padding: 14px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  font-size: 0.95rem;
+  background: #ffffff;
+  color: #111827;
+  cursor: pointer;
+  transition:
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    transform 0.2s ease;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+}
+
+.mobile-cat-btn:hover,
+.mobile-cat-btn:focus {
+  background: #f8fafc;
+  border-color: #d1d5db;
+  transform: translateY(-1px);
+}
+
+.mobile-cat-icon {
+  display: inline-flex;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: linear-gradient(
+    135deg,
+    rgba(212, 175, 55, 0.12),
+    rgba(17, 24, 39, 0.08)
+  );
+  justify-content: center;
+  align-items: center;
+  color: #111827;
+  font-size: 16px;
+}
+
+.mobile-cat-label {
+  font-size: 0.96rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: #111827;
+}
+
+.mobile-cat-arrow {
+  color: #9ca3af;
+  font-size: 0.85rem;
+}
+
+#mobileCategories {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 12px;
+}
+
+#mobileCategories li {
+  margin: 0;
+}
+
+.mobile-category-empty {
+  padding: 14px 16px;
+  color: #6b7280;
+  font-size: 0.95rem;
+  background: #fafafa;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
 }
 
 /* Help & Settings: keep links fixed bottom-left of the section */
@@ -647,6 +763,12 @@ nav.nav-bar {
   width: 18px;
   height: 18px;
   flex: 0 0 18px;
+}
+
+.mobile-category-empty {
+  padding: 10px 12px;
+  color: #6b7280;
+  font-size: 0.95rem;
 }
 
 /* Pinned Sign-out in Help & Settings */
@@ -1822,7 +1944,6 @@ a.cart-link {
   }
 
   /* Note: consolidated carousel-slide height rules in mobile optimization section below */
-}
 
   .carousel-overlay h2 {
     font-size: 24px;
@@ -8182,6 +8303,77 @@ f .recently-viewed {
     padding: 12px 0;
   }
 
+  /* --------------------
+   Focused Responsive Enhancements
+   -------------------- */
+  @media (max-width: 768px) {
+    /* Hide inline nav links on small screens, show hamburger */
+    .nav-links > li {
+      display: none !important;
+    }
+    .menu-btn {
+      display: block !important;
+    }
+
+    /* Ensure side menu and overlay behave nicely */
+    .side-menu {
+      width: 85% !important;
+      max-width: 420px !important;
+    }
+    .side-menu.is-active {
+      transform: translateX(0) !important;
+    }
+    .overlay.is-active {
+      opacity: 1 !important;
+      visibility: visible !important;
+    }
+
+    /* Carousel: reduce height for small viewports */
+    .carousel-wrapper {
+      height: 50vh !important;
+    }
+
+    /* Product grid: use two columns on tablets/large phones */
+    #productsGrid {
+      grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    /* Single product: stack gallery & details and make images fluid */
+    .product-wrapper {
+      display: block !important;
+    }
+    .product-gallery .main-image img,
+    .product-gallery .thumbnails img {
+      max-width: 100% !important;
+      height: auto !important;
+    }
+    .product-details {
+      padding: 16px !important;
+    }
+
+    /* Footer: stack and center */
+    footer {
+      padding: 20px 12px !important;
+      text-align: center !important;
+    }
+  }
+
+  @media (max-width: 375px) {
+    /* Very small phones: single column products */
+    #productsGrid {
+      grid-template-columns: 1fr !important;
+    }
+    .carousel-wrapper {
+      height: 40vh !important;
+    }
+    .overlay-content {
+      width: 95% !important;
+    }
+    .logo {
+      font-size: 14px !important;
+    }
+  }
+
   .promo-code {
     margin: 12px 0;
   }
@@ -8556,5 +8748,130 @@ f .recently-viewed {
 
   .variant select {
     font-size: 16px;
+  }
+}
+
+/* Homepage carousel mobile fit and visibility fixes */
+@media (max-width: 768px) {
+  .jumia-carousel {
+    margin-top: 0 !important;
+    padding-top: 100px !important;
+  }
+
+  .carousel-wrapper {
+    height: 56vh !important;
+    min-height: 320px !important;
+    max-height: 62vh !important;
+  }
+
+  .overlay-content {
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: 92% !important;
+    padding: 0 14px !important;
+    text-align: center !important;
+  }
+
+  .overlay-headline {
+    font-size: clamp(1.8rem, 6vw, 2.8rem) !important;
+    line-height: 1.05 !important;
+  }
+
+  .overlay-sub {
+    font-size: 0.95rem !important;
+    margin-bottom: 18px !important;
+  }
+
+  .cta-row {
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    justify-content: center !important;
+    gap: 10px !important;
+    width: 100% !important;
+    align-items: center !important;
+  }
+
+  .cta-btn {
+    width: 48% !important;
+    max-width: none !important;
+    padding: 10px 14px !important;
+    font-size: 0.85rem !important;
+  }
+
+  .carousel-prev,
+  .carousel-next {
+    position: absolute !important;
+    width: 46px !important;
+    height: 46px !important;
+    top: 50% !important;
+    bottom: auto !important;
+    transform: translateY(-50%) !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    color: #111 !important;
+    border-color: rgba(0, 0, 0, 0.14) !important;
+    z-index: 20 !important;
+  }
+
+  .carousel-prev {
+    left: 10px !important;
+  }
+
+  .carousel-next {
+    right: 10px !important;
+  }
+
+  .carousel-dots {
+    bottom: 8px !important;
+    gap: 6px !important;
+  }
+
+  .carousel-dot {
+    width: 8px !important;
+    height: 8px !important;
+  }
+
+  .carousel-dot.active {
+    width: 10px !important;
+    height: 10px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .carousel-wrapper {
+    height: 58vh !important;
+    min-height: 300px !important;
+  }
+
+  .overlay-content {
+    top: 50% !important;
+    width: 96% !important;
+  }
+
+  .overlay-headline {
+    font-size: clamp(1.4rem, 7vw, 2rem) !important;
+  }
+
+  .overlay-sub {
+    font-size: 0.8rem !important;
+  }
+
+  .cta-row {
+    gap: 8px !important;
+  }
+
+  .cta-btn {
+    width: 46% !important;
+    font-size: 0.78rem !important;
+    padding: 9px 12px !important;
+  }
+
+  .carousel-prev,
+  .carousel-next {
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  .carousel-dots {
+    bottom: 6px !important;
   }
 }

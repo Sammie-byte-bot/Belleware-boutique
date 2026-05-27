@@ -1,15 +1,10 @@
 // =====================================================
 // FIREBASE SETUP
 // =====================================================
-// Modular Firebase imports (tree-shaking friendly)
-
+// Reuse the shared Firebase configuration from firebase.js
 import {
-  initializeApp,
-  getApps,
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-
-import {
-  getFirestore,
+  auth,
+  db,
   collection,
   query,
   where,
@@ -17,34 +12,9 @@ import {
   orderBy,
   doc,
   getDoc,
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-import {
-  getAuth,
+  serverTimestamp,
   onAuthStateChanged,
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-// Timestamp used when creating reviews
-import { serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-// =====================================================
-// FIREBASE CONFIGURATION
-// =====================================================
-
-const firebaseConfig = {
-  apiKey: "YOUR_KEY",
-  authDomain: "bellewear-boutique.firebaseapp.com",
-  projectId: "bellewear-boutique",
-  storageBucket: "bellewear-boutique.firebasestorage.app",
-  messagingSenderId: "795858464616",
-  appId: "1:795858464616:web:0bbf307b3da145766ff0dd",
-};
-
-// Prevent multiple firebase initializations
-const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
-
-const db = getFirestore(app);
-const auth = getAuth(app);
+} from "./firebase.js";
 
 // =====================================================
 // DOM ELEMENTS
@@ -582,6 +552,17 @@ function showToast(message) {
   }, 2500);
 }
 
+function saveCartItems(cart) {
+  localStorage.setItem(getCartKey(), JSON.stringify(cart));
+  window.dispatchEvent(new CustomEvent("cart:updated"));
+}
+
+function updateHeaderCartCount(cart) {
+  if (!cartCountEl) return;
+  const total = cart.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
+  cartCountEl.textContent = total;
+}
+
 // =====================================================
 // ADD TO CART HANDLER
 // =====================================================
@@ -651,15 +632,9 @@ function handleAddToCart() {
     cart.push(cartItem);
   }
 
-  localStorage.setItem(cartKey, JSON.stringify(cart));
+  saveCartItems(cart);
+  updateHeaderCartCount(cart);
   showToast(`${currentProductData.name} added to cart!`);
-
-  // Update cart count in header
-  const cartCountEl = document.querySelector(".cart-count");
-  if (cartCountEl) {
-    const total = cart.reduce((sum, item) => sum + item.quantity, 0);
-    cartCountEl.textContent = total;
-  }
 }
 
 // =====================================================
@@ -731,7 +706,8 @@ function handleBuyNow() {
     cart.push(cartItem);
   }
 
-  localStorage.setItem(cartKey, JSON.stringify(cart));
+  saveCartItems(cart);
+  updateHeaderCartCount(cart);
 
   // Calculate totals
   const subtotal = cart.reduce(

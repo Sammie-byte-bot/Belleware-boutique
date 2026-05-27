@@ -1,19 +1,86 @@
 import "./firebase.js";
 import { initReviews } from "./reviews.js";
 
+const GLOBAL_CATEGORY_ICONS = {
+  watches: "fa-watch",
+  hoodies: "fa-shirt",
+  caps: "fa-hat-cowboy",
+  shoes: "fa-shoe-prints",
+  sneakers: "fa-shoe-prints",
+  slides: "fa-shoe-prints",
+  shirts: "fa-shirt",
+  "t-shirts": "fa-tshirt",
+  accessories: "fa-box-open",
+  bags: "fa-shopping-bag",
+  jewelry: "fa-gem",
+};
+
+const GLOBAL_CATEGORY_LIST = [
+  "Watches",
+  "Hoodies",
+  "Caps",
+  "Shoes",
+  "Sneakers",
+  "Slides",
+  "Shirts",
+  "T-Shirts",
+  "Accessories",
+  "Bags",
+  "Jewelry",
+];
+
+function renderGlobalMobileCategories(categories) {
+  const mobileCategoriesEl = document.getElementById("mobileCategories");
+  if (!mobileCategoriesEl || mobileCategoriesEl.childElementCount > 0) return;
+
+  mobileCategoriesEl.innerHTML = categories
+    .map((category) => {
+      const key = category.toLowerCase().replace(/\s+/g, "-");
+      const iconClass = GLOBAL_CATEGORY_ICONS[key] || "fa-tags";
+      return `
+        <li>
+          <button type="button" class="mobile-cat-btn" data-category="${category}">
+            <span class="mobile-cat-icon"><i class="fas ${iconClass}"></i></span>
+            <span class="mobile-cat-label">${category}</span>
+            <span class="mobile-cat-arrow"><i class="fas fa-chevron-right"></i></span>
+          </button>
+        </li>
+      `;
+    })
+    .join("");
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const header = document.getElementById("header");
   function setHeaderVar() {
     if (!header) return;
-    const h = header.offsetHeight || 0;
+    const h = header.offsetHeight || 88; // desktop fallback
     document.documentElement.style.setProperty("--header-height", `${h}px`);
+
+    // Mobile fallback via media query detection
+    if (window.matchMedia("(max-width: 768px)").matches) {
+      // Force mobile height recalc ~120px for top+nav
+      const estimatedMobileHeight = Math.max(h, 120);
+      document.documentElement.style.setProperty(
+        "--header-height",
+        `${estimatedMobileHeight}px`,
+      );
+    }
   }
+
   setHeaderVar();
   let rh;
   window.addEventListener("resize", () => {
     if (rh) cancelAnimationFrame(rh);
     rh = requestAnimationFrame(setHeaderVar);
   });
+
+  // Enhanced ResizeObserver for viewport/media changes
+  const resizeObserver = new ResizeObserver(() => {
+    requestAnimationFrame(setHeaderVar);
+  });
+  if (header) resizeObserver.observe(header);
+
   if (header) {
     const mo = new MutationObserver(() => {
       if (rh) cancelAnimationFrame(rh);
@@ -28,6 +95,49 @@ document.addEventListener("DOMContentLoaded", () => {
     const productId = productEl.dataset.productId;
     initReviews(productId);
   }
+
+  // Dispatch custom event for other scripts to listen
+  window.dispatchEvent(new CustomEvent("header:height-updated"));
+  // Mobile menu toggle (open/close side menu + overlay)
+  const menuBtn = document.getElementById("menuBtn");
+  const sideMenu = document.getElementById("sideMenu");
+  const closeMenuBtn = document.getElementById("closeMenu");
+  const overlayEl = document.getElementById("overlay");
+
+  function openSideMenu() {
+    if (sideMenu) sideMenu.classList.add("is-active");
+    if (overlayEl) overlayEl.classList.add("is-active");
+    if (menuBtn) menuBtn.setAttribute("aria-expanded", "true");
+    document.documentElement.style.overflow = "hidden";
+  }
+
+  function closeSideMenu() {
+    if (sideMenu) sideMenu.classList.remove("is-active");
+    if (overlayEl) overlayEl.classList.remove("is-active");
+    if (menuBtn) menuBtn.setAttribute("aria-expanded", "false");
+    document.documentElement.style.overflow = "";
+  }
+
+  if (menuBtn) menuBtn.addEventListener("click", openSideMenu);
+  if (closeMenuBtn) closeMenuBtn.addEventListener("click", closeSideMenu);
+  if (overlayEl) overlayEl.addEventListener("click", closeSideMenu);
+
+  renderGlobalMobileCategories(GLOBAL_CATEGORY_LIST);
+
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest(".mobile-cat-btn");
+    if (!btn) return;
+    if (document.getElementById("filter-category")) return;
+
+    const category = btn.dataset.category;
+    if (!category) return;
+
+    window.location.href = `shop.html?q=${encodeURIComponent(category)}`;
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeSideMenu();
+  });
 });
 
 // =======================
@@ -161,12 +271,16 @@ function updateProfileUI() {
     profileGreeting.textContent = currentUser
       ? `Hello, ${greetingName}`
       : stored
-      ? `Hello, ${greetingName}`
-      : "Sign In";
+        ? `Hello, ${greetingName}`
+        : "Sign In";
   }
 
   if (profileUserName) {
-    profileUserName.textContent = currentUser ? authEmail : stored ? authDisplay : "";
+    profileUserName.textContent = currentUser
+      ? authEmail
+      : stored
+        ? authDisplay
+        : "";
   }
 
   if (userNameSpan) {
@@ -666,6 +780,10 @@ onAuthStateChanged(auth, (user) => {
 });
 
 document.addEventListener("DOMContentLoaded", initCartWishlistPages);
+window.addEventListener("cart:updated", () => {
+  updateCartCountHeader();
+  if (isCartPage()) renderCartPage();
+});
 document.addEventListener("DOMContentLoaded", initGlobalSearch);
 document.addEventListener("DOMContentLoaded", () => {
   updateProfileUI();

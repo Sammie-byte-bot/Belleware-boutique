@@ -63,6 +63,20 @@ function renderPrice(product) {
   return `<div class="current-price">Ksh ${price}</div>`;
 }
 
+const CATEGORY_ICONS = {
+  watches: "fa-watch",
+  hoodies: "fa-shirt",
+  caps: "fa-hat-cowboy",
+  shoes: "fa-shoe-prints",
+  sneakers: "fa-shoe-prints",
+  slides: "fa-shoe-prints",
+  shirts: "fa-shirt",
+  "t-shirts": "fa-tshirt",
+  accessories: "fa-box-open",
+  bags: "fa-shopping-bag",
+  jewelry: "fa-gem",
+};
+
 // ================= CARD =================
 function createProductCard(product) {
   const image =
@@ -511,6 +525,7 @@ function populateFilters(products) {
   const categories = [
     ...new Set(products.map((p) => p.category).filter(Boolean)),
   ];
+  console.debug("shop.js populateFilters categories:", categories);
 
   // Extract unique brands
   const brands = [...new Set(products.map((p) => p.brand).filter(Boolean))];
@@ -542,6 +557,41 @@ function populateFilters(products) {
       </label>
     `,
       )
+      .join("");
+  }
+
+  // Fall back to a polished category shortlist if the product feed has no category data yet
+  const categoryList =
+    categories.length > 0
+      ? categories
+      : [
+          "Watches",
+          "Hoodies",
+          "Caps",
+          "Shoes",
+          "Sneakers",
+          "Slides",
+          "Shirts",
+          "T-Shirts",
+        ];
+
+  // Populate mobile side menu categories (for the hamburger menu)
+  const mobileCategoriesEl = document.getElementById("mobileCategories");
+  if (mobileCategoriesEl) {
+    mobileCategoriesEl.innerHTML = categoryList
+      .map((category) => {
+        const key = category.toLowerCase().replace(/\s+/g, "-");
+        const iconClass = CATEGORY_ICONS[key] || "fa-tags";
+        return `
+        <li>
+          <button type="button" class="mobile-cat-btn" data-category="${category}">
+            <span class="mobile-cat-icon"><i class="fas ${iconClass}"></i></span>
+            <span class="mobile-cat-label">${category}</span>
+            <span class="mobile-cat-arrow"><i class="fas fa-chevron-right"></i></span>
+          </button>
+        </li>
+      `;
+      })
       .join("");
   }
 }
@@ -583,6 +633,40 @@ function initShopPage() {
     ) {
       applyFilters();
     }
+  });
+
+  // Handle taps on mobile side menu categories
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest(".mobile-cat-btn");
+    if (!btn) return;
+    const category = btn.dataset.category;
+    if (!category) return;
+
+    const checkbox = Array.from(
+      document.querySelectorAll("#filter-category input"),
+    ).find((input) => input.value === category);
+
+    if (checkbox) {
+      checkbox.checked = !checkbox.checked;
+      applyFilters();
+    } else {
+      const container = document.getElementById("filter-category");
+      if (container) {
+        const label = document.createElement("label");
+        label.className =
+          "flex items-center gap-2 cursor-pointer py-1.5 hover:text-[#088178]";
+        label.innerHTML = `\n            <input type=\"checkbox\" value=\"${category}\" checked class=\"w-4 h-4 text-[#088178] rounded border-gray-300 focus:ring-[#088178]\" />\n            <span class=\"text-sm text-gray-700\">${category}</span>\n          `;
+        container.appendChild(label);
+        applyFilters();
+      } else {
+        filteredProducts = allProducts.filter((p) => p.category === category);
+        displayProducts(filteredProducts);
+      }
+    }
+
+    // Close side menu
+    const closeBtn = document.getElementById("closeMenu");
+    if (closeBtn) closeBtn.click();
   });
 
   const clearBtn = document.getElementById("clear-all-filters");
