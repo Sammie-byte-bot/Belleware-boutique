@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<<<<<<< HEAD
 <!--
   ============================================================
   SITEMAP — BELLEWEAR BOUTIQUE
@@ -142,44 +143,125 @@
   </url>
 
   <!-- Blog Post 1: Cotton Jersey Zip Up Hoodies (Jan 13) -->
+=======
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Core Pages -->
+  <url>
+    <loc>https://belleware-boutique.vercel.app/</loc>
+    <lastmod>2025-05-20</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://belleware-boutique.vercel.app/shop.html</loc>
+    <lastmod>2025-05-20</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://belleware-boutique.vercel.app/blog.html</loc>
+    <lastmod>2025-05-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://belleware-boutique.vercel.app/about.html</loc>
+    <lastmod>2025-05-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://belleware-boutique.vercel.app/contact.html</loc>
+    <lastmod>2025-05-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Categories -->
+  <url>
+    <loc>https://belleware-boutique.vercel.app/shop.html?category=watches</loc>
+    <lastmod>2025-05-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://belleware-boutique.vercel.app/shop.html?category=hoodies</loc>
+    <lastmod>2025-05-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://belleware-boutique.vercel.app/shop.html?category=caps</loc>
+    <lastmod>2025-05-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://belleware-boutique.vercel.app/shop.html?category=shoes</loc>
+    <lastmod>2025-05-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://belleware-boutique.vercel.app/shop.html?category=sneakers</loc>
+    <lastmod>2025-05-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Blog Posts -->
+>>>>>>> 457857ec85a3edc5ef4eaa1c8466dd1570fa5c5b
   <url>
     <loc>https://belleware-boutique.vercel.app/blog/cotton-jersey-zip-up-hoodies.html</loc>
     <lastmod>2025-01-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+<<<<<<< HEAD
 
   <!-- Blog Post 2: Must Have Items For A Skater Girl (Feb 09) -->
+=======
+>>>>>>> 457857ec85a3edc5ef4eaa1c8466dd1570fa5c5b
   <url>
     <loc>https://belleware-boutique.vercel.app/blog/must-have-items-skater-girl.html</loc>
     <lastmod>2025-02-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+<<<<<<< HEAD
 
   <!-- Blog Post 3: How To Style A Quiff (Mar 03) -->
+=======
+>>>>>>> 457857ec85a3edc5ef4eaa1c8466dd1570fa5c5b
   <url>
     <loc>https://belleware-boutique.vercel.app/blog/how-to-style-a-quiff.html</loc>
     <lastmod>2025-03-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+<<<<<<< HEAD
 
   <!-- Blog Post 4: Runway Inspired Trends (May 01) -->
+=======
+>>>>>>> 457857ec85a3edc5ef4eaa1c8466dd1570fa5c5b
   <url>
     <loc>https://belleware-boutique.vercel.app/blog/runway-inspired-trends.html</loc>
     <lastmod>2025-05-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+<<<<<<< HEAD
 
   <!-- Blog Post 5: AW20 Menswear Trends (May 17) -->
+=======
+>>>>>>> 457857ec85a3edc5ef4eaa1c8466dd1570fa5c5b
   <url>
     <loc>https://belleware-boutique.vercel.app/blog/aw20-menswear-trends.html</loc>
     <lastmod>2025-05-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+<<<<<<< HEAD
 
 
   <!-- ======================================================
@@ -244,3 +326,6 @@
 
 
 </urlset>
+=======
+</urlset>
+>>>>>>> 457857ec85a3edc5ef4eaa1c8466dd1570fa5c5b
