@@ -11,8 +11,10 @@
     <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="fontawesome-free-7.1.0-web/css/all.css" />
 
+    <!-- Paystack inline script -->
+    <script src="https://js.paystack.co/v1/inline.js"></script>
+
     <style>
-      /* READ-ONLY ORDER ITEMS */
       .order-item {
         display: flex;
         align-items: center;
@@ -20,7 +22,6 @@
         padding: 0.8rem 0;
         border-bottom: 1px dashed #ccc;
       }
-
       .order-item img {
         width: 60px;
         height: 60px;
@@ -28,23 +29,19 @@
         border-radius: 8px;
         margin-right: 10px;
       }
-
       .item-info {
         flex: 1;
         display: flex;
         flex-direction: column;
       }
-
       .item-info span {
         font-size: 0.9rem;
         color: #555;
       }
-
       .delivery-area {
         margin: 1rem 0;
         font-weight: 500;
       }
-
       .checkout-right button {
         padding: 12px;
         width: 100%;
@@ -55,26 +52,22 @@
         color: #fff;
         font-weight: 600;
       }
-
       .checkout-right button:hover {
         opacity: 0.9;
       }
 
-      /* Multi-step checkout styles */
+      /* Multi-step */
       .checkout-step {
         display: none;
       }
-
       .checkout-step.active {
         display: block;
       }
-
       .step-navigation {
         display: flex;
         justify-content: space-between;
         margin-top: 2rem;
       }
-
       .step-navigation button {
         padding: 12px 24px;
         border-radius: 8px;
@@ -83,25 +76,20 @@
         font-weight: 600;
         transition: all 0.3s ease;
       }
-
       .btn-prev {
         background: #f1f5f9;
         color: #333;
       }
-
       .btn-prev:hover {
         background: #e2e8f0;
       }
-
       .btn-next {
         background: #3bc1a8;
         color: #fff;
       }
-
       .btn-next:hover {
         background: #2a9d8f;
       }
-
       .btn-next:disabled {
         background: #ccc;
         cursor: not-allowed;
@@ -112,13 +100,11 @@
         justify-content: center;
         margin-bottom: 2rem;
       }
-
       .step {
         display: flex;
         align-items: center;
         margin: 0 1rem;
       }
-
       .step-circle {
         width: 40px;
         height: 40px;
@@ -130,33 +116,80 @@
         margin-right: 0.5rem;
         transition: all 0.3s ease;
       }
-
       .step-circle.active {
         background: #3bc1a8;
         color: white;
       }
-
       .step-circle.completed {
         background: #2a9d8f;
         color: white;
       }
-
       .step-circle.inactive {
         background: #e2e8f0;
         color: #666;
       }
-
       .step-text {
         font-weight: 600;
         color: #666;
       }
-
       .step.active .step-text {
         color: #3bc1a8;
       }
-
       .step.completed .step-text {
         color: #2a9d8f;
+      }
+
+      /* Payment options */
+      .payment-options {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+      }
+      .payment-option {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 1rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: border-color 0.2s;
+      }
+      .payment-option:has(input:checked) {
+        border-color: #3bc1a8;
+        background: #f0fdfb;
+      }
+      .payment-option input {
+        accent-color: #3bc1a8;
+      }
+
+      /* Paystack notice */
+      .paystack-notice {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: #f0fdfb;
+        border: 1px solid #3bc1a8;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        font-size: 0.85rem;
+        color: #2a9d8f;
+        margin-top: 1rem;
+      }
+      .paystack-notice i {
+        font-size: 1rem;
+      }
+
+      /* M-Pesa info */
+      #mpesa-info {
+        background: #fffbeb;
+        border: 1px solid #f59e0b;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        font-size: 0.85rem;
+        color: #92400e;
+        margin-top: 0.5rem;
       }
     </style>
   </head>
@@ -164,12 +197,14 @@
   <body>
     <!-- NAVBAR -->
     <section id="header">
-      <!-- Logo + Greeting -->
       <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0">
         <a href="index.html" class="logo">Bellewear <span>Boutique</span></a>
-        <span class="profile-greet" style="white-space: nowrap; font-size: 12px"
-          >Hello, <span id="userName">Guest</span></span
+        <span
+          class="profile-greet"
+          style="white-space: nowrap; font-size: 12px"
         >
+          Hello, <span id="userName">Guest</span>
+        </span>
       </div>
       <ul id="navbar">
         <li><a href="index.html">Continue shopping</a></li>
@@ -187,7 +222,7 @@
           <span class="step-text">Address</span>
         </div>
         <div class="step" id="step-2">
-          <div class="step-circle inacWtive">2</div>
+          <div class="step-circle inactive">2</div>
           <span class="step-text">Delivery</span>
         </div>
         <div class="step" id="step-3">
@@ -199,7 +234,7 @@
       <div class="checkout-container">
         <!-- CUSTOMER DETAILS & PAYMENT -->
         <div class="checkout-left">
-          <!-- STEP 1: CUSTOMER ADDRESS CARD -->
+          <!-- STEP 1: CUSTOMER ADDRESS -->
           <div class="checkout-step active" id="step1-content">
             <div class="checkout-card">
               <div class="card-number">1</div>
@@ -207,6 +242,14 @@
               <form id="address-form">
                 <label for="full-name">Full Name</label>
                 <input type="text" id="full-name" required />
+
+                <label for="email">Email Address</label>
+                <input
+                  type="email"
+                  id="email"
+                  required
+                  placeholder="For payment receipt"
+                />
 
                 <label for="phone">Phone Number</label>
                 <input type="tel" id="phone" required />
@@ -221,7 +264,7 @@
             </div>
           </div>
 
-          <!-- STEP 2: DELIVERY DETAILS CARD -->
+          <!-- STEP 2: DELIVERY DETAILS -->
           <div class="checkout-step" id="step2-content">
             <div class="checkout-card">
               <div class="card-number">2</div>
@@ -249,51 +292,56 @@
             <div class="checkout-card">
               <div class="card-number">3</div>
               <h3>Payment Method</h3>
+
               <div class="payment-options">
                 <label class="payment-option">
-                  <input type="radio" name="payment" value="mpesa" checked />
-                  <span>M-Pesa</span>
+                  <input type="radio" name="payment" value="card" checked />
+                  <span>💳 Credit / Debit Card</span>
                 </label>
                 <label class="payment-option">
-                  <input type="radio" name="payment" value="card" />
-                  <span>Credit/Debit Card</span>
+                  <input type="radio" name="payment" value="mpesa" />
+                  <span>📱 M-Pesa</span>
                 </label>
                 <label class="payment-option">
                   <input type="radio" name="payment" value="pickup" />
-                  <span>Pickup on our store</span>
+                  <span>🏪 Pickup at our store (Pay on arrival)</span>
                 </label>
               </div>
-              <div id="mpesa-details" class="payment-details">
-                <label for="mpesa-number">M-Pesa Number</label>
-                <input
-                  type="tel"
-                  id="mpesa-number"
-                  placeholder="e.g. 0712345678"
-                />
-              </div>
-              <div id="card-details" class="payment-details hidden">
-                <label for="card-number">Card Number</label>
-                <input
-                  type="text"
-                  id="card-number"
-                  placeholder="1234 5678 9012 3456"
-                />
 
-                <div class="card-row">
-                  <div>
-                    <label for="expiry">Expiry Date</label>
-                    <input type="text" id="expiry" placeholder="MM/YY" />
-                  </div>
-                  <div>
-                    <label for="cvv">CVV</label>
-                    <input type="text" id="cvv" placeholder="123" />
-                  </div>
-                </div>
+              <!-- Shown for card & mpesa -->
+              <div id="paystack-notice" class="paystack-notice">
+                <i class="fas fa-lock"></i>
+                Payments are securely processed by <strong>Paystack</strong>.
+                You will be redirected to a secure checkout popup.
+              </div>
+
+              <!-- M-Pesa tip -->
+              <div id="mpesa-info" style="display: none">
+                <strong>M-Pesa via Paystack:</strong> After clicking "Pay Now",
+                enter your M-Pesa number in the Paystack popup. You'll receive a
+                STK push prompt on your phone.
+              </div>
+
+              <!-- Pickup note -->
+              <div
+                id="pickup-info"
+                style="
+                  display: none;
+                  background: #f1f5f9;
+                  border-radius: 8px;
+                  padding: 0.75rem 1rem;
+                  font-size: 0.85rem;
+                  margin-top: 0.5rem;
+                "
+              >
+                You've chosen to pick up your order. No payment is required now
+                — you'll pay at our store.
               </div>
             </div>
+
             <div class="step-navigation">
               <button class="btn-prev" id="back-to-step2">Previous</button>
-              <button class="btn-next" id="place-order">Place Order</button>
+              <button class="btn-next" id="place-order">Pay Now</button>
             </div>
           </div>
         </div>
@@ -301,19 +349,15 @@
         <!-- ORDER SUMMARY -->
         <div class="checkout-right">
           <h3>Order Summary</h3>
-
           <div id="order-items"></div>
-
           <div class="summary-row">
             <span>Subtotal</span>
             <span>Ksh <span id="subtotal">0</span></span>
           </div>
-
           <div class="summary-row">
             <span>Delivery</span>
             <span>Ksh <span id="delivery-fee">0</span></span>
           </div>
-
           <div class="summary-row total">
             <span>Total</span>
             <span>Ksh <span id="grand-total">0</span></span>
@@ -330,7 +374,6 @@
         </div>
         <h2>Order Placed Successfully</h2>
         <p>Your order has been received and is being processed.</p>
-
         <button id="go-to-orders">View My Orders</button>
       </div>
     </div>
@@ -353,6 +396,7 @@
         getDoc,
       } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
+      // ─── Firebase Config ───────────────────────────────────────────────────────
       const firebaseConfig = {
         apiKey: "AIzaSyD6UqMyedaoaXgqOeddQN47ADgP8joO364",
         authDomain: "bellewear-boutique.firebaseapp.com",
@@ -368,6 +412,12 @@
       const auth = getAuth(app);
       const db = getFirestore(app);
 
+      // ─── Paystack Public Key ────────────────────────────────────────────────────
+      // Switch to your live key when going to production!
+      const PAYSTACK_PUBLIC_KEY =
+        "pk_test_60282976d513502972ea51e68dae3642225ed932";
+
+      // ─── Delivery Areas ─────────────────────────────────────────────────────────
       const supportedAreas = {
         "Nairobi CBD": 150,
         Kangemi: 150,
@@ -376,47 +426,13 @@
         Kinoo: 150,
       };
 
-      const defaultArea = "Uthiru";
-      const deliveryFee = supportedAreas[defaultArea];
-
+      // ─── State ───────────────────────────────────────────────────────────────────
+      let currentUser = null;
+      let currentStep = 1;
       const rawOrder = localStorage.getItem("pendingOrder");
       let pendingOrder = rawOrder ? JSON.parse(rawOrder) : null;
 
-      function getCartStorageKey(userId) {
-        return userId ? `cart_${userId}` : "cart_guest";
-      }
-
-      function buildPendingOrderFromCart(cartItems) {
-        const subtotal = cartItems.reduce(
-          (sum, item) =>
-            sum + (Number(item.price) || 0) * (Number(item.quantity) || 1),
-          0,
-        );
-        return {
-          items: cartItems,
-          subtotal,
-          deliveryFee,
-          total: subtotal + deliveryFee,
-          createdAt: Date.now(),
-          status: "CHECKOUT",
-        };
-      }
-
-      async function ensurePendingOrder(user) {
-        if (pendingOrder) return true;
-
-        const cartKey = getCartStorageKey(user?.uid);
-        const cartItems = JSON.parse(localStorage.getItem(cartKey)) || [];
-
-        if (!cartItems.length) {
-          return false;
-        }
-
-        pendingOrder = buildPendingOrderFromCart(cartItems);
-        localStorage.setItem("pendingOrder", JSON.stringify(pendingOrder));
-        return true;
-      }
-
+      // ─── DOM refs ────────────────────────────────────────────────────────────────
       const orderItemsContainer = document.getElementById("order-items");
       const subtotalEl = document.getElementById("subtotal");
       const deliveryEl = document.getElementById("delivery-fee");
@@ -426,315 +442,394 @@
         "delivery-fee-display",
       );
       const paymentRadios = document.querySelectorAll('input[name="payment"]');
-      const mpesaDetails = document.getElementById("mpesa-details");
-      const cardDetails = document.getElementById("card-details");
       const placeOrderBtn = document.getElementById("place-order");
+      const paystackNotice = document.getElementById("paystack-notice");
+      const mpesaInfo = document.getElementById("mpesa-info");
+      const pickupInfo = document.getElementById("pickup-info");
+
+      // ─── Helpers ─────────────────────────────────────────────────────────────────
+      function getCartStorageKey(userId) {
+        return userId ? `cart_${userId}` : "cart_guest";
+      }
+
+      function buildPendingOrderFromCart(cartItems) {
+        const defaultArea = "Uthiru";
+        const fee = supportedAreas[defaultArea];
+        const subtotal = cartItems.reduce(
+          (sum, item) =>
+            sum + (Number(item.price) || 0) * (Number(item.quantity) || 1),
+          0,
+        );
+        return {
+          items: cartItems,
+          subtotal,
+          deliveryFee: fee,
+          total: subtotal + fee,
+          createdAt: Date.now(),
+          status: "CHECKOUT",
+        };
+      }
+
+      async function ensurePendingOrder(user) {
+        if (pendingOrder) return true;
+        const cartItems =
+          JSON.parse(localStorage.getItem(getCartStorageKey(user?.uid))) || [];
+        if (!cartItems.length) return false;
+        pendingOrder = buildPendingOrderFromCart(cartItems);
+        localStorage.setItem("pendingOrder", JSON.stringify(pendingOrder));
+        return true;
+      }
+
+      function getCurrentDeliveryFee() {
+        const selectedArea = deliveryAreaSelect.value;
+        const paymentMethod = document.querySelector(
+          'input[name="payment"]:checked',
+        )?.value;
+        if (paymentMethod === "pickup") return 0;
+        return supportedAreas[selectedArea] ?? 110;
+      }
+
+      function getCurrentTotal() {
+        const subtotal = parseInt(subtotalEl.textContent) || 0;
+        return subtotal + getCurrentDeliveryFee();
+      }
 
       function renderOrderItems() {
         let subtotal = 0;
         orderItemsContainer.innerHTML = "";
-
         pendingOrder.items.forEach((item) => {
           const itemTotal = item.price * item.quantity;
           subtotal += itemTotal;
-
           const div = document.createElement("div");
           div.className = "order-item";
           div.innerHTML = `
-        <img src="${item.img}" />
-        <div class="item-info">
-          <strong>${item.name}</strong>
-          <span>Qty: ${item.quantity}</span>
-        </div>
-        <span>KES ${itemTotal}</span>
-      `;
+            <img src="${item.img}" alt="${item.name}" />
+            <div class="item-info">
+              <strong>${item.name}</strong>
+              <span>Qty: ${item.quantity}</span>
+            </div>
+            <span>KES ${itemTotal}</span>
+          `;
           orderItemsContainer.appendChild(div);
         });
-
         subtotalEl.textContent = subtotal;
-        deliveryEl.textContent = deliveryFee;
-        grandTotalEl.textContent = subtotal + deliveryFee;
+        const fee = getCurrentDeliveryFee();
+        deliveryEl.textContent = fee;
+        grandTotalEl.textContent = subtotal + fee;
       }
 
-      let currentUser = null;
-      let currentStep = 1;
-
-      async function initializeCheckoutForUser(user) {
-        const hasOrder = await ensurePendingOrder(user);
-        if (!hasOrder) {
-          alert("No pending order found");
-          window.location.href = "cart.html";
-          return false;
-        }
-
-        renderOrderItems();
-        return true;
-      }
-
-      // Multi-step navigation functions
       function showStep(step) {
-        // Hide all steps
-        document.querySelectorAll(".checkout-step").forEach((stepEl) => {
-          stepEl.classList.remove("active");
-        });
-
-        // Show current step
+        document
+          .querySelectorAll(".checkout-step")
+          .forEach((el) => el.classList.remove("active"));
         document.getElementById(`step${step}-content`).classList.add("active");
 
-        // Update step indicators
         for (let i = 1; i <= 3; i++) {
           const stepEl = document.getElementById(`step-${i}`);
           const circle = stepEl.querySelector(".step-circle");
           const text = stepEl.querySelector(".step-text");
-
           if (i < step) {
-            stepEl.classList.remove("active");
-            stepEl.classList.add("completed");
-            circle.classList.remove("active", "inactive");
-            circle.classList.add("completed");
+            stepEl.className = "step completed";
+            circle.className = "step-circle completed";
             text.style.color = "#2a9d8f";
           } else if (i === step) {
-            stepEl.classList.add("active");
-            stepEl.classList.remove("completed");
-            circle.classList.add("active");
-            circle.classList.remove("inactive", "completed");
+            stepEl.className = "step active";
+            circle.className = "step-circle active";
             text.style.color = "#3bc1a8";
           } else {
-            stepEl.classList.remove("active", "completed");
-            circle.classList.add("inactive");
-            circle.classList.remove("active", "completed");
+            stepEl.className = "step";
+            circle.className = "step-circle inactive";
             text.style.color = "#666";
           }
         }
-
         currentStep = step;
       }
 
-      // Pre-fill user data
       async function prefillUserData(user) {
         try {
-          const userRef = doc(db, "users", user.uid);
-          const userSnap = await getDoc(userRef);
-
+          const userSnap = await getDoc(doc(db, "users", user.uid));
           if (userSnap.exists()) {
-            const userData = userSnap.data();
-
-            // Pre-fill full name
-            const fullNameInput = document.getElementById("full-name");
-            if (userData.fullName) {
-              fullNameInput.value = userData.fullName;
+            const d = userSnap.data();
+            if (d.fullName)
+              document.getElementById("full-name").value = d.fullName;
+            if (d.phone) document.getElementById("phone").value = d.phone;
+            if (d.email || user.email)
+              document.getElementById("email").value = d.email || user.email;
+            if (d.address && typeof d.address === "object") {
+              const a = d.address;
+              const str =
+                `${a.streetAddress || ""}\n${a.city || ""}\n${a.postalCode || ""}\n${a.country || ""}`.trim();
+              if (str) document.getElementById("address").value = str;
             }
-
-            // Pre-fill phone
-            const phoneInput = document.getElementById("phone");
-            if (userData.phone) {
-              phoneInput.value = userData.phone;
-            }
-
-            // Pre-fill address
-            const addressTextarea = document.getElementById("address");
-            if (userData.address && typeof userData.address === "object") {
-              const addr = userData.address;
-              const addressString =
-                `${addr.streetAddress || ""}\n${addr.city || ""}\n${addr.postalCode || ""}\n${addr.country || ""}`.trim();
-              if (addressString) {
-                addressTextarea.value = addressString;
-              }
-            }
+          } else {
+            // Fallback: use Firebase Auth email
+            if (user.email) document.getElementById("email").value = user.email;
           }
-        } catch (error) {
-          console.error("Error fetching user data:", error);
+        } catch (err) {
+          console.error("Prefill error:", err);
         }
       }
 
       async function verifyUserAccount(user) {
         try {
-          const userRef = doc(db, "users", user.uid);
-          const userSnap = await getDoc(userRef);
-          if (!userSnap.exists()) {
+          const snap = await getDoc(doc(db, "users", user.uid));
+          if (!snap.exists()) {
             alert("Please complete your account before checkout.");
             window.location.href = "auth.html";
             return false;
           }
           return true;
-        } catch (error) {
-          console.error("Error verifying user account:", error);
+        } catch (err) {
           alert("Unable to verify account. Please login again.");
           window.location.href = "auth.html";
           return false;
         }
       }
 
+      // ─── Save order to Firestore (called after payment confirmed) ────────────────
+      async function saveOrderToFirestore({ paymentReference, paymentMethod }) {
+        const fullName = document.getElementById("full-name").value.trim();
+        const email = document.getElementById("email").value.trim();
+        const phone = document.getElementById("phone").value.trim();
+        const address = document.getElementById("address").value.trim();
+        const selectedArea = deliveryAreaSelect.value;
+        const fee = getCurrentDeliveryFee();
+        const subtotal = pendingOrder.items.reduce(
+          (s, i) => s + i.price * i.quantity,
+          0,
+        );
+
+        const orderData = {
+          orderId: "ORD-" + Date.now(),
+          userId: currentUser.uid,
+          items: pendingOrder.items,
+          subtotal,
+          deliveryFee: fee,
+          total: subtotal + fee,
+          customerInfo: {
+            fullName,
+            email,
+            phone,
+            address,
+            deliveryArea: selectedArea,
+          },
+          paymentMethod,
+          paymentReference: paymentReference || null,
+          status: paymentMethod === "pickup" ? "PLACED_UNPAID" : "PLACED",
+          createdAt: serverTimestamp(),
+        };
+
+        await addDoc(collection(db, "orders"), orderData);
+
+        // Store receipt data
+        localStorage.setItem("lastReceipt", JSON.stringify(orderData));
+        localStorage.removeItem("pendingOrder");
+        localStorage.removeItem(getCartStorageKey(currentUser.uid));
+
+        return orderData;
+      }
+
+      // ─── Show success and redirect ───────────────────────────────────────────────
+      function onOrderSuccess() {
+        document.getElementById("success-overlay").classList.remove("hidden");
+        placeOrderBtn.disabled = true;
+        setTimeout(() => {
+          window.location.href = "receipt.html";
+        }, 2000);
+      }
+
+      // ─── Expose to window so plain <script> (Paystack) can call them ─────────────
+      window._bw_saveOrder = saveOrderToFirestore;
+      window._bw_onSuccess = onOrderSuccess;
+      window._bw_getCurrentTotal = getCurrentTotal;
+      window._bw_getDeliveryArea = () => deliveryAreaSelect.value;
+      window._bw_placeOrderBtn = () => document.getElementById("place-order");
+
+      // ─── Handle pickup (no payment) ──────────────────────────────────────────────
+      async function handlePickupOrder() {
+        try {
+          placeOrderBtn.disabled = true;
+          placeOrderBtn.textContent = "Placing order...";
+          await saveOrderToFirestore({
+            paymentReference: null,
+            paymentMethod: "pickup",
+          });
+          onOrderSuccess();
+        } catch (err) {
+          console.error("Order failed:", err);
+          alert("Order failed to save. Please try again.");
+          placeOrderBtn.disabled = false;
+          placeOrderBtn.textContent = "Confirm Order";
+        }
+      }
+
+      // ─── Auth ────────────────────────────────────────────────────────────────────
       onAuthStateChanged(auth, async (user) => {
         if (!user) {
           alert("Please login first");
           window.location.href = "auth.html";
           return;
         }
-
         const hasAccount = await verifyUserAccount(user);
         if (!hasAccount) return;
-
         currentUser = user;
-
-        // Pre-fill user data
         await prefillUserData(user);
-
-        await initializeCheckoutForUser(user);
+        const hasOrder = await ensurePendingOrder(user);
+        if (!hasOrder) {
+          alert("No pending order found");
+          window.location.href = "cart.html";
+          return;
+        }
+        renderOrderItems();
       });
 
-      // Handle delivery area change
+      // ─── Delivery area change ────────────────────────────────────────────────────
       deliveryAreaSelect.addEventListener("change", (e) => {
-        const selectedArea = e.target.value;
-        const fee = supportedAreas[selectedArea];
+        const fee = supportedAreas[e.target.value];
         deliveryFeeDisplay.textContent = fee;
         deliveryEl.textContent = fee;
-        const subtotal = parseInt(subtotalEl.textContent);
-        grandTotalEl.textContent = subtotal + fee;
+        grandTotalEl.textContent =
+          (parseInt(subtotalEl.textContent) || 0) + fee;
       });
 
-      // Handle payment method change
+      // ─── Payment method change ───────────────────────────────────────────────────
       paymentRadios.forEach((radio) => {
         radio.addEventListener("change", (e) => {
-          if (e.target.value === "mpesa") {
-            mpesaDetails.classList.remove("hidden");
-            cardDetails.classList.add("hidden");
-          } else if (e.target.value === "card") {
-            mpesaDetails.classList.add("hidden");
-            cardDetails.classList.remove("hidden");
-          } else if (e.target.value === "pickup") {
-            mpesaDetails.classList.add("hidden");
-            cardDetails.classList.add("hidden");
-            // For pickup, set delivery fee to 0
+          const val = e.target.value;
+          paystackNotice.style.display = val === "pickup" ? "none" : "flex";
+          mpesaInfo.style.display = val === "mpesa" ? "block" : "none";
+          pickupInfo.style.display = val === "pickup" ? "block" : "none";
+          placeOrderBtn.textContent =
+            val === "pickup" ? "Confirm Order" : "Pay Now";
+
+          // Update delivery fee for pickup (free)
+          if (val === "pickup") {
             deliveryEl.textContent = "0";
-            const subtotal = parseInt(subtotalEl.textContent);
-            grandTotalEl.textContent = subtotal;
+            grandTotalEl.textContent = parseInt(subtotalEl.textContent) || 0;
+          } else {
+            const fee = supportedAreas[deliveryAreaSelect.value];
+            deliveryEl.textContent = fee;
+            grandTotalEl.textContent =
+              (parseInt(subtotalEl.textContent) || 0) + fee;
           }
         });
       });
 
-      // Step navigation event listeners
+      // ─── Step navigation ─────────────────────────────────────────────────────────
       document.getElementById("next-to-step2").addEventListener("click", () => {
-        // Validate step 1
         const fullName = document.getElementById("full-name").value.trim();
+        const email = document.getElementById("email").value.trim();
         const phone = document.getElementById("phone").value.trim();
         const address = document.getElementById("address").value.trim();
-
-        if (!fullName || !phone || !address) {
-          alert(
-            "Please fill in all required fields (Full Name, Phone Number, and Delivery Address) before proceeding.",
-          );
+        if (!fullName || !email || !phone || !address) {
+          alert("Please fill in all required fields before proceeding.");
           return;
         }
-
-        showStep(2);
-      });
-
-      document.getElementById("back-to-step1").addEventListener("click", () => {
-        showStep(1);
-      });
-
-      document.getElementById("next-to-step3").addEventListener("click", () => {
-        showStep(3);
-      });
-
-      document.getElementById("back-to-step2").addEventListener("click", () => {
         showStep(2);
       });
 
       document
-        .getElementById("place-order")
-        .addEventListener("click", async () => {
-          if (!currentUser) return;
+        .getElementById("back-to-step1")
+        .addEventListener("click", () => showStep(1));
+      document
+        .getElementById("next-to-step3")
+        .addEventListener("click", () => showStep(3));
+      document
+        .getElementById("back-to-step2")
+        .addEventListener("click", () => showStep(2));
 
-          // Collect form data
-          const fullName = document.getElementById("full-name").value.trim();
-          const phone = document.getElementById("phone").value.trim();
-          const address = document.getElementById("address").value.trim();
-          const selectedArea = deliveryAreaSelect.value;
-          const paymentMethod = document.querySelector(
-            'input[name="payment"]:checked',
-          ).value;
-          const mpesaNumber = document
-            .getElementById("mpesa-number")
-            .value.trim();
+      // ─── Place order / Pay Now ───────────────────────────────────────────────────
+      placeOrderBtn.addEventListener("click", () => {
+        if (!currentUser) return;
+        const paymentMethod = document.querySelector(
+          'input[name="payment"]:checked',
+        ).value;
+        if (paymentMethod === "pickup") {
+          handlePickupOrder();
+        } else {
+          // launchPaystack is defined in the plain <script> below to avoid ES module scope issues
+          window._bw_launchPaystack();
+        }
+      });
 
-          // Basic validation
-          if (!fullName || !phone || !address) {
-            alert("Please fill in all required fields");
-            return;
-          }
+      // ─── View orders button ──────────────────────────────────────────────────────
+      document.getElementById("go-to-orders")?.addEventListener("click", () => {
+        window.location.href = "account.html";
+      });
+    </script>
+    <!-- Paystack launcher in a PLAIN script (not module) to avoid ES module scope issues -->
+    <script>
+      window._bw_launchPaystack = function () {
+        var PAYSTACK_PUBLIC_KEY =
+          "pk_test_60282976d513502972ea51e68dae3642225ed932";
 
-          if (paymentMethod === "mpesa" && !mpesaNumber) {
-            alert("Please enter your M-Pesa number");
-            return;
-          }
+        var email = document.getElementById("email").value.trim();
+        var fullName = document.getElementById("full-name").value.trim();
+        var phone = document.getElementById("phone").value.trim();
+        var totalKsh = window._bw_getCurrentTotal();
+        var amountKobo = totalKsh * 100;
+        var paymentMethod = document.querySelector(
+          'input[name="payment"]:checked',
+        ).value;
+        var deliveryArea = window._bw_getDeliveryArea();
+        var btn = window._bw_placeOrderBtn();
 
-          try {
-            if (placeOrderBtn) {
-              placeOrderBtn.disabled = true;
-              placeOrderBtn.textContent = "Placing order...";
-            }
-
-            const subtotal = pendingOrder.items.reduce(
-              (sum, item) => sum + item.price * item.quantity,
-              0,
-            );
-            const currentDeliveryFee = supportedAreas[selectedArea];
-
-            const orderData = {
-              orderId: "ORD-" + Date.now(),
-              userId: currentUser.uid,
-              items: pendingOrder.items,
-              subtotal,
-              deliveryFee: currentDeliveryFee,
-              total: subtotal + currentDeliveryFee,
-              customerInfo: {
-                fullName,
-                phone,
-                address,
-                deliveryArea: selectedArea,
+        var handler = PaystackPop.setup({
+          key: PAYSTACK_PUBLIC_KEY,
+          email: email,
+          amount: amountKobo,
+          currency: "KES",
+          ref: "BWB-" + Date.now(),
+          metadata: {
+            custom_fields: [
+              {
+                display_name: "Customer Name",
+                variable_name: "customer_name",
+                value: fullName,
               },
-              paymentMethod,
-              mpesaNumber: paymentMethod === "mpesa" ? mpesaNumber : null,
-              status: "PLACED",
-              createdAt: serverTimestamp(),
-            };
+              { display_name: "Phone", variable_name: "phone", value: phone },
+              {
+                display_name: "Delivery Area",
+                variable_name: "delivery_area",
+                value: deliveryArea,
+              },
+            ],
+          },
+          channels:
+            paymentMethod === "mpesa"
+              ? ["mobile_money"]
+              : ["card", "bank", "ussd", "mobile_money"],
 
-            await addDoc(collection(db, "orders"), orderData);
+          callback: function (response) {
+            btn.disabled = true;
+            btn.textContent = "Saving order...";
+            window
+              ._bw_saveOrder({
+                paymentReference: response.reference,
+                paymentMethod: paymentMethod,
+              })
+              .then(function () {
+                window._bw_onSuccess();
+              })
+              .catch(function (err) {
+                console.error("Order save failed:", err);
+                alert(
+                  "Payment received but order save failed. Contact support with ref: " +
+                    response.reference,
+                );
+                btn.disabled = false;
+                btn.textContent = "Pay Now";
+              });
+          },
 
-            localStorage.removeItem("pendingOrder");
-
-            // Clear the cart after placing order
-            const cartKey = currentUser
-              ? `cart_${currentUser.uid}`
-              : "cart_guest";
-            localStorage.removeItem(cartKey);
-
-            document
-              .getElementById("success-overlay")
-              .classList.remove("hidden");
-            document.getElementById("place-order").disabled = true;
-
-            setTimeout(() => {
-              window.location.href = "account.html";
-            }, 2500);
-          } catch (err) {
-            console.error("ORDER WRITE FAILED:", err);
-            alert("Order failed to save");
-            if (placeOrderBtn) {
-              placeOrderBtn.disabled = false;
-              placeOrderBtn.textContent = "Place Order";
-            }
-          }
+          onClose: function () {
+            btn.disabled = false;
+            btn.textContent = "Pay Now";
+          },
         });
 
-      const goToOrdersButton = document.getElementById("go-to-orders");
-      if (goToOrdersButton) {
-        goToOrdersButton.addEventListener("click", () => {
-          window.location.href = "account.html";
-        });
-      }
+        handler.openIframe();
+      };
     </script>
   </body>
 </html>
