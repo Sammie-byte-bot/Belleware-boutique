@@ -1,0 +1,974 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Receipt | Bellewear Boutique</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --teal: #3bc1a8;
+        --teal-dark: #2a9d8f;
+        --ink: #111111;
+        --muted: #6b7280;
+        --border: #e5e7eb;
+        --bg: #f9fafb;
+        --white: #ffffff;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background: var(--bg);
+        color: var(--ink);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 2rem 1rem 4rem;
+      }
+
+      .topbar {
+        width: 100%;
+        max-width: 680px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+      }
+
+      .logo-text {
+        font-family: "Playfair Display", serif;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--ink);
+        text-decoration: none;
+      }
+
+      .logo-text span {
+        color: var(--teal);
+      }
+
+      .topbar-actions {
+        display: flex;
+        gap: 0.75rem;
+      }
+
+      .btn {
+        padding: 8px 18px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        font-size: 0.85rem;
+        font-weight: 600;
+        font-family: "Inter", sans-serif;
+        transition: opacity 0.2s;
+      }
+
+      .btn:hover {
+        opacity: 0.85;
+      }
+
+      .btn-outline {
+        background: var(--white);
+        border: 1.5px solid var(--border);
+        color: var(--ink);
+      }
+
+      .btn-primary {
+        background: var(--teal);
+        color: var(--white);
+      }
+
+      .receipt-card {
+        width: 100%;
+        max-width: 680px;
+        background: var(--white);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
+      }
+
+      .receipt-header {
+        background: var(--ink);
+        color: var(--white);
+        padding: 2rem 2.5rem 1.5rem;
+        position: relative;
+      }
+
+      .receipt-header::after {
+        content: "";
+        display: block;
+        position: absolute;
+        bottom: -14px;
+        left: 0;
+        right: 0;
+        height: 28px;
+        background: var(--white);
+        border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+      }
+
+      .receipt-brand {
+        font-family: "Playfair Display", serif;
+        font-size: 1.6rem;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+      }
+
+      .receipt-brand span {
+        color: var(--teal);
+      }
+
+      .receipt-tagline {
+        font-size: 0.78rem;
+        color: rgba(255, 255, 255, 0.55);
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        margin-top: 2px;
+      }
+
+      .receipt-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-top: 1.4rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+
+      .receipt-meta-label {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: rgba(255, 255, 255, 0.5);
+        margin-bottom: 2px;
+      }
+
+      .receipt-meta-value {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--white);
+      }
+
+      .receipt-meta-value.order-id {
+        color: var(--teal);
+        font-size: 1rem;
+      }
+
+      .receipt-body {
+        padding: 2.5rem 2.5rem 2rem;
+      }
+
+      .success-banner {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        background: #ecfdf5;
+        border: 1px solid #a7f3d0;
+        border-radius: 10px;
+        padding: 0.9rem 1.2rem;
+        margin-bottom: 2rem;
+      }
+
+      .success-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--teal);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+
+      .success-icon svg {
+        width: 16px;
+        height: 16px;
+        stroke: white;
+        stroke-width: 2.5;
+        fill: none;
+      }
+
+      .success-text strong {
+        display: block;
+        font-size: 0.92rem;
+        color: #065f46;
+      }
+
+      .success-text span {
+        font-size: 0.8rem;
+        color: #6b7280;
+      }
+
+      .section-label {
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 0.75rem;
+        margin-top: 1.6rem;
+      }
+
+      .section-label:first-of-type {
+        margin-top: 0;
+      }
+
+      .items-list {
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        overflow: hidden;
+      }
+
+      .item-row {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.85rem 1rem;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .item-row:last-child {
+        border-bottom: none;
+      }
+
+      .item-img {
+        width: 52px;
+        height: 52px;
+        border-radius: 8px;
+        object-fit: cover;
+        flex-shrink: 0;
+        background: var(--border);
+      }
+
+      .item-img-placeholder {
+        width: 52px;
+        height: 52px;
+        border-radius: 8px;
+        background: var(--border);
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--muted);
+        font-size: 1.2rem;
+      }
+
+      .item-detail {
+        flex: 1;
+      }
+
+      .item-name {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--ink);
+      }
+
+      .item-qty {
+        font-size: 0.78rem;
+        color: var(--muted);
+        margin-top: 2px;
+      }
+
+      .item-price {
+        font-size: 0.92rem;
+        font-weight: 600;
+        color: var(--ink);
+        white-space: nowrap;
+      }
+
+      .totals-block {
+        background: var(--bg);
+        border-radius: 10px;
+        padding: 1rem 1.2rem;
+        margin-top: 0;
+      }
+
+      .total-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.35rem 0;
+        font-size: 0.88rem;
+        color: var(--muted);
+      }
+
+      .total-row.grand {
+        border-top: 1.5px solid var(--border);
+        margin-top: 0.5rem;
+        padding-top: 0.75rem;
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--ink);
+      }
+
+      .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+      }
+
+      .info-cell {
+        background: var(--bg);
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+      }
+
+      .info-cell-label {
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 3px;
+      }
+
+      .info-cell-value {
+        font-size: 0.88rem;
+        font-weight: 500;
+        color: var(--ink);
+        line-height: 1.4;
+      }
+
+      .payment-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: #eff6ff;
+        color: #1d4ed8;
+        border-radius: 20px;
+        padding: 3px 10px;
+        font-size: 0.78rem;
+        font-weight: 600;
+      }
+
+      .payment-badge.mpesa {
+        background: #ecfdf5;
+        color: #065f46;
+      }
+
+      .payment-badge.pickup {
+        background: #fef3c7;
+        color: #92400e;
+      }
+
+      .divider {
+        border: none;
+        border-top: 1px dashed var(--border);
+        margin: 1.5rem 0;
+      }
+
+      .receipt-footer {
+        text-align: center;
+        padding: 1.5rem 2.5rem 2rem;
+        border-top: 1px solid var(--border);
+        background: #fafafa;
+      }
+
+      .receipt-footer p {
+        font-size: 0.78rem;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .receipt-footer strong {
+        color: var(--teal-dark);
+      }
+
+      .actions-row {
+        display: flex;
+        gap: 0.75rem;
+        justify-content: center;
+        margin-top: 1.5rem;
+        flex-wrap: wrap;
+      }
+
+      @media print {
+        body {
+          background: white;
+          padding: 0;
+        }
+
+        .topbar,
+        .actions-row,
+        .no-print {
+          display: none !important;
+        }
+
+        .receipt-card {
+          box-shadow: none;
+          border-radius: 0;
+        }
+      }
+
+      @media (max-width: 520px) {
+        .receipt-body {
+          padding: 2rem 1.25rem 1.5rem;
+        }
+
+        .receipt-header {
+          padding: 1.5rem 1.25rem 1.25rem;
+        }
+
+        .info-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .receipt-footer {
+          padding: 1.25rem 1.25rem 1.5rem;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- TOP BAR -->
+    <div class="topbar no-print">
+      <a href="index.html" class="logo-text">Bellewear <span>Boutique</span></a>
+      <div class="topbar-actions">
+        <button
+          class="btn btn-outline"
+          id="download-btn"
+          onclick="downloadReceiptPDF()"
+        >
+          ⬇️ Download PDF
+        </button>
+        <button
+          class="btn btn-primary"
+          onclick="window.location.href = 'index.html'"
+        >
+          Continue Shopping
+        </button>
+      </div>
+    </div>
+
+    <!-- RECEIPT CARD -->
+    <div class="receipt-card" id="receipt-card">
+      <!-- HEADER -->
+      <div class="receipt-header">
+        <div class="receipt-brand">Bellewear <span>Boutique</span></div>
+        <div class="receipt-tagline">Order Receipt</div>
+        <div class="receipt-meta">
+          <div>
+            <div class="receipt-meta-label">Order ID</div>
+            <div class="receipt-meta-value order-id" id="r-order-id">—</div>
+          </div>
+          <div>
+            <div class="receipt-meta-label">Date</div>
+            <div class="receipt-meta-value" id="r-date">—</div>
+          </div>
+          <div>
+            <div class="receipt-meta-label">Status</div>
+            <div class="receipt-meta-value">✅ Confirmed</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BODY -->
+      <div class="receipt-body">
+        <!-- Success banner -->
+        <div class="success-banner">
+          <div class="success-icon">
+            <svg viewBox="0 0 24 24">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </div>
+          <div class="success-text">
+            <strong>Order placed successfully!</strong>
+            <span>Thank you for shopping with Bellewear Boutique.</span>
+          </div>
+        </div>
+
+        <!-- Items -->
+        <div class="section-label">Items Ordered</div>
+        <div class="items-list" id="r-items">
+          <!-- populated by JS -->
+        </div>
+
+        <!-- Totals -->
+        <div class="section-label">Summary</div>
+        <div class="totals-block">
+          <div class="total-row">
+            <span>Subtotal</span>
+            <span>Ksh <span id="r-subtotal">0</span></span>
+          </div>
+          <div class="total-row">
+            <span>Delivery (<span id="r-delivery-area">—</span>)</span>
+            <span>Ksh <span id="r-delivery-fee">0</span></span>
+          </div>
+          <div class="total-row grand">
+            <span>Total Paid</span>
+            <span>Ksh <span id="r-total">0</span></span>
+          </div>
+        </div>
+
+        <!-- Customer & Delivery info -->
+        <div class="section-label">Customer Details</div>
+        <div class="info-grid">
+          <div class="info-cell">
+            <div class="info-cell-label">Full Name</div>
+            <div class="info-cell-value" id="r-name">—</div>
+          </div>
+          <div class="info-cell">
+            <div class="info-cell-label">Phone</div>
+            <div class="info-cell-value" id="r-phone">—</div>
+          </div>
+          <div class="info-cell" style="grid-column: 1 / -1">
+            <div class="info-cell-label">Delivery Address</div>
+            <div class="info-cell-value" id="r-address">—</div>
+          </div>
+          <div class="info-cell">
+            <div class="info-cell-label">Payment Method</div>
+            <div class="info-cell-value" id="r-payment">—</div>
+          </div>
+          <div class="info-cell" id="r-mpesa-cell" style="display: none">
+            <div class="info-cell-label">M-Pesa Number</div>
+            <div class="info-cell-value" id="r-mpesa">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FOOTER -->
+      <div class="receipt-footer">
+        <p>
+          Questions about your order? Contact us on WhatsApp or email.<br />
+          <strong>bellewearboutique.co.ke</strong>
+        </p>
+        <div class="actions-row no-print">
+          <button
+            class="btn btn-outline"
+            onclick="window.location.href = 'account.html'"
+          >
+            View My Orders
+          </button>
+          <button
+            class="btn btn-primary"
+            onclick="window.location.href = 'index.html'"
+          >
+            Shop More
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- jsPDF from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <script>
+      // ── Shared order state (populated by populate()) ─────────────────────
+      let currentOrder = null;
+
+      // ── Read saved receipt data ──────────────────────────────────────────
+      let order = null;
+      try {
+        const raw =
+          localStorage.getItem("lastReceipt") ||
+          localStorage.getItem("pendingOrder");
+        if (raw) order = JSON.parse(raw);
+      } catch (e) {}
+
+      if (!order) {
+        document.getElementById("receipt-card").innerHTML =
+          '<div style="padding:3rem;text-align:center;color:#6b7280">No receipt found. <a href="index.html" style="color:#3bc1a8">Return to shop</a></div>';
+        document.getElementById("download-btn").disabled = true;
+      } else {
+        populate(order);
+        currentOrder = order;
+      }
+
+      function populate(o) {
+        // Order ID & date
+        document.getElementById("r-order-id").textContent =
+          o.orderId || "ORD-" + Date.now();
+
+        const ts = o.createdAt?.seconds
+          ? new Date(o.createdAt.seconds * 1000)
+          : o.createdAt
+            ? new Date(o.createdAt)
+            : new Date();
+        document.getElementById("r-date").textContent = ts.toLocaleDateString(
+          "en-KE",
+          {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          },
+        );
+
+        // Items
+        const itemsContainer = document.getElementById("r-items");
+        (o.items || []).forEach((item) => {
+          const itemTotal = item.price * item.quantity;
+          const row = document.createElement("div");
+          row.className = "item-row";
+          row.innerHTML = `
+            ${
+              item.img
+                ? `<img class="item-img" src="${item.img}" alt="${item.name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+                : ""
+            }
+            <div class="item-img-placeholder" ${item.img ? "style='display:none'" : ""}>👗</div>
+            <div class="item-detail">
+              <div class="item-name">${item.name}</div>
+              <div class="item-qty">Qty: ${item.quantity}</div>
+            </div>
+            <div class="item-price">Ksh ${itemTotal.toLocaleString()}</div>
+          `;
+          itemsContainer.appendChild(row);
+        });
+
+        // Totals
+        const subtotal =
+          o.subtotal ??
+          (o.items || []).reduce((s, i) => s + i.price * i.quantity, 0);
+        const deliveryFee = o.deliveryFee ?? 0;
+        const total = o.total ?? subtotal + deliveryFee;
+
+        document.getElementById("r-subtotal").textContent =
+          subtotal.toLocaleString();
+        document.getElementById("r-delivery-fee").textContent =
+          deliveryFee.toLocaleString();
+        document.getElementById("r-total").textContent = total.toLocaleString();
+        document.getElementById("r-delivery-area").textContent =
+          o.customerInfo?.deliveryArea || o.deliveryArea || "";
+
+        // Customer info
+        const ci = o.customerInfo || {};
+        document.getElementById("r-name").textContent =
+          ci.fullName || o.fullName || "—";
+        document.getElementById("r-phone").textContent =
+          ci.phone || o.phone || "—";
+        document.getElementById("r-address").textContent = (
+          ci.address ||
+          o.address ||
+          "—"
+        ).replace(/\n/g, ", ");
+
+        // Payment
+        const pm = o.paymentMethod || "mpesa";
+        const pmMap = {
+          mpesa: "M-Pesa",
+          card: "Credit / Debit Card",
+          pickup: "Pay on Pickup",
+        };
+        const badgeClass =
+          pm === "mpesa" ? "mpesa" : pm === "pickup" ? "pickup" : "";
+        document.getElementById("r-payment").innerHTML =
+          `<span class="payment-badge ${badgeClass}">${pmMap[pm] || pm}</span>`;
+
+        if (pm === "mpesa" && (o.mpesaNumber || ci.mpesaNumber)) {
+          document.getElementById("r-mpesa-cell").style.display = "block";
+          document.getElementById("r-mpesa").textContent =
+            o.mpesaNumber || ci.mpesaNumber;
+        }
+      }
+
+      // ── PDF Download ─────────────────────────────────────────────────────
+      function downloadReceiptPDF() {
+        const o = currentOrder;
+        if (!o) return;
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ unit: "pt", format: "a4" });
+
+        // Enhanced safe function to prevent NaN and encoding errors
+        function safe(str) {
+          if (str == null) return "";
+          return String(str)
+            .replace(/[\u2013\u2014]/g, "-") // En/Em dashes
+            .replace(/\u00A0/g, " ") // Non-breaking spaces
+            .replace(/[^\x00-\xFF]/g, ""); // Remove non-Latin1
+        }
+
+        // Helper to ensure numeric coordinates
+        const safeNum = (n) => (Number.isFinite(n) ? n : 0);
+
+        const TEAL = [59, 193, 168];
+        const INK = [17, 17, 17];
+        const MUTED = [107, 114, 128];
+        const LIGHT = [249, 250, 251];
+        const WHITE = [255, 255, 255];
+        const BORDER = [229, 231, 235];
+
+        const pageW = safeNum(doc.internal.pageSize.getWidth());
+        const margin = 48;
+        const contentW = pageW - margin * 2;
+        let y = 0;
+
+        // ── Header bar ──
+        doc.setFillColor(...INK);
+        doc.rect(0, 0, pageW, 100, "F");
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(22);
+        doc.setTextColor(...WHITE);
+        doc.text(safe("Bellewear "), margin, 38);
+
+        const bw = safeNum(doc.getTextWidth(safe("Bellewear ")));
+        doc.setTextColor(...TEAL);
+        doc.text(safe("Boutique"), margin + bw, 38);
+
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8);
+        doc.setTextColor(180, 180, 180);
+        doc.text(safe("ORDER RECEIPT"), margin, 52);
+
+        const ts = o.createdAt?.seconds
+          ? new Date(o.createdAt.seconds * 1000)
+          : o.createdAt
+            ? new Date(o.createdAt)
+            : new Date();
+
+        const dateStr = ts.toLocaleDateString("en-KE", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+        const orderId = o.orderId || "ORD-" + Date.now();
+
+        const metaItems = [
+          { label: "ORDER ID", value: orderId },
+          { label: "DATE", value: dateStr },
+          { label: "STATUS", value: "Confirmed" },
+        ];
+
+        const colW = contentW / metaItems.length;
+        metaItems.forEach((m, i) => {
+          const x = margin + i * colW;
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(7);
+          doc.setTextColor(180, 180, 180);
+          doc.text(safe(m.label), x, 72);
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(9);
+          // FIXED: Added spread operator (...) to ensure numeric arguments
+          doc.setTextColor(...(i === 0 ? TEAL : WHITE));
+          doc.text(safe(m.value), x, 86);
+        });
+
+        y = 118;
+
+        // ── Success banner ──
+        doc.setFillColor(236, 253, 245);
+        doc.roundedRect(margin, y, contentW, 36, 4, 4, "F");
+        doc.setFillColor(...TEAL);
+        doc.circle(margin + 20, y + 18, 10, "F");
+        doc.setDrawColor(255, 255, 255);
+        doc.setLineWidth(1.8);
+        doc.line(margin + 14, y + 19, margin + 18, y + 23);
+        doc.line(margin + 18, y + 23, margin + 26, y + 13);
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(10);
+        doc.setTextColor(6, 95, 70);
+        doc.text(safe("Order placed successfully!"), margin + 36, y + 15);
+
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8.5);
+        doc.setTextColor(...MUTED);
+        doc.text(
+          safe("Thank you for shopping with Bellewear Boutique."),
+          margin + 36,
+          y + 27,
+        );
+
+        y += 52;
+
+        function sectionLabel(text) {
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(7.5);
+          doc.setTextColor(...MUTED);
+          doc.text(safe(text).toUpperCase(), margin, y);
+          y += 14;
+        }
+
+        sectionLabel("Items Ordered");
+
+        const items = o.items || [];
+        doc.setFillColor(...LIGHT);
+        doc.rect(margin, y, contentW, 22, "F");
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(8);
+        doc.setTextColor(...MUTED);
+        doc.text(safe("ITEM"), margin + 8, y + 14);
+        doc.text(safe("QTY"), margin + contentW * 0.62, y + 14);
+        doc.text(safe("PRICE"), margin + contentW * 0.78, y + 14);
+        doc.text(safe("TOTAL"), margin + contentW * 0.88, y + 14);
+        y += 22;
+
+        items.forEach((item, idx) => {
+          const rowH = 28;
+          doc.setFillColor(...(idx % 2 === 0 ? WHITE : [252, 252, 253]));
+          doc.rect(margin, y, contentW, rowH, "F");
+
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(9);
+          doc.setTextColor(...INK);
+          const nameLines = doc.splitTextToSize(
+            safe(item.name),
+            contentW * 0.55,
+          );
+          doc.text(safe(nameLines[0]), margin + 8, y + 17);
+
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(9);
+          doc.setTextColor(...MUTED);
+          doc.text(safe(item.quantity), margin + contentW * 0.62, y + 17);
+
+          // Clean price strings to prevent NaN
+          const parsePrice = (p) => Number(String(p).replace(/[^0-9.]/g, ""));
+          const uPrice = parsePrice(item.price);
+          const qty = Number(item.quantity) || 0;
+
+          doc.setTextColor(...INK);
+          doc.text(
+            safe("Ksh " + uPrice.toLocaleString()),
+            margin + contentW * 0.73,
+            y + 17,
+          );
+
+          doc.setFont("helvetica", "bold");
+          doc.text(
+            safe("Ksh " + (uPrice * qty).toLocaleString()),
+            margin + contentW * 0.87,
+            y + 17,
+          );
+
+          y += rowH;
+        });
+
+        doc.setDrawColor(...BORDER);
+        doc.setLineWidth(0.5);
+        doc.line(margin, y, margin + contentW, y);
+        y += 20;
+
+        sectionLabel("Summary");
+
+        const parsePrice = (p) => Number(String(p).replace(/[^0-9.]/g, ""));
+        const subtotal =
+          o.subtotal ??
+          items.reduce(
+            (s, i) => s + parsePrice(i.price) * (Number(i.quantity) || 0),
+            0,
+          );
+        const deliveryFee = parsePrice(o.deliveryFee || 0);
+        const total = o.total ?? subtotal + deliveryFee;
+        const deliveryArea =
+          o.customerInfo?.deliveryArea || o.deliveryArea || "";
+
+        doc.setFillColor(...LIGHT);
+        doc.roundedRect(margin, y, contentW, 72, 4, 4, "F");
+
+        const totRows = [
+          { label: "Subtotal", value: "Ksh " + subtotal.toLocaleString() },
+          {
+            label: `Delivery${deliveryArea ? " (" + deliveryArea + ")" : ""}`,
+            value: "Ksh " + deliveryFee.toLocaleString(),
+          },
+        ];
+
+        totRows.forEach((row) => {
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(9);
+          doc.setTextColor(...MUTED);
+          doc.text(safe(row.label), margin + 12, y + 16);
+          doc.text(safe(row.value), margin + contentW - 12, y + 16, {
+            align: "right",
+          });
+          y += 22;
+        });
+
+        doc.setDrawColor(...BORDER);
+        doc.setLineWidth(0.75);
+        y += 10;
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(11);
+        doc.setTextColor(...INK);
+        doc.text(safe("Total Paid"), margin + 12, y + 16);
+        doc.setTextColor(...TEAL);
+        doc.text(
+          safe("Ksh " + total.toLocaleString()),
+          margin + contentW - 12,
+          y + 16,
+          { align: "right" },
+        );
+
+        y += 40;
+        sectionLabel("Customer Details");
+
+        const ci = o.customerInfo || {};
+        const pmMap = {
+          mpesa: "M-Pesa",
+          card: "Credit / Debit Card",
+          pickup: "Pay on Pickup",
+        };
+        const details = [
+          ["Full Name", ci.fullName || o.fullName || "—"],
+          ["Phone", ci.phone || o.phone || "—"],
+          [
+            "Delivery Address",
+            (ci.address || o.address || "—").replace(/\n/g, ", "),
+          ],
+          [
+            "Payment Method",
+            pmMap[o.paymentMethod] || o.paymentMethod || "M-Pesa",
+          ],
+        ];
+
+        details.forEach((pair, i) => {
+          const isFull = pair[0] === "Delivery Address";
+          const w = isFull ? contentW : contentW / 2 - 4;
+          const x = !isFull && i % 2 !== 0 ? margin + contentW / 2 + 4 : margin;
+
+          doc.setFillColor(...LIGHT);
+          doc.roundedRect(x, y, w, 40, 3, 3, "F");
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(7);
+          doc.setTextColor(...MUTED);
+          doc.text(safe(pair[0]).toUpperCase(), x + 10, y + 13);
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(9);
+          doc.setTextColor(...INK);
+          doc.text(safe(pair[1]), x + 10, y + 28);
+
+          if (isFull || i % 2 !== 0 || i === details.length - 1) y += 48;
+        });
+
+        y += 20;
+        doc.setFillColor(250, 250, 250);
+        doc.rect(0, y, pageW, 60, "F");
+        doc.setDrawColor(...BORDER);
+        doc.line(0, y, pageW, y);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8.5);
+        doc.setTextColor(...MUTED);
+        doc.text(
+          safe("Questions about your order? Contact us on WhatsApp or email."),
+          pageW / 2,
+          y + 22,
+          { align: "center" },
+        );
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(42, 157, 143);
+        doc.text(safe("bellewearboutique.co.ke"), pageW / 2, y + 37, {
+          align: "center",
+        });
+
+        doc.save(`Bellewear-Receipt-${orderId}.pdf`);
+      }
+    </script>
+  </body>
+</html>

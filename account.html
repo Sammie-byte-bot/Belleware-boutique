@@ -1,0 +1,1937 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Account | Bellewear</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="fontawesome-free-7.1.0-web/css/all.css" />
+
+    <style>
+      body {
+        background: #f4f6f8;
+        font-family:
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          sans-serif;
+      }
+
+      .modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.55);
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+      }
+
+      .account-page {
+        display: flex;
+        flex-direction: column;
+        min-height: calc(100vh - var(--header-height));
+        padding-top: var(--header-height);
+        margin: 0 auto 2rem auto;
+        padding: 0;
+        max-width: 1200px;
+        width: 100%;
+      }
+
+      .sidebar {
+        width: 100%;
+        background: linear-gradient(135deg, #3bc1a8 0%, #2d9a8a 100%);
+        border-radius: 0;
+        padding: 0;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-start;
+        height: auto;
+        position: static;
+        left: auto;
+        top: auto;
+      }
+
+      .sidebar-links {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 0;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .sidebar-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 14px 24px;
+        margin: 0;
+        text-decoration: none;
+        color: #fff;
+        font-weight: 700;
+        border-radius: 0;
+        border-bottom: 3px solid transparent;
+        transition: all 0.3s ease;
+        font-size: 1rem;
+        white-space: nowrap;
+      }
+
+      .sidebar-link:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-bottom-color: #fff;
+      }
+
+      .sidebar-link.active {
+        background: rgba(255, 255, 255, 0.15);
+        border-bottom-color: #fff;
+        border-left: none;
+      }
+
+      .content {
+        flex: 1;
+        margin-left: 0;
+        padding: 2rem 1rem;
+        width: 100%;
+      }
+
+      .content-section {
+        display: none;
+      }
+
+      .content-section.active {
+        display: block;
+      }
+
+      .account-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-top: 2rem;
+        max-height: none;
+        overflow: visible;
+      }
+
+      .account-card {
+        background: #fff;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: auto;
+        min-height: 200px;
+        transition: all 0.3s ease;
+      }
+
+      .account-card:hover {
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+        transform: translateY(-2px);
+      }
+
+      .account-card .btn-blue {
+        align-self: flex-end;
+        margin-top: auto;
+      }
+
+      .profile-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        font-weight: 700;
+        color: #fff;
+        background: linear-gradient(135deg, #3bc1a8, #ff6b35);
+        margin-right: 1rem;
+        flex-shrink: 0;
+      }
+
+      .account-card h3 {
+        margin: 0 0 1rem 0;
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #333;
+      }
+
+      .account-card p {
+        margin: 0.5rem 0;
+        color: #666;
+      }
+
+      .account-card .value {
+        font-size: 1.5rem;
+        font-weight: 900;
+        color: #3bc1a8;
+      }
+
+      .btn-blue {
+        margin-top: 1rem;
+        padding: 10px 14px;
+        background: #3bc1a8;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .cta-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: auto;
+      }
+
+      .btn-shop {
+        background: #3bc1a8;
+        color: #fff;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+        flex: 1;
+      }
+
+      .btn-home {
+        background: #f1f5f9;
+        color: #333;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+        flex: 1;
+      }
+
+      .section-title {
+        font-size: 1.8rem;
+        font-weight: 800;
+        margin-bottom: 0.6rem;
+      }
+
+      .orders-container {
+        background: #fff;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+      }
+
+      .order-card {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+        padding: 1.2rem;
+        margin-bottom: 1.2rem;
+      }
+
+      .order-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      .order-ref {
+        font-weight: 700;
+        font-size: 1rem;
+        color: #222;
+      }
+
+      .order-date {
+        color: #777;
+        font-size: 0.9rem;
+        margin-top: 0.2rem;
+      }
+
+      .track-btn {
+        background: #3bc1a8;
+        color: #fff;
+        padding: 0.7rem 1.2rem;
+        border-radius: 30px;
+        font-weight: 700;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .order-items {
+        margin-top: 1.2rem;
+        border-top: 1px solid #eee;
+        padding-top: 1.2rem;
+      }
+
+      .item-row {
+        display: grid;
+        grid-template-columns: 90px 1fr 250px 220px;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem 0;
+        border-bottom: 1px solid #eee;
+      }
+
+      .item-row:last-child {
+        border-bottom: none;
+      }
+
+      .item-row img {
+        width: 90px;
+        height: 90px;
+        border-radius: 10px;
+        object-fit: cover;
+      }
+
+      .item-details {
+        font-weight: 700;
+        font-size: 1rem;
+      }
+
+      .item-details small {
+        font-weight: 400;
+        display: block;
+        margin-top: 0.4rem;
+        color: #777;
+      }
+
+      .status-badge {
+        display: inline-block;
+        padding: 0.6rem 0.9rem;
+        border-radius: 999px;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+      }
+
+      .status-PLACED {
+        background: #fff3cd;
+        color: #856404;
+      }
+      .status-CONFIRMED {
+        background: #e7f3ff;
+        color: #0b5ed7;
+      }
+      .status-SHIPPED {
+        background: #e0e7ff;
+        color: #3730a3;
+      }
+      .status-DELIVERED {
+        background: #e6f4ea;
+        color: #1e7e34;
+      }
+      .status-CANCELLED {
+        background: #f8d7da;
+        color: #721c24;
+      }
+
+      .delivery {
+        text-align: right;
+        color: #333;
+        font-weight: 700;
+      }
+
+      .delivery small {
+        display: block;
+        font-weight: 400;
+        color: #777;
+      }
+
+      .order-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #eee;
+      }
+
+      .cancel-btn {
+        background: transparent;
+        border: none;
+        color: #333;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .cancel-btn:hover {
+        text-decoration: underline;
+      }
+
+      /* ===================================================
+         MOBILE RESPONSIVE STYLES - PROFESSIONAL TOP SIDEBAR
+         =================================================== */
+
+      /* Tablet & Medium Mobile (1024px and below) */
+      @media (max-width: 1024px) {
+        .account-page {
+          margin: var(--header-height) auto 1.5rem auto;
+        }
+
+        .sidebar {
+          overflow-x: auto;
+        }
+
+        .sidebar-links {
+          display: flex;
+          gap: 0;
+        }
+
+        .account-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .item-row {
+          grid-template-columns: 80px 1fr 180px;
+        }
+      }
+
+      /* Tablet (768px and below) */
+      @media (max-width: 768px) {
+        .account-page {
+          margin: var(--header-height) 0 1.5rem 0;
+          padding: 0;
+        }
+
+        .sidebar {
+          border-radius: 0;
+          padding: 0;
+          margin-bottom: 0;
+          overflow-x: auto;
+          scroll-behavior: smooth;
+        }
+
+        .sidebar-links {
+          display: flex;
+          gap: 0;
+          flex-wrap: nowrap;
+          overflow-x: auto;
+        }
+
+        .sidebar-links::-webkit-scrollbar {
+          height: 2px;
+        }
+
+        .sidebar-links::-webkit-scrollbar-track {
+          background: rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-links::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.3);
+          border-radius: 10px;
+        }
+
+        .sidebar-link {
+          padding: 12px 16px;
+          font-size: 0.9rem;
+          border-radius: 0;
+          border-bottom: 3px solid transparent;
+          flex: 0 0 auto;
+        }
+
+        .sidebar-link:hover {
+          background: rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-link.active {
+          border-bottom-color: #fff;
+        }
+
+        .content {
+          padding: 1.5rem 1rem;
+        }
+
+        .account-grid {
+          grid-template-columns: 1fr;
+          gap: 1.2rem;
+          margin-top: 1.5rem;
+        }
+
+        .account-card {
+          padding: 1.2rem;
+          min-height: auto;
+        }
+
+        .account-card h3 {
+          font-size: 1.1rem;
+          margin-bottom: 0.8rem;
+        }
+
+        .section-title {
+          font-size: 1.5rem;
+          margin-top: 1.5rem;
+          margin-bottom: 1rem;
+        }
+
+        .orders-container {
+          padding: 1.2rem;
+        }
+
+        .order-card {
+          padding: 1rem;
+          margin-bottom: 1rem;
+        }
+
+        .item-row {
+          grid-template-columns: 70px 1fr 100px;
+          gap: 0.8rem;
+          padding: 0.8rem 0;
+        }
+
+        .item-row img {
+          width: 70px;
+          height: 70px;
+        }
+
+        .item-details {
+          font-size: 0.9rem;
+        }
+
+        .status-badge {
+          padding: 0.4rem 0.6rem;
+          font-size: 0.7rem;
+        }
+
+        .track-btn {
+          padding: 0.6rem 1rem;
+          font-size: 0.85rem;
+        }
+      }
+
+      /* Small Mobile (600px and below) */
+      @media (max-width: 600px) {
+        .account-page {
+          margin: var(--header-height) 0 1rem 0;
+        }
+
+        .sidebar {
+          padding: 0;
+        }
+
+        .sidebar-link {
+          padding: 10px 14px;
+          font-size: 0.85rem;
+          gap: 6px;
+        }
+
+        .sidebar-link i {
+          font-size: 1rem;
+        }
+
+        .content {
+          padding: 1rem 0.8rem;
+        }
+
+        .account-card {
+          padding: 1rem;
+          min-height: 120px;
+        }
+
+        .account-card h3 {
+          font-size: 1rem;
+          margin-bottom: 0.6rem;
+        }
+
+        .account-card p {
+          font-size: 0.9rem;
+        }
+
+        .account-card .value {
+          font-size: 1.2rem;
+        }
+
+        .profile-avatar {
+          width: 50px;
+          height: 50px;
+          font-size: 20px;
+        }
+
+        .section-title {
+          font-size: 1.3rem;
+          margin-top: 1.2rem;
+        }
+
+        .orders-container {
+          padding: 1rem;
+          border-radius: 10px;
+        }
+
+        .order-card {
+          padding: 0.8rem;
+          margin-bottom: 0.8rem;
+        }
+
+        .item-row {
+          grid-template-columns: 60px 1fr 80px;
+          gap: 0.6rem;
+          padding: 0.6rem 0;
+        }
+
+        .item-row img {
+          width: 60px;
+          height: 60px;
+          border-radius: 8px;
+        }
+
+        .btn-blue {
+          padding: 8px 12px;
+          font-size: 0.85rem;
+        }
+
+        .btn-shop,
+        .btn-home {
+          padding: 10px 15px;
+          font-size: 0.85rem;
+        }
+      }
+
+      /* Extra Small Mobile (480px and below) */
+      @media (max-width: 480px) {
+        .account-page {
+          margin: var(--header-height) 0 0.8rem 0;
+        }
+
+        .sidebar {
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+        }
+
+        .sidebar-link {
+          padding: 8px 12px;
+          font-size: 0.8rem;
+          border-radius: 0;
+        }
+
+        .sidebar-link i {
+          font-size: 0.9rem;
+        }
+
+        .content {
+          padding: 0.8rem 0.6rem;
+        }
+
+        .account-grid {
+          gap: 0.8rem;
+          margin-top: 1rem;
+        }
+
+        .account-card {
+          padding: 0.8rem;
+          min-height: 110px;
+          border-radius: 10px;
+        }
+
+        .account-card h3 {
+          font-size: 0.95rem;
+          margin-bottom: 0.5rem;
+        }
+
+        .account-card p {
+          font-size: 0.85rem;
+        }
+
+        .account-card .value {
+          font-size: 1.1rem;
+        }
+
+        .profile-avatar {
+          width: 45px;
+          height: 45px;
+          font-size: 18px;
+          margin-right: 0.5rem;
+        }
+
+        .section-title {
+          font-size: 1.2rem;
+          margin-top: 1rem;
+        }
+
+        .orders-container {
+          padding: 0.8rem;
+        }
+
+        .order-card {
+          padding: 0.6rem;
+          margin-bottom: 0.6rem;
+        }
+
+        .order-ref {
+          font-size: 0.9rem;
+        }
+
+        .item-row {
+          grid-template-columns: 50px 1fr 70px;
+          gap: 0.5rem;
+          padding: 0.5rem 0;
+        }
+
+        .item-row img {
+          width: 50px;
+          height: 50px;
+          border-radius: 6px;
+        }
+
+        .item-details {
+          font-size: 0.8rem;
+        }
+
+        .item-details small {
+          font-size: 0.75rem;
+        }
+
+        .status-badge {
+          padding: 0.3rem 0.5rem;
+          font-size: 0.6rem;
+        }
+
+        .track-btn {
+          padding: 0.4rem 0.8rem;
+          font-size: 0.75rem;
+        }
+
+        .btn-blue {
+          padding: 6px 10px;
+          font-size: 0.8rem;
+        }
+
+        .cta-buttons {
+          gap: 0.6rem;
+          flex-direction: column;
+        }
+
+        .btn-shop,
+        .btn-home {
+          padding: 10px 14px;
+          font-size: 0.8rem;
+        }
+      }
+
+      /* Ultra Small Mobile (375px and below) */
+      @media (max-width: 375px) {
+        .sidebar-link {
+          padding: 6px 10px;
+          font-size: 0.75rem;
+        }
+
+        .sidebar-link i {
+          font-size: 0.85rem;
+        }
+
+        .content {
+          padding: 0.6rem 0.5rem;
+        }
+
+        .account-card {
+          padding: 0.6rem;
+          min-height: 100px;
+        }
+
+        .account-card h3 {
+          font-size: 0.9rem;
+          margin-bottom: 0.4rem;
+        }
+
+        .account-card .value {
+          font-size: 1rem;
+        }
+
+        .profile-avatar {
+          width: 40px;
+          height: 40px;
+          font-size: 16px;
+        }
+
+        .section-title {
+          font-size: 1.1rem;
+        }
+
+        .item-row {
+          grid-template-columns: 45px 1fr 65px;
+          gap: 0.4rem;
+          padding: 0.4rem 0;
+        }
+
+        .item-row img {
+          width: 45px;
+          height: 45px;
+        }
+
+        .item-details {
+          font-size: 0.75rem;
+        }
+
+        .item-details small {
+          font-size: 0.7rem;
+        }
+
+        .btn-blue {
+          padding: 5px 8px;
+          font-size: 0.75rem;
+        }
+
+        .btn-shop,
+        .btn-home {
+          padding: 8px 12px;
+          font-size: 0.75rem;
+        }
+
+        .total {
+          font-size: 0.9rem;
+        }
+
+        .cancel-btn {
+          font-size: 0.75rem;
+        }
+      }
+    </style>
+    <link rel="stylesheet" href="account.css" />
+  </head>
+
+  <body>
+    <!-- ACCOUNT PAGE -->
+    <div class="account-page">
+      <aside class="sidebar">
+        <div class="sidebar-brand">
+          <span class="sidebar-brand-icon"><i class="fas fa-store"></i></span>
+          <div>
+            <strong>My Account</strong>
+            <small>Manage your Bellewear profile</small>
+          </div>
+        </div>
+        <nav class="sidebar-links" aria-label="Account sections">
+          <a href="#account" class="sidebar-link active" aria-current="page"
+            ><i class="fas fa-user"></i> Account</a
+          >
+          <a href="#orders" class="sidebar-link"
+            ><i class="fas fa-box"></i> Orders</a
+          >
+          <a href="#wishlist" class="sidebar-link"
+            ><i class="fas fa-heart"></i> Wishlist</a
+          >
+          <a href="#messages" class="sidebar-link">
+            <i class="fas fa-envelope"></i> Messages
+          </a>
+        </nav>
+        <a href="#" class="sidebar-link logout-btn" id="logoutBtn"
+          ><i class="fas fa-sign-out-alt"></i> Logout</a
+        >
+      </aside>
+
+      <main class="content">
+        <header class="account-page-header">
+          <p>PERSONAL SPACE</p>
+          <h1>Welcome to your account</h1>
+          <span>Manage your profile, orders, wishlist, and messages.</span>
+        </header>
+        <!-- ACCOUNT SECTION -->
+        <section id="account" class="content-section active">
+          <div class="account-grid">
+            <!-- Account Details Card -->
+            <div class="account-card">
+              <h3><i class="fas fa-user"></i> Account Details</h3>
+              <div class="account-profile-summary">
+                <div class="profile-avatar" id="profile-avatar">U</div>
+                <div class="account-profile-copy">
+                  <p id="account-name">
+                    Loading...
+                  </p>
+                  <p id="account-email">
+                    Loading...
+                  </p>
+                </div>
+              </div>
+              <p class="account-card-detail" id="account-phone">Loading...</p>
+              <button type="button" class="btn-blue" onclick="editProfile()">
+                Edit Profile
+              </button>
+            </div>
+
+            <!-- Address Card -->
+
+            <div class="account-card">
+              <h3><i class="fas fa-map-marker-alt"></i> Address</h3>
+              <p class="account-card-detail address-card-detail" id="account-address">No address set</p>
+              <button type="button" class="btn-blue" onclick="editAddress()">
+                Manage Address
+              </button>
+            </div>
+            <!-- Wallet Balance Card -->
+            <div class="account-card">
+              <h3><i class="fas fa-wallet"></i> Wallet Balance</h3>
+              <p class="account-card-detail">Available Balance</p>
+              <p class="value" id="wallet-balance">KES 0.00</p>
+              <button type="button" class="btn-blue" onclick="addFunds()">Add Funds</button>
+            </div>
+
+            <!-- Call to Action Card -->
+            <div class="account-card">
+              <h3><i class="fas fa-shopping-bag"></i> Shop More</h3>
+              <p>Discover amazing products</p>
+              <p>Exclusive deals waiting for you!</p>
+              <div class="cta-buttons">
+                <button
+                  class="btn-shop"
+                  onclick="window.location.href = 'shop.html'"
+                >
+                  Shop Now
+                </button>
+                <button
+                  class="btn-home"
+                  onclick="window.location.href = 'index.html'"
+                >
+                  Go Home
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div id="profileModal" class="modal account-modal" role="presentation">
+            <div class="account-modal-content" role="dialog" aria-modal="true" aria-labelledby="profileModalTitle">
+              <div class="account-modal-heading">
+                <span class="account-modal-icon"><i class="fas fa-user-edit"></i></span>
+                <div>
+                  <h3 id="profileModalTitle">Edit Profile</h3>
+                  <p>Update the name and phone number on your account.</p>
+                </div>
+              </div>
+              <form id="profileForm" class="account-modal-form">
+                <label for="profileName">Full name</label>
+                <input id="profileName" name="name" type="text" autocomplete="name" required maxlength="100" />
+                <label for="profilePhone">Phone number</label>
+                <input id="profilePhone" name="phone" type="tel" autocomplete="tel" maxlength="30" />
+                <p class="account-modal-error" id="profileModalError" role="alert" aria-live="polite"></p>
+                <div class="account-modal-actions">
+                  <button type="button" class="account-modal-secondary" data-close-modal="profileModal">Close</button>
+                  <button type="submit" class="account-modal-primary" id="saveProfileBtn">Save Profile</button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <div id="addressModal" class="modal account-modal" role="presentation">
+            <div class="account-modal-content" role="dialog" aria-modal="true" aria-labelledby="addressModalTitle">
+              <div class="account-modal-heading">
+                <span class="account-modal-icon"><i class="fas fa-map-marker-alt"></i></span>
+                <div>
+                  <h3 id="addressModalTitle">Delivery Address</h3>
+                  <p>Set the address where you would like your orders delivered.</p>
+                </div>
+              </div>
+              <form id="addressForm" class="account-modal-form">
+                <label for="streetAddress">Street address</label>
+                <input id="streetAddress" name="streetAddress" type="text" autocomplete="street-address" placeholder="House number and street" required maxlength="160" />
+                <div class="account-form-row">
+                  <div>
+                    <label for="city">City or town</label>
+                    <input id="city" name="city" type="text" autocomplete="address-level2" required maxlength="80" />
+                  </div>
+                  <div>
+                    <label for="postalCode">Postal code</label>
+                    <input id="postalCode" name="postalCode" type="text" autocomplete="postal-code" required maxlength="20" />
+                  </div>
+                </div>
+                <label for="country">Country</label>
+                <input id="country" name="country" type="text" autocomplete="country-name" required maxlength="80" />
+                <p class="account-modal-error" id="addressModalError" role="alert" aria-live="polite"></p>
+                <div class="account-modal-actions">
+                  <button type="button" class="account-modal-secondary" data-close-modal="addressModal">Close</button>
+                  <button type="submit" class="account-modal-primary" id="saveAddressBtn">Save Address</button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <div id="fundsModal" class="modal account-modal" role="presentation">
+            <div class="account-modal-content account-funds-modal" role="dialog" aria-modal="true" aria-labelledby="fundsModalTitle">
+              <div class="account-modal-heading">
+                <span class="account-modal-icon"><i class="fas fa-wallet"></i></span>
+                <div>
+                  <h3 id="fundsModalTitle">Add Wallet Funds</h3>
+                  <p>Enter the amount you want to add to your wallet.</p>
+                </div>
+              </div>
+              <form id="fundsForm" class="account-modal-form">
+                <label for="fundsAmount">Amount (KES)</label>
+                <div class="funds-amount-field">
+                  <span>KES</span>
+                  <input id="fundsAmount" name="amount" type="number" min="1" step="0.01" inputmode="decimal" placeholder="0.00" required />
+                </div>
+                <p class="account-modal-error" id="fundsModalError" role="alert" aria-live="polite"></p>
+                <div class="account-modal-actions">
+                  <button type="button" class="account-modal-secondary" data-close-modal="fundsModal">Close</button>
+                  <button type="submit" class="account-modal-primary" id="saveFundsBtn">Add Funds</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <!-- ORDERS SECTION -->
+        <section id="orders" class="content-section">
+          <div class="orders-container">
+            <div class="section-title">My Orders</div>
+            <div id="ordersList"></div>
+          </div>
+        </section>
+
+        <!-- WISHLIST SECTION -->
+        <section id="wishlist" class="content-section">
+          <div class="orders-container">
+            <div class="section-title">Wishlist</div>
+            <div id="wishlistList"></div>
+          </div>
+        </section>
+
+        <!-- MESSAGES SECTION -->
+        <section id="messages" class="content-section">
+          <div class="orders-container messages-container">
+            <div class="section-title">Messages</div>
+            <div id="messagesList" aria-live="polite"></div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- CANCEL MODAL -->
+    <div id="cancelModal" class="modal" role="presentation">
+      <div
+        class="modal-content cancel-modal-content"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="cancelModalTitle"
+        aria-describedby="cancelModalDescription"
+      >
+        <h3 id="cancelModalTitle">Cancel Order</h3>
+        <p id="cancelModalDescription">
+          Tell us why you want to cancel this order.
+        </p>
+        <label class="cancel-reason-label" for="cancelReason">Cancellation reason</label>
+        <textarea
+          id="cancelReason"
+          placeholder="Reason for cancelling..."
+          rows="4"
+          maxlength="500"
+          aria-describedby="cancelError"
+        ></textarea>
+        <p id="cancelError" class="cancel-error" role="alert" aria-live="polite"></p>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-cancel" id="closeModal">Keep Order</button>
+          <button type="button" class="btn btn-submit" id="submitCancel">Confirm Cancellation</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- REVIEW MODAL -->
+    <div id="reviewModal" class="modal">
+      <div class="modal-content">
+        <h3>Rate & Review Products</h3>
+        <div id="reviewItems"></div>
+        <div class="modal-actions">
+          <button class="btn btn-cancel" id="closeReviewModal">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Close review modal
+      document.getElementById("closeReviewModal").onclick = () => {
+        document.getElementById("reviewModal").style.display = "none";
+      };
+    </script>
+
+    <!-- FIREBASE + JS -->
+    <script type="module">
+      import {
+        initializeApp,
+        getApps,
+      } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+
+      import {
+        getAuth,
+        onAuthStateChanged,
+        updateProfile,
+        signOut,
+      } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+
+      import {
+        getFirestore,
+        doc,
+        getDoc,
+        updateDoc,
+        collection,
+        query,
+        where,
+        getDocs,
+        orderBy,
+        serverTimestamp,
+        addDoc,
+        deleteDoc,
+        increment,
+      } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyD6UqMyedaoaXgqOeddQN47ADgP8joO364",
+        authDomain: "bellewear-boutique.firebaseapp.com",
+        projectId: "bellewear-boutique",
+        storageBucket: "bellewear-boutique.firebasestorage.app",
+        messagingSenderId: "795858464616",
+        appId: "1:795858464616:web:0bbf307b3da145766ff0dd",
+      };
+
+      const app = getApps().length
+        ? getApps()[0]
+        : initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
+
+      const logoutBtn = document.querySelector("#logoutBtn");
+
+      const accountNameEl = document.getElementById("account-name");
+      const accountEmailEl = document.getElementById("account-email");
+      const accountPhoneEl = document.getElementById("account-phone");
+      const accountAddressEl = document.getElementById("account-address");
+      const walletBalanceEl = document.getElementById("wallet-balance");
+      const profileAvatarEl = document.getElementById("profile-avatar");
+      let currentAddress = null;
+
+      const ordersList = document.getElementById("ordersList");
+      const wishlistList = document.getElementById("wishlistList");
+
+      let selectedOrderId = null;
+      let selectedOrder = null;
+
+      const cancelModal = document.getElementById("cancelModal");
+      const cancelReason = document.getElementById("cancelReason");
+      const closeModal = document.getElementById("closeModal");
+      const submitCancel = document.getElementById("submitCancel");
+      const cancelError = document.getElementById("cancelError");
+      const messagesList = document.getElementById("messagesList");
+      let lastCancelTrigger = null;
+
+      // Modal controls
+      function closeCancelModal() {
+        cancelModal.style.display = "none";
+        cancelReason.value = "";
+        cancelError.textContent = "";
+        selectedOrderId = null;
+        selectedOrder = null;
+        lastCancelTrigger?.focus();
+      }
+
+      closeModal.onclick = closeCancelModal;
+      cancelModal.addEventListener("click", (event) => {
+        if (event.target === cancelModal) closeCancelModal();
+      });
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && cancelModal.style.display === "flex") {
+          closeCancelModal();
+        }
+      });
+
+      submitCancel.onclick = async () => {
+        const reason = cancelReason.value.trim();
+        const user = auth.currentUser;
+        cancelError.textContent = "";
+        if (!selectedOrderId || !user) {
+          cancelError.textContent = "Your session has expired. Please sign in and try again.";
+          return;
+        }
+        if (!reason) {
+          cancelError.textContent = "Please enter a reason for cancelling this order.";
+          cancelReason.focus();
+          return;
+        }
+
+        submitCancel.disabled = true;
+        submitCancel.textContent = "Cancelling...";
+        try {
+          await updateDoc(doc(db, "orders", selectedOrderId), {
+            status: "CANCELLED",
+            cancelReason: reason,
+            canceledAt: serverTimestamp(),
+          });
+
+          try {
+            const products = (selectedOrder?.items || []).map((item) => ({
+              name: item.name || "Product",
+              img: item.img || item.image || item.imageUrl || "",
+              quantity: item.quantity || 1,
+            }));
+            await addDoc(collection(db, "messages"), {
+              userId: user.uid,
+              type: "ORDER_CANCELLED",
+              title: "Order Cancelled",
+              body: `Your order was cancelled. Reason: ${reason}`,
+              orderId: selectedOrderId,
+              products,
+              cancelReason: reason,
+              read: false,
+              createdAt: serverTimestamp(),
+            });
+          } catch (messageError) {
+            console.error("Order was cancelled, but the notification could not be saved.", messageError);
+            cancelError.textContent = "Your order was cancelled, but we could not save the notification. The admin dashboard has been updated.";
+            try {
+              await fetchOrders(user.uid);
+            } catch (refreshError) {
+              console.error("Failed to refresh orders after cancellation.", refreshError);
+              cancelError.textContent += " Please refresh the page to see the updated order status.";
+            }
+            submitCancel.textContent = "Cancellation saved";
+            return;
+          }
+
+          closeCancelModal();
+          showSection("orders");
+          try {
+            await fetchOrders(user.uid);
+          } catch (refreshError) {
+            console.error("Order was cancelled, but the order list could not be refreshed.", refreshError);
+            window.alert("Your order was cancelled, but the order list could not be refreshed. Please reload the page.");
+          }
+          try {
+            await fetchMessages(user.uid);
+          } catch (refreshError) {
+            console.error("Cancellation was saved, but messages could not be refreshed.", refreshError);
+            window.alert("Your cancellation was saved, but the Messages section could not be refreshed. Please reopen it or reload the page.");
+          }
+        } catch (error) {
+          console.error("Failed to cancel order.", error);
+          cancelError.textContent = "We couldn't cancel this order. Please try again.";
+        } finally {
+          if (submitCancel.textContent !== "Cancellation saved") {
+            submitCancel.disabled = false;
+            submitCancel.textContent = "Confirm Cancellation";
+          }
+        }
+      };
+
+      // Auth guard
+      onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+          window.location.href = "auth.html";
+          return;
+        }
+
+        const userRef = doc(db, "users", user.uid);
+        const snap = await getDoc(userRef);
+
+        if (!snap.exists()) {
+          alert("User profile missing in Firestore");
+          return;
+        }
+
+        const data = snap.data();
+        if (accountNameEl) accountNameEl.textContent = data.fullName || "User";
+        if (accountEmailEl)
+          accountEmailEl.textContent = data.email || user.email;
+        if (accountPhoneEl)
+          accountPhoneEl.textContent = data.phone || "No phone added";
+        if (accountAddressEl) {
+          currentAddress = data.address || null;
+          if (typeof data.address === "object" && data.address) {
+            accountAddressEl.replaceChildren();
+            [
+              data.address.streetAddress,
+              data.address.city,
+              data.address.postalCode,
+              data.address.country,
+            ]
+              .filter(Boolean)
+              .forEach((line, index) => {
+                if (index) accountAddressEl.appendChild(document.createElement("br"));
+                accountAddressEl.appendChild(document.createTextNode(line));
+              });
+          } else {
+            accountAddressEl.textContent = data.address || "No address set";
+          }
+        }
+        if (walletBalanceEl)
+          walletBalanceEl.textContent = `KES ${data.walletBalance || 0}.00`;
+        if (profileAvatarEl) {
+          if (user.photoURL) {
+            profileAvatarEl.innerHTML = `<img src="${user.photoURL}" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+          } else {
+            profileAvatarEl.textContent = (data.fullName || "User")
+              .charAt(0)
+              .toUpperCase();
+          }
+        }
+
+        // Load data
+        fetchOrders(user.uid);
+        fetchWishlist(user.uid).catch((error) => {
+          console.error("Failed to load wishlist.", error);
+          wishlistList.innerHTML = '<p class="messages-empty">Your wishlist could not be loaded. Please try again.</p>';
+        });
+        fetchMessages(user.uid);
+      });
+
+      // FETCH ORDERS
+      async function fetchOrders(uid) {
+        const q = query(
+          collection(db, "orders"),
+          where("userId", "==", uid),
+          orderBy("createdAt", "desc"),
+        );
+
+        const snapshot = await getDocs(q);
+
+        if (snapshot.empty) {
+          ordersList.innerHTML = "<p>No orders yet.</p>";
+          return;
+        }
+
+        ordersList.innerHTML = "";
+
+        snapshot.forEach((docSnap) => {
+          const order = docSnap.data();
+          const orderId = docSnap.id;
+
+          const orderDateObj = order.createdAt?.toDate?.();
+          const orderDate = orderDateObj?.toDateString() || "Unknown date";
+
+          let deliveryDate = "Not set";
+          if (orderDateObj) {
+            const deliveryDateObj = new Date(orderDateObj);
+            deliveryDateObj.setDate(deliveryDateObj.getDate() + 3);
+            deliveryDate = deliveryDateObj.toDateString();
+          }
+
+          const card = document.createElement("div");
+          card.className = "order-card";
+
+          card.innerHTML = `
+              <div class="order-header">
+                <div>
+                  <div class="order-ref">Order #${orderId.slice(0, 10).toUpperCase()}</div>
+                  <div class="order-date">Order Placed: ${orderDate}</div>
+                </div>
+                <button class="track-btn">TRACK ORDER</button>
+              </div>
+
+              <div class="order-items">
+                ${order.items
+                  .map(
+                    (item) => `
+                      <div class="item-row">
+                        <img src="${item.img}" />
+                        <div class="item-details">
+                          ${item.name}
+                          <small>By: ${item.brand || "Unknown"}</small>
+                          <small>Size: ${item.size || "N/A"} | Qty: ${item.quantity}</small>
+                        </div>
+                        <div>
+                          <span class="status-badge status-${order.status}">
+                            ${order.status}
+                          </span>
+                        </div>
+                        <div class="delivery">
+                          Delivery Expected by:
+                          <small>${deliveryDate}</small>
+                        </div>
+                      </div>
+                    `,
+                  )
+                  .join("")}
+
+                <div class="order-footer">
+                  <button class="cancel-btn" ${order.status === "DELIVERED" || order.status === "CANCELLED" ? "disabled" : ""}>
+                    × Cancel Order
+                  </button>
+                  <div class="total">KES ${order.total}</div>
+                </div>
+              </div>
+            `;
+
+          const cancelBtn = card.querySelector(".cancel-btn");
+          cancelBtn.onclick = () => {
+            selectedOrderId = orderId;
+            selectedOrder = order;
+            lastCancelTrigger = cancelBtn;
+            cancelError.textContent = "";
+            submitCancel.disabled = false;
+            submitCancel.textContent = "Confirm Cancellation";
+            cancelReason.value = "";
+            cancelModal.style.display = "flex";
+            cancelReason.focus();
+          };
+
+          ordersList.appendChild(card);
+        });
+      }
+
+      // FETCH WISHLIST
+      async function fetchWishlist(uid) {
+        const storageKey = `wishlist_${uid}`;
+        let items = [];
+        const storedItems = localStorage.getItem(storageKey);
+        if (storedItems) {
+          try {
+            const parsedItems = JSON.parse(storedItems);
+            if (Array.isArray(parsedItems)) items = parsedItems;
+            else console.error("Stored wishlist data is not a list.");
+          } catch (error) {
+            console.error("Stored wishlist data could not be parsed.", error);
+          }
+        }
+
+        const guestWishlist = localStorage.getItem("wishlist_guest");
+        if (guestWishlist) {
+          try {
+            const parsedGuestItems = JSON.parse(guestWishlist);
+            if (Array.isArray(parsedGuestItems)) {
+              parsedGuestItems.forEach((guestItem) => {
+                if (
+                  guestItem?.id &&
+                  !items.some((item) => item.id === guestItem.id)
+                ) {
+                  items.push(guestItem);
+                }
+              });
+            } else {
+              console.error("Stored guest wishlist data is not a list.");
+            }
+          } catch (error) {
+            console.error("Stored guest wishlist data could not be parsed.", error);
+          }
+        }
+
+        try {
+          const wishRef = collection(db, "wishlists", uid, "items");
+          const snap = await getDocs(wishRef);
+          snap.forEach((docSnap) => {
+            const item = docSnap.data();
+            const id = item.id || docSnap.id;
+            const existingItem = items.find((existing) => existing.id === id);
+            if (existingItem) {
+              existingItem._firestoreId = docSnap.id;
+            } else {
+              items.push({
+                ...item,
+                id,
+                _firestoreId: docSnap.id,
+                img: item.img || item.image || item.imageUrl || "",
+              });
+            }
+          });
+        } catch (error) {
+          console.error("Could not merge legacy Firestore wishlist items.", error);
+        }
+        localStorage.setItem(storageKey, JSON.stringify(items));
+        if (guestWishlist) localStorage.removeItem("wishlist_guest");
+
+        wishlistList.replaceChildren();
+        if (!items.length) {
+          wishlistList.innerHTML = '<p class="messages-empty">Your wishlist is empty. Add products from the shop or homepage.</p>';
+          return;
+        }
+
+        items.forEach((item, index) => {
+          const card = document.createElement("article");
+          card.className = "message-card wishlist-card";
+
+          const header = document.createElement("div");
+          header.className = "message-card-header";
+          const title = document.createElement("h3");
+          title.textContent = item.name || "Product";
+          const price = document.createElement("span");
+          price.className = "wishlist-price";
+          price.textContent = `KES ${Number(item.price || 0).toLocaleString()}`;
+          header.append(title, price);
+          card.appendChild(header);
+
+          const details = document.createElement("div");
+          details.className = "message-product wishlist-product";
+          const imageUrl = item.img || item.image || item.imageUrl || "";
+          if (imageUrl) {
+            const image = document.createElement("img");
+            image.src = imageUrl;
+            image.alt = item.name || "Wishlist product";
+            image.loading = "lazy";
+            image.onerror = () => image.remove();
+            details.appendChild(image);
+          }
+          const productName = document.createElement("p");
+          productName.className = "message-product-name";
+          productName.textContent = item.name || "Product";
+          details.appendChild(productName);
+          card.appendChild(details);
+
+          const actions = document.createElement("div");
+          actions.className = "wishlist-actions";
+          const addButton = document.createElement("button");
+          addButton.type = "button";
+          addButton.className = "message-view-order";
+          addButton.textContent = "Add to cart";
+          addButton.addEventListener("click", () => {
+            const cartKey = `cart_${uid}`;
+            let cart = [];
+            try {
+              const parsedCart = JSON.parse(localStorage.getItem(cartKey) || "[]");
+              if (Array.isArray(parsedCart)) cart = parsedCart;
+              else throw new Error("Stored cart data is not a list.");
+            } catch (error) {
+              console.error("Stored cart data could not be read.", error);
+              window.alert("Your cart could not be updated. Please reload and try again.");
+              return;
+            }
+
+            const existing = cart.find(
+              (cartItem) =>
+                cartItem.id === item.id &&
+                cartItem.size === item.size &&
+                cartItem.color === item.color,
+            );
+            if (existing) {
+              existing.quantity = Number(existing.quantity || 1) + 1;
+            } else {
+              cart.push({ ...item, quantity: Number(item.quantity || 1) });
+            }
+
+            localStorage.setItem(cartKey, JSON.stringify(cart));
+            window.updateCartCountHeader?.();
+            addButton.textContent = "Added to cart";
+            window.setTimeout(() => {
+              addButton.textContent = "Add to cart";
+            }, 1500);
+          });
+
+          const removeButton = document.createElement("button");
+          removeButton.type = "button";
+          removeButton.className = "wishlist-remove-button";
+          removeButton.textContent = "Remove";
+          removeButton.addEventListener("click", async () => {
+            if (item._firestoreId) {
+              removeButton.disabled = true;
+              try {
+                await deleteDoc(
+                  doc(db, "wishlists", uid, "items", item._firestoreId),
+                );
+              } catch (error) {
+                console.error("Failed to remove the saved wishlist item.", error);
+                window.alert("This wishlist item could not be removed. Please try again.");
+                removeButton.disabled = false;
+                return;
+              }
+            }
+            items.splice(index, 1);
+            localStorage.setItem(storageKey, JSON.stringify(items));
+            window.refreshWishlistIcons?.();
+            fetchWishlist(uid).catch((error) => {
+              console.error("Failed to refresh wishlist after removal.", error);
+              wishlistList.innerHTML = '<p class="messages-empty">Your wishlist was updated, but could not be refreshed. Please reload the page.</p>';
+            });
+          });
+          actions.append(addButton, removeButton);
+          card.appendChild(actions);
+          wishlistList.appendChild(card);
+        });
+      }
+
+      async function fetchMessages(uid) {
+        const q = query(
+          collection(db, "messages"),
+          where("userId", "==", uid),
+          orderBy("createdAt", "desc"),
+        );
+
+        const snap = await getDocs(q);
+
+        if (snap.empty) {
+          messagesList.innerHTML = '<p class="messages-empty">No messages yet.</p>';
+          return;
+        }
+
+        messagesList.replaceChildren();
+
+        for (const docSnap of snap.docs) {
+          const msg = docSnap.data();
+          const card = document.createElement("article");
+          card.className = `message-card${msg.read ? "" : " unread"}`;
+
+          const header = document.createElement("div");
+          header.className = "message-card-header";
+          const title = document.createElement("h3");
+          title.textContent = msg.title || "Message";
+          const date = document.createElement("time");
+          const createdAt = msg.createdAt?.toDate?.();
+          date.className = "message-date";
+          if (createdAt) {
+            date.dateTime = createdAt.toISOString();
+            date.textContent = createdAt.toLocaleString();
+          }
+          header.append(title, date);
+          card.appendChild(header);
+
+          const orderId = String(msg.orderId || "");
+          if (orderId) {
+            const orderRef = document.createElement("p");
+            orderRef.className = "message-order-id";
+            orderRef.textContent = `Order #${orderId.slice(0, 10).toUpperCase()}`;
+            card.appendChild(orderRef);
+          }
+
+          let products = Array.isArray(msg.products) ? msg.products : [];
+          if (!products.length && orderId) {
+            try {
+              const orderSnap = await getDoc(doc(db, "orders", orderId));
+              const orderItems = orderSnap.exists()
+                ? orderSnap.data().items || []
+                : [];
+              products = orderItems.map((item) => ({
+                name: item.name || "Product",
+                img:
+                  item.img ||
+                  item.image ||
+                  item.imageUrl ||
+                  item.images?.[0] ||
+                  "",
+                quantity: item.quantity || 1,
+              }));
+            } catch (error) {
+              console.error(`Failed to load products for message order ${orderId}.`, error);
+            }
+          }
+          if (products.length) {
+            const productList = document.createElement("div");
+            productList.className = "message-products";
+            products.forEach((product) => {
+              const productRow = document.createElement("div");
+              productRow.className = "message-product";
+
+              if (product.img) {
+                const image = document.createElement("img");
+                image.src = product.img;
+                image.alt = product.name || "Product";
+                image.loading = "lazy";
+                image.onerror = () => image.remove();
+                productRow.appendChild(image);
+              }
+
+              const productName = document.createElement("p");
+              productName.className = "message-product-name";
+              productName.textContent = product.name || "Product";
+              productRow.appendChild(productName);
+              if (Number(product.quantity) > 1) {
+                const quantity = document.createElement("span");
+                quantity.className = "message-product-quantity";
+                quantity.textContent = `Qty ${product.quantity}`;
+                productRow.appendChild(quantity);
+              }
+              productList.appendChild(productRow);
+            });
+            card.appendChild(productList);
+          }
+
+          const body = document.createElement("p");
+          body.className = "message-body";
+          body.textContent = msg.body || "";
+          card.appendChild(body);
+
+          const reason = msg.cancelReason || (msg.type === "ORDER_CANCELLED" ? "" : null);
+          if (reason) {
+            const reasonBlock = document.createElement("div");
+            reasonBlock.className = "message-cancel-reason";
+            const reasonLabel = document.createElement("strong");
+            reasonLabel.textContent = "Cancellation reason";
+            const reasonText = document.createElement("p");
+            reasonText.textContent = reason;
+            reasonBlock.append(reasonLabel, reasonText);
+            card.appendChild(reasonBlock);
+          }
+
+          if (orderId) {
+            const viewButton = document.createElement("button");
+            viewButton.type = "button";
+            viewButton.className = "message-view-order";
+            viewButton.textContent = "View order";
+            viewButton.addEventListener("click", () => showSection("orders"));
+            card.appendChild(viewButton);
+          }
+          messagesList.appendChild(card);
+        }
+      }
+
+      const profileModal = document.getElementById("profileModal");
+      const profileForm = document.getElementById("profileForm");
+      const profileNameInput = document.getElementById("profileName");
+      const profilePhoneInput = document.getElementById("profilePhone");
+      const profileModalError = document.getElementById("profileModalError");
+      const saveProfileBtn = document.getElementById("saveProfileBtn");
+      const addressModal = document.getElementById("addressModal");
+      const addressForm = document.getElementById("addressForm");
+      const addressModalError = document.getElementById("addressModalError");
+      const saveAddressBtn = document.getElementById("saveAddressBtn");
+      const fundsModal = document.getElementById("fundsModal");
+      const fundsForm = document.getElementById("fundsForm");
+      const fundsAmount = document.getElementById("fundsAmount");
+      const fundsModalError = document.getElementById("fundsModalError");
+      const saveFundsBtn = document.getElementById("saveFundsBtn");
+
+      function openAccountModal(modal, focusTarget) {
+        modal.style.display = "flex";
+        document.body.classList.add("account-modal-open");
+        focusTarget?.focus();
+      }
+
+      function closeAccountModal(modal) {
+        modal.style.display = "none";
+        if (
+          ![profileModal, addressModal, fundsModal].some(
+            (item) => item.style.display === "flex",
+          )
+        ) {
+          document.body.classList.remove("account-modal-open");
+        }
+      }
+
+      document.querySelectorAll("[data-close-modal]").forEach((button) => {
+        button.addEventListener("click", () => {
+          closeAccountModal(document.getElementById(button.dataset.closeModal));
+        });
+      });
+
+      [profileModal, addressModal, fundsModal].forEach((modal) => {
+        modal.addEventListener("click", (event) => {
+          if (event.target === modal) closeAccountModal(modal);
+        });
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key !== "Escape") return;
+        [profileModal, addressModal, fundsModal].forEach((modal) => {
+          if (modal.style.display === "flex") closeAccountModal(modal);
+        });
+      });
+
+      window.editProfile = () => {
+        profileModalError.textContent = "";
+        profileNameInput.value =
+          accountNameEl.textContent === "Loading..."
+            ? ""
+            : accountNameEl.textContent.trim();
+        profilePhoneInput.value =
+          accountPhoneEl.textContent === "No phone added"
+            ? ""
+            : accountPhoneEl.textContent.trim();
+        openAccountModal(profileModal, profileNameInput);
+      };
+
+      profileForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        profileModalError.textContent = "";
+        if (!profileForm.reportValidity()) return;
+        const user = auth.currentUser;
+        if (!user) {
+          profileModalError.textContent =
+            "Please sign in again to update your profile.";
+          return;
+        }
+
+        const newName = profileNameInput.value.trim();
+        const newPhone = profilePhoneInput.value.trim();
+        if (!newName) {
+          profileModalError.textContent = "Enter your full name.";
+          profileNameInput.focus();
+          return;
+        }
+
+        saveProfileBtn.disabled = true;
+        saveProfileBtn.textContent = "Saving...";
+        try {
+          await updateProfile(user, { displayName: newName });
+          await updateDoc(doc(db, "users", user.uid), {
+            fullName: newName,
+            phone: newPhone,
+          });
+          accountNameEl.textContent = newName;
+          accountPhoneEl.textContent = newPhone || "No phone added";
+          if (profileAvatarEl && !user.photoURL) {
+            profileAvatarEl.textContent = newName.charAt(0).toUpperCase();
+          }
+          closeAccountModal(profileModal);
+        } catch (error) {
+          console.error("Failed to update account profile.", error);
+          profileModalError.textContent =
+            "Your profile could not be saved. Please try again.";
+        } finally {
+          saveProfileBtn.disabled = false;
+          saveProfileBtn.textContent = "Save Profile";
+        }
+      });
+
+      window.editAddress = () => {
+        addressModalError.textContent = "";
+        const savedAddress =
+          typeof currentAddress === "object" && currentAddress
+            ? currentAddress
+            : { streetAddress: currentAddress || "" };
+        document.getElementById("streetAddress").value =
+          savedAddress.streetAddress || "";
+        document.getElementById("city").value = savedAddress.city || "";
+        document.getElementById("postalCode").value =
+          savedAddress.postalCode || "";
+        document.getElementById("country").value = savedAddress.country || "";
+        openAccountModal(addressModal, document.getElementById("streetAddress"));
+      };
+
+      addressForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        addressModalError.textContent = "";
+        if (!addressForm.reportValidity()) return;
+        const user = auth.currentUser;
+        if (!user) {
+          addressModalError.textContent =
+            "Please sign in again to save your address.";
+          return;
+        }
+
+        const addressData = {
+          streetAddress: document.getElementById("streetAddress").value.trim(),
+          city: document.getElementById("city").value.trim(),
+          postalCode: document.getElementById("postalCode").value.trim(),
+          country: document.getElementById("country").value.trim(),
+        };
+        saveAddressBtn.disabled = true;
+        saveAddressBtn.textContent = "Saving...";
+        try {
+          await updateDoc(doc(db, "users", user.uid), { address: addressData });
+          currentAddress = addressData;
+          accountAddressEl.replaceChildren();
+          [
+            addressData.streetAddress,
+            addressData.city,
+            addressData.postalCode,
+            addressData.country,
+          ].forEach((line, index) => {
+            if (index) accountAddressEl.appendChild(document.createElement("br"));
+            accountAddressEl.appendChild(document.createTextNode(line));
+          });
+          closeAccountModal(addressModal);
+        } catch (error) {
+          console.error("Failed to save delivery address.", error);
+          addressModalError.textContent =
+            "Your address could not be saved. Please try again.";
+        } finally {
+          saveAddressBtn.disabled = false;
+          saveAddressBtn.textContent = "Save Address";
+        }
+      });
+
+      window.addFunds = () => {
+        fundsModalError.textContent = "";
+        fundsForm.reset();
+        openAccountModal(fundsModal, fundsAmount);
+      };
+
+      fundsForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        fundsModalError.textContent = "";
+        if (!fundsForm.reportValidity()) return;
+        const amount = Number(fundsAmount.value);
+        if (!Number.isFinite(amount) || amount <= 0) {
+          fundsModalError.textContent = "Enter an amount greater than zero.";
+          fundsAmount.focus();
+          return;
+        }
+        const user = auth.currentUser;
+        if (!user) {
+          fundsModalError.textContent =
+            "Please sign in again to update your wallet.";
+          return;
+        }
+
+        saveFundsBtn.disabled = true;
+        saveFundsBtn.textContent = "Adding...";
+        try {
+          const userRef = doc(db, "users", user.uid);
+          await updateDoc(userRef, { walletBalance: increment(amount) });
+          const currentBalance = Number(
+            walletBalanceEl.textContent.replace(/[^\d.-]/g, ""),
+          );
+          if (Number.isFinite(currentBalance)) {
+            walletBalanceEl.textContent = `KES ${(currentBalance + amount).toFixed(2)}`;
+          }
+          closeAccountModal(fundsModal);
+        } catch (error) {
+          console.error("Failed to add funds to wallet.", error);
+          fundsModalError.textContent =
+            "Funds could not be added. Please try again.";
+        } finally {
+          saveFundsBtn.disabled = false;
+          saveFundsBtn.textContent = "Add Funds";
+        }
+      });
+
+      // LOGOUT
+      logoutBtn.addEventListener("click", () => {
+        signOut(auth)
+          .then(() => {
+            localStorage.clear();
+            window.location.href = "auth.html";
+          })
+          .catch((err) => alert("Logout failed"));
+      });
+
+      // SIDEBAR NAV
+      const links = document.querySelectorAll(".sidebar-links .sidebar-link");
+      const sections = document.querySelectorAll(".content-section");
+
+      function showSection(id) {
+        const section = document.getElementById(id);
+        const activeLink = document.querySelector(
+          `.sidebar-links a[href="#${id}"]`,
+        );
+        if (!section || !activeLink) return;
+
+        sections.forEach((sec) => sec.classList.remove("active"));
+        links.forEach((link) => {
+          link.classList.remove("active");
+          link.removeAttribute("aria-current");
+        });
+
+        section.classList.add("active");
+        activeLink.classList.add("active");
+        activeLink.setAttribute("aria-current", "page");
+      }
+
+      links.forEach((link) => {
+        link.addEventListener("click", (e) => {
+          e.preventDefault();
+          const id = link.getAttribute("href").replace("#", "");
+          showSection(id);
+          if (id === "messages" && auth.currentUser) {
+            fetchMessages(auth.currentUser.uid).catch((error) => {
+              console.error("Failed to refresh account messages.", error);
+              messagesList.innerHTML = '<p class="messages-empty">Messages could not be loaded. Please try again.</p>';
+            });
+          }
+          if (id === "wishlist" && auth.currentUser) {
+            fetchWishlist(auth.currentUser.uid).catch((error) => {
+              console.error("Failed to refresh wishlist.", error);
+              wishlistList.innerHTML = '<p class="messages-empty">Your wishlist could not be loaded. Please try again.</p>';
+            });
+          }
+          history.replaceState(null, "", `#${id}`);
+        });
+      });
+
+      window.addEventListener("load", () => {
+        const hash = window.location.hash.replace("#", "") || "account";
+        showSection(document.getElementById(hash) ? hash : "account");
+      });
+    </script>
+    <script type="module" src="main.js"></script>
+  </body>
+</html>

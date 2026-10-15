@@ -1,0 +1,22 @@
+# ============================================================
+# robots.txt — BELLEWEAR BOUTIQUE
+# Optimized for SEO and Google Search Console
+# ============================================================
+
+User-agent: *
+Allow: /
+
+# Block non-essential system pages
+Disallow: /login.html
+Disallow: /auth.html
+Disallow: /account.html
+Disallow: /cart.html
+Disallow: /admin/
+Disallow: /checkout/
+
+# Block duplicate content
+Disallow: /index.html
+Disallow: /Contact.html
+
+# Link to sitemap
+Sitemap: https://belleware-boutique.vercel.app/sitemap.xml

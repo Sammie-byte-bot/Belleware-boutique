@@ -1,0 +1,799 @@
+// Dynamic Firebase Hero Carousel
+// Step 4: Fetch top products → populate slides with real data + animations
+
+import {
+  auth,
+  db,
+  collection,
+  query,
+  where,
+  orderBy,
+  limit,
+  getDocs,
+  doc,
+  getDoc,
+  addDoc,
+  serverTimestamp,
+  fetchBestSellingProductsFromAdmin,
+} from "./firebase.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+
+console.log("index.js loaded", document.readyState);
+
+// Slide categories mapping (matches data-product-category)
+const SLIDE_CATEGORIES = [
+  "watches",
+  "hoodies",
+  "caps",
+  "shoes",
+  "sneakers",
+  "slides",
+  "shirts",
+  "t-shirts",
+];
+
+// Static images for carousel slides by category
+const CATEGORY_IMAGES = {
+  watches: "img/watches.jpg",
+  hoodies: "img/hoodies.jpg",
+  caps: "img/caps.jpg",
+  shoes: "img/shoes.jpg",
+  sneakers: "img/shoes1.jpg",
+  slides: "img/slides.jpg",
+  shirts: "img/shirts.jpg",
+  "t-shirts": "img/t-shirts.jpg",
+};
+
+const carouselState = {
+  currentIndex: 0,
+  slides: [],
+  autoplayInterval: 5000, // ms between slides
+  autoplayId: null,
+};
+
+// ================= HELPERS (copied exactly from shop.js for identical cards) =================
+function renderStars(rating = 0) {
+  const r = Math.max(0, Math.min(5, Math.round(Number(rating))));
+  return Array.from(
+    { length: 5 },
+    (_, i) => `<i class="fas fa-star${i < r ? "" : "-o"}"></i>`,
+  ).join("");
+}
+
+function renderPrice(product) {
+  const price = Number(product.price);
+  const oldPrice = Number(product.oldPrice);
+
+  if (Number.isFinite(oldPrice) && oldPrice > price && price > 0) {
+    const discount = Math.floor(((oldPrice - price) / oldPrice) * 100);
+    if (discount >= 1) {
+      return `
+        <div class="price-section">
+          <div class="old-price">Ksh ${oldPrice}</div>
+          <div class="discount">${discount}% OFF</div>
+          <div class="current-price">Ksh ${price}</div>
+        </div>
+      `;
+    }
+  }
+
+  return `<div class="current-price">Ksh ${price}</div>`;
+}
+
+// ================= INIT =================
+document.addEventListener("DOMContentLoaded", initDynamicCarousel);
+
+document.addEventListener("DOMContentLoaded", initCarouselControls);
+
+async function initDynamicCarousel() {
+  console.log("🚀 Initializing Dynamic Hero Carousel...");
+
+  // Show skeletons immediately
+  showCarouselSkeletons();
+
+  try {
+    // Fetch top 8 products (best sellers)
+    const products = await fetchHeroProducts();
+
+    if (products.length === 0) {
+      console.warn("No products found, using static fallback");
+      hideSkeletons(); // Hide skeletons for static
+      return;
+    }
+
+    // DISABLED: Keep static HTML text (per user request)
+    // await populateCarouselSlides(products);
+
+    // Start/enhance carousel animations after load
+    hideSkeletons();
+    enhanceCarouselAnimations();
+
+    console.log(`✅ Loaded ${products.length}/8 dynamic products`);
+  } catch (error) {
+    console.error("❌ Carousel load failed:", error);
+    // Fallback: hide skeletons (static content visible)
+    hideSkeletons();
+  }
+}
+
+// ================= FETCH PRODUCTS =================
+async function fetchHeroProducts() {
+  try {
+    // Query: top 8 active products (newest/best sellers)
+    let q = query(
+      collection(db, "products"),
+      where("isActive", "==", true),
+      orderBy("createdAt", "desc"),
+      limit(8),
+    );
+
+    let snapshot = await getDocs(q);
+    let products = snapshot.docs
+      .map((doc) => ({ id: doc.id, ...doc.data() }))
+      .filter(validateProduct);
+
+    if (!products.length) {
+      // Fallback: if no active products are marked, load any products instead
+      q = query(
+        collection(db, "products"),
+        orderBy("createdAt", "desc"),
+        limit(8),
+      );
+      snapshot = await getDocs(q);
+      products = snapshot.docs
+        .map((doc) => ({ id: doc.id, ...doc.data() }))
+        .filter(validateProduct);
+    }
+
+    // Fallback sort by revenue if createdAt missing
+    products.sort((a, b) => (b.revenue || 0) - (a.revenue || 0));
+
+    return products.slice(0, 8);
+  } catch (error) {
+    console.error("Firebase fetch failed:", error);
+    try {
+      const fallbackQuery = query(
+        collection(db, "products"),
+        orderBy("createdAt", "desc"),
+        limit(8),
+      );
+      const fallbackSnapshot = await getDocs(fallbackQuery);
+      const fallbackProducts = fallbackSnapshot.docs
+        .map((doc) => ({ id: doc.id, ...doc.data() }))
+        .filter(validateProduct);
+      fallbackProducts.sort((a, b) => (b.revenue || 0) - (a.revenue || 0));
+      return fallbackProducts.slice(0, 8);
+    } catch (fallbackError) {
+      console.error("Firebase fallback fetch failed:", fallbackError);
+      return [];
+    }
+  }
+}
+
+// ================= POPULATE SLIDES =================
+async function populateCarouselSlides(products) {
+  const slides = document.querySelectorAll(".carousel-slide");
+
+  slides.forEach((slide, index) => {
+    const category = slide.dataset.productCategory;
+
+    // Find best matching product by category
+    const product =
+      products.find(
+        (p) =>
+          p.category?.toLowerCase() === category ||
+          p.name?.toLowerCase().includes(category),
+      ) || products[index % products.length]; // Fallback to index
+
+    if (product) {
+      populateSlide(slide, product, category);
+    }
+  });
+
+  // Smooth reveal after population
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  hideSkeletons();
+
+  // Preload all new images
+  preloadSlideImages();
+}
+
+function populateSlide(slide, product, category) {
+  const img = slide.querySelector("img");
+  const headline = slide.querySelector(".overlay-headline");
+  const sub = slide.querySelector(".overlay-sub");
+  const shopBtns = slide.querySelectorAll(".cta-btn");
+
+  // Use static category image first, fallback to product/dynamic
+  const staticImg = CATEGORY_IMAGES[category] || slide.dataset.fallbackImg;
+  const newImg = staticImg; // Prioritize static image
+  if (img && newImg !== img.src) {
+    img.src = newImg;
+    img.alt = product?.name || category.toUpperCase();
+  }
+
+  // Update headline/subtitle
+  if (headline)
+    headline.textContent =
+      product.name?.toUpperCase() || category.toUpperCase();
+  if (sub)
+    sub.textContent =
+      product.description?.substring(0, 60) + "..." ||
+      `${category.toUpperCase()} collection`;
+
+  // Update CTAs with product/category links
+  shopBtns.forEach((btn) => {
+    if (btn.classList.contains("cta-btn")) {
+      btn.href = `shop.html?category=${encodeURIComponent(product.category || category)}`;
+    }
+  });
+
+  // Add loaded class for animations
+  slide.classList.add("product-loaded");
+}
+
+// ================= SKELETONS =================
+function showCarouselSkeletons() {
+  document.querySelectorAll(".carousel-slide").forEach((slide) => {
+    const skeleton = slide.querySelector(".carousel-skeleton");
+    if (skeleton) skeleton.style.display = "block";
+    slide.classList.add("loading");
+  });
+}
+
+function hideSkeletons() {
+  const slides = document.querySelectorAll(".carousel-slide");
+  slides.forEach((slide) => {
+    const skeleton = slide.querySelector(".carousel-skeleton");
+    if (skeleton) skeleton.style.display = "none";
+    slide.classList.remove("loading");
+    slide.classList.add("loaded");
+  });
+
+  activateCarouselSlide(carouselState.currentIndex);
+}
+
+function initCarouselControls() {
+  carouselState.slides = Array.from(
+    document.querySelectorAll(".carousel-slide"),
+  );
+  if (!carouselState.slides.length) return;
+
+  const prevBtn = document.querySelector(".carousel-prev");
+  const nextBtn = document.querySelector(".carousel-next");
+  const dotsContainer = document.querySelector(".carousel-dots");
+  const carousel = document.querySelector(".carousel-wrapper");
+
+  renderCarouselDots(carouselState.slides.length);
+  activateCarouselSlide(carouselState.currentIndex);
+  // Start autoplay when controls initialize
+  startAutoplay();
+
+  // Click handlers for previous button
+  if (prevBtn) {
+    prevBtn.addEventListener("click", () => {
+      const nextIndex =
+        (carouselState.currentIndex - 1 + carouselState.slides.length) %
+        carouselState.slides.length;
+      activateCarouselSlide(nextIndex);
+      // restart autoplay after manual interaction
+      startAutoplay();
+    });
+  }
+
+  // Click handlers for next button
+  if (nextBtn) {
+    nextBtn.addEventListener("click", () => {
+      const nextIndex =
+        (carouselState.currentIndex + 1) % carouselState.slides.length;
+      activateCarouselSlide(nextIndex);
+      // restart autoplay after manual interaction
+      startAutoplay();
+    });
+  }
+
+  // Click handlers for dots
+  if (dotsContainer) {
+    dotsContainer.addEventListener("click", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      const index = Number(target.dataset.index);
+      if (!Number.isNaN(index)) {
+        activateCarouselSlide(index);
+        startAutoplay();
+      }
+    });
+  }
+
+  // Touch/Swipe handling for mobile
+  if (carousel) {
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    carousel.addEventListener(
+      "touchstart",
+      (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+      },
+      false,
+    );
+
+    carousel.addEventListener(
+      "touchend",
+      (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+        // resume autoplay after touch
+        startAutoplay();
+      },
+      false,
+    );
+
+    function handleSwipe() {
+      const swipeThreshold = 50; // Minimum distance for a swipe
+      const diff = touchStartX - touchEndX;
+
+      if (Math.abs(diff) > swipeThreshold) {
+        if (diff > 0) {
+          // Swiped left - show next slide
+          const nextIndex =
+            (carouselState.currentIndex + 1) % carouselState.slides.length;
+          activateCarouselSlide(nextIndex);
+          startAutoplay();
+        } else {
+          // Swiped right - show previous slide
+          const nextIndex =
+            (carouselState.currentIndex - 1 + carouselState.slides.length) %
+            carouselState.slides.length;
+          activateCarouselSlide(nextIndex);
+          startAutoplay();
+        }
+      }
+    }
+  }
+}
+
+// AUTOPLAY helpers
+function startAutoplay() {
+  try {
+    stopAutoplay();
+    if (!carouselState.slides || carouselState.slides.length === 0) return;
+    carouselState.autoplayId = setInterval(() => {
+      const nextIndex =
+        (carouselState.currentIndex + 1) % carouselState.slides.length;
+      activateCarouselSlide(nextIndex);
+    }, carouselState.autoplayInterval);
+  } catch (e) {
+    console.error("Autoplay start failed", e);
+  }
+}
+
+function stopAutoplay() {
+  if (carouselState.autoplayId) {
+    clearInterval(carouselState.autoplayId);
+    carouselState.autoplayId = null;
+  }
+}
+
+// Pause/resume on pointer interactions
+document.addEventListener("DOMContentLoaded", () => {
+  const carouselEl = document.querySelector(".carousel-wrapper");
+  if (!carouselEl) return;
+  carouselEl.addEventListener("mouseenter", stopAutoplay);
+  carouselEl.addEventListener("mouseleave", startAutoplay);
+  carouselEl.addEventListener("touchstart", stopAutoplay, { passive: true });
+  carouselEl.addEventListener("touchend", startAutoplay, { passive: true });
+});
+
+function renderCarouselDots(count) {
+  const dotsContainer = document.querySelector(".carousel-dots");
+  if (!dotsContainer) return;
+
+  dotsContainer.innerHTML = Array.from({ length: count })
+    .map(
+      (_item, index) =>
+        `<button class="carousel-dot" data-index="${index}" aria-label="Slide ${
+          index + 1
+        }"></button>`,
+    )
+    .join("");
+}
+
+function activateCarouselSlide(index = 0) {
+  const slides =
+    carouselState.slides.length > 0
+      ? carouselState.slides
+      : Array.from(document.querySelectorAll(".carousel-slide"));
+  if (!slides.length) return;
+
+  const normalizedIndex = Math.max(0, Math.min(index, slides.length - 1));
+  carouselState.currentIndex = normalizedIndex;
+
+  slides.forEach((slide, slideIndex) => {
+    slide.classList.toggle("active", slideIndex === normalizedIndex);
+  });
+
+  document.querySelectorAll(".carousel-dot").forEach((dot, dotIndex) => {
+    dot.classList.toggle("active", dotIndex === normalizedIndex);
+  });
+}
+
+// ================= PRELOAD IMAGES =================
+function preloadSlideImages() {
+  const images = Array.from(document.querySelectorAll(".carousel-slide img"))
+    .map((img) => img.src)
+    .filter(Boolean);
+
+  images.forEach((src) => {
+    const img = new Image();
+    img.src = src;
+  });
+}
+
+// ================= ANIMATIONS =================
+function enhanceCarouselAnimations() {
+  const carousel = document.querySelector(".jumia-carousel");
+  if (!carousel) return;
+
+  // Fade-in on load animations
+  document
+    .querySelectorAll(".carousel-slide.product-loaded")
+    .forEach((slide) => {
+      setTimeout(() => (slide.style.opacity = "1"), 100);
+    });
+}
+
+// ================= UTILS =================
+function validateProduct(p) {
+  const price = Number(p.price);
+  const hasImage =
+    (Array.isArray(p.images) && p.images.length > 0) ||
+    (typeof p.images === "string" && p.images.trim() !== "") ||
+    (typeof p.image === "string" && p.image.trim() !== "");
+
+  return p.id && p.name && Number.isFinite(price) && price > 0 && hasImage;
+}
+
+// Identical product card creator (now matches shop.js exactly)
+function createProductCard(product) {
+  const image =
+    (Array.isArray(product.images) &&
+      product.images.length &&
+      product.images[0]) ||
+    product.images ||
+    product.image ||
+    "img/placeholder.png";
+  return `
+    <div class="pro" data-id="${product.id}">
+      <div class="img-wrapper">
+        <img src="${image}" alt="${product.name}" loading="lazy"/>
+        <i class="far fa-heart wishlist" data-name="${product.name}" data-price="${product.price}" data-img="${image}"></i>
+      </div>
+      <div class="des">
+        <h5>${product.name}</h5>
+        <span>${product.brand || product.category || ""}</span>
+        <div class="star">${renderStars(product.rating)}</div>
+        ${renderPrice(product)}
+        <div class="Cart"><i class="fas fa-shopping-cart"></i></div>
+      </div>
+    </div>
+  `;
+}
+
+function displayProducts(products, containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) {
+    console.warn(`Container missing: ${containerId}`);
+    return;
+  }
+  container.innerHTML = products.map(createProductCard).join("");
+}
+
+// ================= PRODUCT CARD NAVIGATION =================
+
+document.addEventListener("click", (e) => {
+  if (e.target.closest(".wishlist")) return;
+
+  const card = e.target.closest(".pro");
+  if (!card) return;
+
+  const productId = card.dataset.id;
+  if (productId) {
+    window.location.href = `product.html?id=${encodeURIComponent(productId)}`;
+  }
+});
+
+// ================= REVIEW FUNCTIONS =================
+// Function to open review modal for an order
+async function openReviewModal(orderId) {
+  try {
+    const orderDoc = await getDoc(doc(db, "orders", orderId));
+    if (!orderDoc.exists()) {
+      alert("Order not found");
+      return;
+    }
+
+    const order = orderDoc.data();
+    const modalHeader = document.querySelector("#reviewModal .modal-header");
+    const modalBody = document.querySelector("#reviewModal .modal-body");
+
+    // Set header
+    modalHeader.innerHTML = `
+      <h2>Rate Your Purchase</h2>
+      <p style="margin: 5px 0 0 0; font-size: 14px; color: #666;">Help others by sharing your experience</p>
+    `;
+
+    // Set body content
+    modalBody.innerHTML = "";
+
+    order.items.forEach((item, index) => {
+      const itemDiv = document.createElement("div");
+      itemDiv.className = "review-item";
+      itemDiv.innerHTML = `
+        <div class="product-info">
+          <img src="${item.img}" alt="${item.name}" class="product-image">
+          <div class="product-details">
+            <h4>${item.name}</h4>
+            <p>Size: ${item.size || "N/A"} | Qty: ${item.quantity}</p>
+          </div>
+        </div>
+        <div class="rating-section">
+          <label>Rating:</label>
+          <div class="star-rating" data-index="${index}">
+            <span class="star" data-value="1">★</span>
+            <span class="star" data-value="2">★</span>
+            <span class="star" data-value="3">★</span>
+            <span class="star" data-value="4">★</span>
+            <span class="star" data-value="5">★</span>
+          </div>
+          <input type="hidden" id="rating-${index}" value="0">
+        </div>
+        <div class="review-section">
+          <label>Review (optional):</label>
+          <textarea id="review-${index}" class="review-textarea" placeholder="Write your review..."></textarea>
+        </div>
+      `;
+      modalBody.appendChild(itemDiv);
+
+      // Add star click functionality
+      const stars = itemDiv.querySelectorAll(".star");
+      const ratingInput = itemDiv.querySelector(`#rating-${index}`);
+      stars.forEach((star) => {
+        star.addEventListener("click", () => {
+          const value = parseInt(star.dataset.value);
+          ratingInput.value = value;
+          stars.forEach((s, i) => {
+            if (i < value) {
+              s.classList.add("selected");
+            } else {
+              s.classList.remove("selected");
+            }
+          });
+        });
+      });
+    });
+
+    // Add submit button
+    const submitBtn = document.createElement("button");
+    submitBtn.textContent = "Submit Reviews";
+    submitBtn.className = "btn-submit";
+    submitBtn.onclick = () => submitReviews(orderId, order.items);
+    modalBody.appendChild(submitBtn);
+
+    document.getElementById("reviewModal").classList.add("show");
+  } catch (error) {
+    console.error("Error opening review modal:", error);
+    alert("Error loading review form");
+  }
+}
+
+// Function to check for pending reviews on delivered orders
+async function checkForPendingReviews(uid) {
+  try {
+    console.log("Checking for pending reviews for user:", uid);
+
+    // Get all delivered orders for the user
+    const ordersQuery = query(
+      collection(db, "orders"),
+      where("userId", "==", uid),
+      where("status", "==", "DELIVERED"),
+    );
+    const ordersSnap = await getDocs(ordersQuery);
+
+    console.log("Found delivered orders:", ordersSnap.size);
+
+    if (ordersSnap.empty) {
+      console.log("No delivered orders found");
+      return;
+    }
+
+    // Check if any of these orders have unreviewed items
+    for (const orderDoc of ordersSnap.docs) {
+      const order = orderDoc.data();
+      const orderId = orderDoc.id;
+
+      console.log("Checking order:", orderId, "status:", order.status);
+
+      // Check if reviews already exist for this order
+      const reviewsQuery = query(
+        collection(db, "reviews"),
+        where("userId", "==", uid),
+        where("orderId", "==", orderId),
+      );
+      const reviewsSnap = await getDocs(reviewsQuery);
+
+      console.log("Reviews for order", orderId, ":", reviewsSnap.size);
+
+      // If no reviews exist for this order, show the review modal
+      if (reviewsSnap.empty) {
+        console.log("Opening review modal for order:", orderId);
+        openReviewModal(orderId);
+        break; // Only show one at a time
+      }
+    }
+  } catch (error) {
+    console.error("Error checking for pending reviews:", error);
+  }
+}
+
+// Function to submit reviews
+async function submitReviews(orderId, items) {
+  try {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    // 🔥 Fetch user's full name from Firestore
+    const userSnap = await getDoc(doc(db, "users", user.uid));
+    const userName = userSnap.exists()
+      ? userSnap.data().fullName || userSnap.data().name || "Verified Buyer"
+      : "Verified Buyer";
+
+    for (let i = 0; i < items.length; i++) {
+      const rating = document.getElementById(`rating-${i}`).value;
+      const review = document.getElementById(`review-${i}`).value.trim();
+
+      if (!rating) {
+        alert(`Please select a rating for ${items[i].name}`);
+        return;
+      }
+
+      await addDoc(collection(db, "reviews"), {
+        productId: items[i].productId || items[i].id,
+        userId: user.uid,
+        userName: userName, // ✅ SAFE + ALLOWED
+        orderId: orderId,
+        rating: parseInt(rating),
+        comment: review,
+        createdAt: serverTimestamp(),
+      });
+    }
+
+    document.getElementById("reviewModal").classList.remove("show");
+    alert("Reviews submitted successfully!");
+  } catch (error) {
+    console.error("Error submitting reviews:", error);
+    alert("Error submitting reviews");
+  }
+}
+
+// ================= AUTH CHECK =================
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    // User is logged in, check for pending reviews immediately
+    setTimeout(() => checkForPendingReviews(user.uid), 1000); // Small delay to ensure page loads
+  }
+});
+
+// ================= MODAL CLOSE =================
+document.addEventListener("DOMContentLoaded", () => {
+  const closeModal = document.getElementById("closeReviewModal");
+  if (closeModal) {
+    closeModal.onclick = () => {
+      document.getElementById("reviewModal").classList.remove("show");
+    };
+  }
+
+  // Close modal when clicking outside
+  window.onclick = (event) => {
+    const modal = document.getElementById("reviewModal");
+    if (event.target === modal) {
+      modal.classList.remove("show");
+    }
+  };
+});
+
+// ================= MAIN PRODUCT LOAD =================
+async function loadIndexProducts() {
+  try {
+    console.log("🏆 Loading index products...");
+
+    // ================= FETCH BEST SELLING FROM ADMIN DASHBOARD =================
+    let bestSelling = [];
+    const adminStats = await fetchBestSellingProductsFromAdmin();
+
+    if (adminStats && adminStats.length > 0) {
+      console.log("✅ Using best selling products from admin dashboard");
+      // Best selling products from admin dashboard
+      bestSelling = adminStats;
+    } else {
+      console.log(
+        "⚠️ No admin stats found, calculating from products collection",
+      );
+      // Fallback: calculate from products directly (by newest)
+      let q = query(
+        collection(db, "products"),
+        where("isActive", "==", true),
+        orderBy("createdAt", "desc"),
+        limit(10),
+      );
+
+      let snapshot = await getDocs(q);
+      let allProducts = snapshot.docs
+        .map((doc) => ({ id: doc.id, ...doc.data() }))
+        .filter((p) => Number.isFinite(Number(p.price)) && p.price > 0);
+
+      if (allProducts.length > 0) {
+        bestSelling = allProducts;
+      }
+    }
+
+    // ================= FETCH NEW ARRIVALS =================
+    let q = query(
+      collection(db, "products"),
+      where("isActive", "==", true),
+      orderBy("createdAt", "desc"),
+      limit(10),
+    );
+
+    let snapshot = await getDocs(q);
+    let newArrivals = snapshot.docs
+      .map((doc) => ({ id: doc.id, ...doc.data() }))
+      .filter((p) => Number.isFinite(Number(p.price)) && p.price > 0);
+
+    if (newArrivals.length === 0) {
+      console.warn("No active products found, falling back to all products");
+      q = query(
+        collection(db, "products"),
+        orderBy("createdAt", "desc"),
+        limit(10),
+      );
+      snapshot = await getDocs(q);
+      newArrivals = snapshot.docs
+        .map((doc) => ({ id: doc.id, ...doc.data() }))
+        .filter((p) => Number.isFinite(Number(p.price)) && p.price > 0);
+    }
+
+    console.log(`🆕 Best: ${bestSelling.length}, New: ${newArrivals.length}`);
+
+    // Preload images
+    const allImages = [...bestSelling, ...newArrivals]
+      .flatMap((p) => p.images || [])
+      .filter(Boolean);
+    allImages.forEach((src) => {
+      new Image().src = src;
+    });
+
+    // Show content
+    document.body.classList.remove("loading");
+
+    // Display
+    displayProducts(bestSelling, "bestSellingContainer");
+    displayProducts(newArrivals, "newArrivalsContainer");
+  } catch (err) {
+    console.error("🔥 INDEX LOAD FAILED:", err);
+    document.body.classList.remove("loading");
+  }
+}
+
+// ================= INIT =================
+function initIndexPage() {
+  console.log("index.js initIndexPage()", document.readyState);
+  initDynamicCarousel();
+  loadIndexProducts();
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initIndexPage);
+} else {
+  initIndexPage();
+}
