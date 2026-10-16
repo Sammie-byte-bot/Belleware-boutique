@@ -5,6 +5,7 @@ import {
   getDocs,
   query,
   where,
+  onSnapshot,
   orderBy,
   limit,
   startAfter,
@@ -141,6 +142,7 @@ const productsPerPage = 12;
 let lastVisibleDoc = null;
 let isLoading = false;
 let hasMoreProducts = true;
+let productsUnsubscribe = null;
 
 // Store all documents for offset-based pagination
 let allDocs = [];
@@ -408,6 +410,66 @@ function getPageNumbers(current, total) {
   return rangeWithDots;
 }
 
+function subscribeToProducts() {
+  productsUnsubscribe?.();
+  const productsQuery = query(
+    collection(db, "products"),
+    orderBy("createdAt", "desc"),
+  );
+
+  productsUnsubscribe = onSnapshot(
+    productsQuery,
+    (snapshot) => {
+      const products = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      const activeProducts = products.filter(
+        (product) => product.isActive === true,
+      );
+      const visibleProducts = activeProducts.length
+        ? activeProducts
+        : products;
+
+      allDocs = visibleProducts.filter(validateProduct);
+      allProducts = [...allDocs];
+      totalProducts = allDocs.length;
+      hasMoreProducts = totalProducts > productsPerPage;
+
+      const selectedFilters = ["category", "brand", "sizes"].map((filter) =>
+        new Set(
+          Array.from(
+            document.querySelectorAll(`#filter-${filter} input:checked`),
+            (input) => input.value,
+          ),
+        ),
+      );
+
+      populateFilters(allProducts);
+      ["category", "brand", "sizes"].forEach((filter, index) => {
+        document
+          .querySelectorAll(`#filter-${filter} input`)
+          .forEach((input) => {
+            input.checked = selectedFilters[index].has(input.value);
+          });
+      });
+
+      currentPage = 1;
+      applyFilters();
+    },
+    (error) => {
+      console.error("Live product catalog failed:", error);
+      const grid = document.getElementById("productsGrid");
+      const errorElement = document.getElementById("errorProducts");
+      if (grid) grid.innerHTML = "";
+      if (errorElement) {
+        errorElement.hidden = false;
+        errorElement.textContent = "Products could not be loaded. Please try again.";
+      }
+    },
+  );
+}
+
 // ================= APPLY FILTERS =================
 function applyFilters() {
   const selectedCategories = [
@@ -612,7 +674,7 @@ function initShopPage() {
     if (searchInput) searchInput.value = searchQuery;
   }
 
-  loadProducts(1, true);
+  subscribeToProducts();
 
   // Listen for search events from header (main.js)
   window.addEventListener("shop:search", (e) => {

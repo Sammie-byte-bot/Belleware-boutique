@@ -21,9 +21,10 @@ service cloud.firestore {
       allow update, delete: if isAdmin();
     }
 
-    // Products: admins manage products
+    // Products: public catalog reads, admin-only management
     match /products/{productId} {
-      allow read, write: if isAdmin();
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
     }
 
     // Notifications: authenticated users can read and create notifications.

@@ -23,14 +23,14 @@ import {
   setDoc,
   updateDoc,
   deleteDoc,
+  deleteField,
   serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-import {
-  getStorage,
-  ref as storageRef,
-  uploadBytes,
-  getDownloadURL,
-} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js";
+
+function formatCurrency(value) {
+  const amount = Number(value ?? 0);
+  return `Ksh ${(Number.isFinite(amount) ? amount : 0).toLocaleString("en-KE")}`;
+}
 
 // ===============================
 // FIREBASE CONFIG
@@ -39,7 +39,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyD6UqMyedaoaXgqOeddQN47ADgP8joO364",
   authDomain: "bellewear-boutique.firebaseapp.com",
   projectId: "bellewear-boutique",
-  storageBucket: "bellewear-boutique.appspot.com",
+  storageBucket: "bellewear-boutique.firebasestorage.app",
   messagingSenderId: "795858464616",
   appId: "1:795858464616:web:0bbf307b3da145766ff0dd",
 };
@@ -51,7 +51,6 @@ const app =
   getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 const auth = getAuth(app);
 const db = getFirestore(app);
-const storage = getStorage(app);
 
 // Track the current authenticated admin uid globally for read tracking
 let currentAdminUid = null;
@@ -232,7 +231,7 @@ function renderRevenueChart(orders) {
         labels,
         datasets: [
           {
-            label: "Revenue ($)",
+            label: "Revenue (Ksh)",
             data,
             fill: true,
             backgroundColor: "rgba(16,185,129,0.2)",
@@ -252,7 +251,7 @@ function renderRevenueChart(orders) {
           tooltip: {
             callbacks: {
               label: function (context) {
-                return `$${context.parsed.y}`;
+                return formatCurrency(context.parsed.y);
               },
             },
           },
@@ -266,7 +265,7 @@ function renderRevenueChart(orders) {
           },
           y: {
             beginAtZero: true,
-            title: { display: true, text: "Revenue ($)" },
+            title: { display: true, text: "Revenue (Ksh)" },
             grid: { display: false },
           },
         },
@@ -282,7 +281,7 @@ function renderRevenueChart(orders) {
           labels,
           datasets: [
             {
-              label: "Revenue ($)",
+              label: "Revenue (Ksh)",
               data,
               backgroundColor: "rgba(99,102,241,0.6)",
             },
@@ -466,7 +465,7 @@ async function renderTopProductsForOverview(orders) {
           </div>
         </td>
         <td class="py-4">${product.sales}</td>
-        <td class="py-4">KSh ${product.revenue.toLocaleString()}</td>
+        <td class="py-4">${formatCurrency(product.revenue)}</td>
         <td class="py-4">
           <span class="px-2 py-1 rounded text-white text-sm ${
             status === "In Stock" ? "bg-green-600" : "bg-orange-600"
@@ -535,7 +534,7 @@ function loadDashboardStatsRealtime() {
       0,
     );
     const salesEl = document.getElementById("stat-sales");
-    if (salesEl) salesEl.textContent = `$${totalSales}`;
+    if (salesEl) salesEl.textContent = formatCurrency(totalSales);
 
     // 30-day comparisons for new orders
     const now = Date.now();
@@ -579,7 +578,7 @@ function loadDashboardStatsRealtime() {
     // Expense (if orders carry an expense field)
     const totalExpense = orders.reduce((acc, o) => acc + (o.expense || 0), 0);
     const expenseEl = document.getElementById("stat-expense");
-    if (expenseEl) expenseEl.textContent = `$${totalExpense}`;
+    if (expenseEl) expenseEl.textContent = formatCurrency(totalExpense);
 
     const last30Expense = last30Orders.reduce(
       (acc, o) => acc + (o.expense || 0),
@@ -928,7 +927,7 @@ function initDashboard(user) {
               </div>
             </td>
             <td class="py-4">${product.sales}</td>
-            <td class="py-4">KSh ${product.revenue.toLocaleString()}</td>
+            <td class="py-4">${formatCurrency(product.revenue)}</td>
             <td class="py-4">
               <span class="px-2 py-1 rounded text-white text-sm ${
                 status === "In Stock" ? "bg-green-600" : "bg-orange-600"
@@ -1059,11 +1058,11 @@ function initDashboard(user) {
         const data = snap.data();
         if (nameEl) nameEl.value = data.name || "";
         if (emailEl) emailEl.value = data.email || "";
-        if (curEl) curEl.value = data.currency || "USD";
+        if (curEl) curEl.value = data.currency || "KES";
       } else {
         if (nameEl) nameEl.value = "";
         if (emailEl) emailEl.value = "";
-        if (curEl) curEl.value = "USD";
+        if (curEl) curEl.value = "KES";
       }
 
       const form = document.getElementById("settings-form");
@@ -1076,7 +1075,7 @@ function initDashboard(user) {
               {
                 name: nameEl.value || "",
                 email: emailEl.value || "",
-                currency: curEl.value || "USD",
+                currency: curEl.value || "KES",
                 updatedAt: serverTimestamp(),
               },
               { merge: true },
@@ -1214,7 +1213,7 @@ function initDashboard(user) {
           </td>
           <td class="p-4">${product.category || "-"}</td>
           <td class="p-4">${product.id}</td>
-          <td class="p-4">$${product.price || 0}</td>
+          <td class="p-4">${formatCurrency(product.price)}</td>
           <td class="p-4">${created}</td>
           <td class="p-4"><span class="status-pill ${statusClass}">${status}</span></td>
           <td class="p-4 text-right"><button class="action-btn" onclick="editProduct('${
@@ -1574,7 +1573,7 @@ function initDashboard(user) {
       <td class="p-4 text-xs">${products}</td>
       <td class="p-4 text-xs">${addressWithArea}</td>
       <td class="p-4 text-xs">${date}</td>
-      <td class="p-4 text-xs text-right">KES ${order.total ?? 0}</td>
+      <td class="p-4 text-xs text-right">${formatCurrency(order.total)}</td>
 
       <td class="p-4 text-xs text-center">
         <span class="status-badge ${getStatusColorClass(status, locked)}">${status}</span>
@@ -1863,7 +1862,7 @@ function initDashboard(user) {
 
       <div>
         <div class="text-gray-500">Total</div>
-        <div class="font-medium">KES ${order.total ?? 0}</div>
+        <div class="font-medium">${formatCurrency(order.total)}</div>
       </div>
 
       <div>
@@ -1894,7 +1893,7 @@ function initDashboard(user) {
 
       <div>
         <div class="text-gray-500">Delivery Fee</div>
-        <div class="font-medium">KES ${order.deliveryFee || 0}</div>
+        <div class="font-medium">${formatCurrency(order.deliveryFee)}</div>
       </div>
 
       ${
@@ -1983,6 +1982,7 @@ function initDashboard(user) {
     if (panel) panel.classList.add("hidden");
     if (message) message.classList.remove("hidden");
   }
+  window.closeReview = closeReview;
 
   /* ===============================
    FILTER BUTTONS
@@ -2003,6 +2003,117 @@ function initDashboard(user) {
   const productForm = document.getElementById("product-form");
   const imageInput = document.getElementById("p-image");
   const previewContainer = document.getElementById("p-image-preview-container");
+  let editingProduct = null;
+  let retainedProductImages = [];
+  let pendingProductImages = [];
+  const MAX_PRODUCT_IMAGES = 3;
+  const MAX_PRODUCT_IMAGE_DATA_CHARS = 700 * 1024;
+
+  function clearPendingProductImages() {
+    pendingProductImages.forEach(({ previewUrl }) =>
+      URL.revokeObjectURL(previewUrl),
+    );
+    pendingProductImages = [];
+  }
+
+  function renderProductImagePreviews() {
+    if (!previewContainer) return;
+    previewContainer.replaceChildren();
+    const imageCount = document.getElementById("product-image-count");
+    if (imageCount) {
+      imageCount.textContent = `${retainedProductImages.length + pendingProductImages.length} / ${MAX_PRODUCT_IMAGES} images`;
+    }
+
+    const appendPreview = (src, alt, onRemove) => {
+      const wrapper = document.createElement("div");
+      wrapper.className = "relative w-24 overflow-hidden rounded-lg border border-white/10 bg-black/5";
+      const image = document.createElement("img");
+      image.src = src;
+      image.alt = alt;
+      image.className = "block h-20 w-24 object-cover";
+      const removeButton = document.createElement("button");
+      removeButton.type = "button";
+      removeButton.textContent = "×";
+      removeButton.setAttribute("aria-label", `Remove ${alt}`);
+      removeButton.className = "absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/75 text-white";
+      removeButton.addEventListener("click", onRemove);
+      const caption = document.createElement("div");
+      caption.className = "truncate px-2 py-1 text-xs text-gray-500";
+      caption.textContent = alt;
+      wrapper.append(image, removeButton, caption);
+      previewContainer.appendChild(wrapper);
+    };
+
+    retainedProductImages.forEach((image, index) => {
+      appendPreview(image, `Current image ${index + 1}`, () => {
+        retainedProductImages.splice(index, 1);
+        renderProductImagePreviews();
+      });
+    });
+
+    pendingProductImages.forEach(({ previewUrl, file }, index) => {
+      appendPreview(previewUrl, file.name || `Selected image ${index + 1}`, () => {
+        URL.revokeObjectURL(previewUrl);
+        pendingProductImages.splice(index, 1);
+        renderProductImagePreviews();
+      });
+    });
+  }
+
+  function fileToDataUrl(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(new Error("Could not read selected image."));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function compressProductImage(file, maxDataUrlChars) {
+    const bitmap = await createImageBitmap(file);
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
+    if (!context) throw new Error("Image compression is unavailable.");
+
+    let scale = Math.min(1, 1400 / Math.max(bitmap.width, bitmap.height));
+    try {
+      for (let resizeAttempt = 0; resizeAttempt < 8; resizeAttempt += 1) {
+        canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+        canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+
+        for (const quality of [0.82, 0.72, 0.62, 0.52]) {
+          const blob = await new Promise((resolve) =>
+            canvas.toBlob(resolve, "image/webp", quality),
+          );
+          if (!blob) continue;
+          const dataUrl = await fileToDataUrl(blob);
+          if (dataUrl.length <= maxDataUrlChars) return dataUrl;
+        }
+        scale *= 0.78;
+      }
+    } finally {
+      bitmap.close?.();
+    }
+
+    throw new Error("An image could not be compressed enough for Firestore.");
+  }
+
+  window.startNewProduct = () => {
+    productForm?.reset();
+    document.getElementById("p-id").value = "";
+    document.getElementById("modal-title").textContent = "Add Product";
+    editingProduct = null;
+    retainedProductImages = [];
+    clearPendingProductImages();
+    document
+      .querySelectorAll(".p-size, .p-size-numeric")
+      .forEach((checkbox) => (checkbox.checked = false));
+    renderProductImagePreviews();
+    categoryInput?.dispatchEvent(new Event("input"));
+    toggleModal("product-modal");
+  };
 
   // ======= CATEGORY-BASED SIZE SWITCHING =======
   const categoryInput = document.getElementById("p-category");
@@ -2049,18 +2160,22 @@ function initDashboard(user) {
   // ======= IMAGE PREVIEW SETUP =======
   if (imageInput && previewContainer) {
     imageInput.addEventListener("change", () => {
-      previewContainer.innerHTML = ""; // clear old previews
-      const files = Array.from(imageInput.files).slice(0, 3); // max 3 files
-      files.forEach((file) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const img = document.createElement("img");
-          img.src = e.target.result;
-          img.className = "w-20 h-20 object-cover rounded border mr-2 mb-2";
-          previewContainer.appendChild(img);
-        };
-        reader.readAsDataURL(file);
+      const selectedFiles = Array.from(imageInput.files || []).filter((file) =>
+        file.type.startsWith("image/"),
+      );
+      const availableSlots =
+        MAX_PRODUCT_IMAGES - retainedProductImages.length - pendingProductImages.length;
+      selectedFiles.slice(0, Math.max(0, availableSlots)).forEach((file) => {
+        pendingProductImages.push({
+          file,
+          previewUrl: URL.createObjectURL(file),
+        });
       });
+      if (selectedFiles.length > availableSlots) {
+        showToast(`A product can have up to ${MAX_PRODUCT_IMAGES} images.`, "error");
+      }
+      imageInput.value = "";
+      renderProductImagePreviews();
     });
   }
 
@@ -2071,35 +2186,65 @@ function initDashboard(user) {
 
       // Gather values
       const id = document.getElementById("p-id").value;
-      const name = document.getElementById("p-name").value;
+      const name = document.getElementById("p-name").value.trim();
       const category = document.getElementById("p-category").value || "-";
-      const price = parseFloat(document.getElementById("p-price").value);
-      const oldPrice =
-        parseFloat(document.getElementById("p-oldPrice").value) || null;
-      const stock = parseInt(document.getElementById("p-stock").value);
-      const brand = document.getElementById("p-brand").value || "-";
+      const price = Number(document.getElementById("p-price").value);
+      const oldPriceValue = Number(
+        document.getElementById("p-oldPrice").value,
+      );
+      const oldPrice = Number.isFinite(oldPriceValue) && oldPriceValue > 0
+        ? oldPriceValue
+        : null;
+      const stock = Number(document.getElementById("p-stock").value);
+      const brand = document.getElementById("p-brand").value.trim() || "-";
       const description = document.getElementById("p-description").value || "";
+      const colors = Array.from(
+        new Set(
+          document
+            .getElementById("p-colors")
+            .value.split(",")
+            .map((color) => color.trim())
+            .filter(Boolean),
+        ),
+      );
       // Get sizes from either letter or numeric checkboxes depending on what's visible
       const sizes =
         Array.from(
           document.querySelectorAll(".p-size:checked, .p-size-numeric:checked"),
         ).map((el) => el.value) || [];
-      const files = imageInput ? Array.from(imageInput.files).slice(0, 3) : [];
-
-      if (!name || isNaN(price) || isNaN(stock))
+      if (
+        !name ||
+        !Number.isFinite(price) ||
+        price <= 0 ||
+        !Number.isInteger(stock) ||
+        stock < 0
+      )
         return showToast("Please fill all fields correctly", "error");
 
       try {
-        // Upload images to Firebase Storage
-        let imageUrls = [];
-        for (const file of files) {
-          const imgRef = storageRef(
-            storage,
-            `products/${Date.now()}_${file.name}`,
+        const images = [...retainedProductImages];
+        if (images.length + pendingProductImages.length > MAX_PRODUCT_IMAGES) {
+          throw new Error(`A product can have up to ${MAX_PRODUCT_IMAGES} images.`);
+        }
+        let remainingImageBudget =
+          MAX_PRODUCT_IMAGE_DATA_CHARS -
+          images.reduce(
+            (total, image) =>
+              total + (image.startsWith("data:") ? image.length : 0),
+            0,
           );
-          const snapshot = await uploadBytes(imgRef, file);
-          const url = await getDownloadURL(snapshot.ref);
-          imageUrls.push(url);
+        if (remainingImageBudget <= 0 && pendingProductImages.length) {
+          throw new Error("Remove an existing image before adding a new one.");
+        }
+        for (let index = 0; index < pendingProductImages.length; index += 1) {
+          const { file } = pendingProductImages[index];
+          const imagesRemaining = pendingProductImages.length - index;
+          const imageBudget = Math.floor(
+            remainingImageBudget / imagesRemaining,
+          );
+          const image = await compressProductImage(file, imageBudget);
+          images.push(image);
+          remainingImageBudget -= image.length;
         }
 
         if (id) {
@@ -2113,8 +2258,11 @@ function initDashboard(user) {
             brand,
             description,
             sizes,
+            colors,
+            images,
+            image: deleteField(),
+            isActive: editingProduct?.isActive ?? true,
           };
-          if (imageUrls.length) updateData.images = imageUrls;
 
           await updateDoc(doc(db, "products", id), updateData);
           showToast("Product updated successfully", "success");
@@ -2127,10 +2275,10 @@ function initDashboard(user) {
             price,
             oldPrice,
             stock,
-            images: imageUrls.length ? imageUrls : ["img/shoes/shoe1.jpg"],
+            images,
             sizes,
             description,
-            colors: [],
+            colors,
             rating: 0,
             reviews: [],
             isActive: true,
@@ -2144,35 +2292,66 @@ function initDashboard(user) {
         productForm.reset();
         if (previewContainer) previewContainer.innerHTML = "";
         document.getElementById("p-id").value = "";
+        editingProduct = null;
+        retainedProductImages = [];
+        clearPendingProductImages();
         document.getElementById("modal-title").textContent = "Add Product";
+        categoryInput?.dispatchEvent(new Event("input"));
       } catch (err) {
         console.error(err);
-        showToast("Error saving product", "error");
+        showToast(`Could not save product: ${err.message}`, "error");
       }
     });
   }
 
   window.editProduct = async (id) => {
-    const docSnap = await getDocs(collection(db, "products"));
-    const product = docSnap.docs.find((d) => d.id === id)?.data();
-    if (!product) return showToast("Product not found", "error");
+    try {
+      const productSnap = await getDoc(doc(db, "products", id));
+      if (!productSnap.exists())
+        return showToast("Product not found", "error");
 
-    document.getElementById("p-id").value = id;
-    document.getElementById("p-name").value = product.name;
-    document.getElementById("p-category").value = product.category;
-    document.getElementById("p-price").value = product.price;
-    document.getElementById("p-stock").value = product.stock;
+      const product = productSnap.data();
+      editingProduct = product;
+      document.getElementById("p-id").value = id;
+      document.getElementById("p-name").value = product.name || "";
+      document.getElementById("p-category").value = product.category || "";
+      document.getElementById("p-price").value = product.price ?? "";
+      document.getElementById("p-oldPrice").value = product.oldPrice ?? "";
+      document.getElementById("p-stock").value = product.stock ?? "";
+      document.getElementById("p-brand").value = product.brand || "";
+      document.getElementById("p-colors").value = Array.isArray(product.colors)
+        ? product.colors.join(", ")
+        : "";
+      document.getElementById("p-description").value =
+        product.description || "";
 
-    previewContainer.innerHTML = "";
-    (product.images || []).slice(0, 3).forEach((url) => {
-      const img = document.createElement("img");
-      img.src = url;
-      img.className = "w-20 h-20 object-cover rounded";
-      previewContainer.appendChild(img);
-    });
+      const sizes = Array.isArray(product.sizes) ? product.sizes : [];
+      document
+        .querySelectorAll(".p-size, .p-size-numeric")
+        .forEach((checkbox) => {
+          checkbox.checked = sizes.includes(checkbox.value);
+        });
+      categoryInput?.dispatchEvent(new Event("input"));
 
-    document.getElementById("modal-title").textContent = "Edit Product";
-    toggleModal("product-modal");
+      if (previewContainer) {
+        clearPendingProductImages();
+        const existingImages = Array.isArray(product.images)
+          ? product.images
+          : typeof product.images === "string" && product.images
+            ? [product.images]
+            : typeof product.image === "string" && product.image
+            ? [product.image]
+            : [];
+        retainedProductImages = existingImages.slice(0, MAX_PRODUCT_IMAGES);
+        renderProductImagePreviews();
+      }
+
+      document.getElementById("modal-title").textContent = "Edit Product";
+      toggleModal("product-modal");
+    } catch (err) {
+      console.error("Failed to load product for editing:", err);
+      showToast(`Could not load product: ${err.message}`, "error");
+    }
   };
 
   window.deleteProduct = async (id) => {
@@ -2281,7 +2460,33 @@ function initTheme() {
 function initSidebar() {
   const aside = document.querySelector("aside.sidebar");
   const btn = document.getElementById("sidebarCollapse");
+  const menuToggle = document.getElementById("menuToggle");
+  const backdrop = document.getElementById("mobileNavBackdrop");
   if (!aside) return;
+
+  const setMobileMenuOpen = (open) => {
+    const isOpen = open && window.innerWidth < 768;
+    aside.classList.toggle("mobile-open", isOpen);
+    backdrop?.classList.toggle("is-visible", isOpen);
+    backdrop?.setAttribute("aria-hidden", String(!isOpen));
+    menuToggle?.setAttribute("aria-expanded", String(isOpen));
+    menuToggle?.setAttribute(
+      "aria-label",
+      isOpen ? "Close navigation menu" : "Open navigation menu",
+    );
+  };
+
+  menuToggle?.addEventListener("click", () => {
+    setMobileMenuOpen(!aside.classList.contains("mobile-open"));
+  });
+  backdrop?.addEventListener("click", () => setMobileMenuOpen(false));
+  aside.querySelectorAll("nav button[data-route]").forEach((navButton) => {
+    navButton.addEventListener("click", () => setMobileMenuOpen(false));
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") setMobileMenuOpen(false);
+  });
+
   // Apply persisted collapsed state
   const collapsed = localStorage.getItem("adminSidebarCollapsed") === "1";
   aside.classList.toggle("collapsed", collapsed);
@@ -2319,6 +2524,7 @@ function initSidebar() {
       btn?.classList.add("hidden");
       aside.classList.remove("hover-expanded");
     } else {
+      setMobileMenuOpen(false);
       btn?.classList.remove("hidden");
     }
   });
@@ -2813,11 +3019,11 @@ function watchOrdersForNotifications() {
         createJumiaNotification(
           change.doc.id,
           "New Order 🛒",
-          `Amount: KES ${order.total}`,
+          `Amount: ${formatCurrency(order.total)}`,
           "order",
           {
             "Order ID": `#${change.doc.id.slice(0, 9).toUpperCase()}`,
-            Total: `KES ${order.total}`,
+            Total: formatCurrency(order.total),
             Customer: order.customerInfo?.fullName || "Guest",
           },
         );

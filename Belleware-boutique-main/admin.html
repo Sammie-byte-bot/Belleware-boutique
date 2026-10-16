@@ -1200,7 +1200,7 @@ tbody tr:not(:last-child) {
                 <button id="clear-product-search" class="clear-btn hidden" aria-label="Clear search">&times;</button>
               </div>
               <button
-                onclick="toggleModal('product-modal')"
+                onclick="startNewProduct()"
                 class="bg-indigo-600 text-white px-4 py-2 rounded-lg"
               >
                 Add Product
@@ -1658,8 +1658,9 @@ tbody tr:not(:last-child) {
             <!-- Media/Images Section -->
             <div class="bg-gradient-to-br from-[#1a1a3a]/50 to-[#0f0f2a]/50 p-5 rounded-2xl border border-white/10 space-y-4 backdrop-blur-sm">
                 <label class="block text-xs font-bold uppercase tracking-wider text-indigo-300/80">Product Media</label>
-                <div id="p-image-preview-container" class="flex gap-2 mb-2 flex-wrap"></div>
                 <input id="p-image" type="file" accept="image/*" multiple class="w-full text-sm text-gray-400 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer transition-all" />
+              <div id="p-image-preview-container" class="flex gap-3 mb-2 flex-wrap"></div>
+              <p id="product-image-count" class="text-xs text-gray-500" aria-live="polite">0 / 3 images</p>
                 
                 <textarea id="p-description" placeholder="Product description..." rows="3" class="w-full bg-white/5 border border-white/10 text-white px-4 py-3 rounded-xl focus:border-indigo-500 focus:bg-white/10 outline-none transition-all placeholder:text-gray-500 backdrop-blur-sm resize-none"></textarea>
             </div>

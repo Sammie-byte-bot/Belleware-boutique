@@ -105,9 +105,16 @@ async function loadProductFromFirestore() {
     const product = docSnap.data();
 
     // Preload main product image for faster display
-    if (Array.isArray(product.images) && product.images.length > 0) {
+    const productImages = Array.isArray(product.images)
+      ? product.images
+      : typeof product.images === "string" && product.images
+        ? [product.images]
+        : product.image
+          ? [product.image]
+          : [];
+    if (productImages.length > 0) {
       const img = new Image();
-      img.src = product.images[0];
+      img.src = productImages[0];
     }
 
     loadProduct(product);
@@ -167,10 +174,13 @@ function loadProduct(product) {
   // PRODUCT IMAGES
   // =====================================================
 
-  const images =
-    Array.isArray(product.images) && product.images.length
-      ? product.images
-      : ["img/products/default.jpg"];
+  const images = Array.isArray(product.images)
+    ? product.images
+    : typeof product.images === "string" && product.images
+      ? [product.images]
+      : product.image
+        ? [product.image]
+        : ["img/products/default.jpg"];
 
   // Set main image with optimization
   productImage.src = images[0];

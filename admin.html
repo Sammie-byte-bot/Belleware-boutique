@@ -868,13 +868,245 @@ tbody tr:not(:last-child) {
     -webkit-overflow-scrolling: touch;
 }
 
+#product-modal .product-modal-dialog {
+  background: var(--panel);
+  color: var(--text-color);
+  border: 1px solid var(--glass);
+  border-radius: 12px;
+}
+#product-modal .product-modal-heading {
+  border-color: var(--glass);
+}
+#product-modal .product-modal-heading h3 {
+  color: var(--text-color);
+}
+#product-modal .product-modal-icon {
+  background: var(--glass);
+  color: var(--accent);
+}
+#product-modal label {
+  color: var(--muted);
+}
+#product-modal input:not([type="checkbox"]):not([type="file"]),
+#product-modal textarea {
+  background-color: var(--glass);
+  border-color: var(--glass);
+  color: var(--text-color);
+}
+#product-modal input::placeholder,
+#product-modal textarea::placeholder {
+  color: var(--muted);
+}
+#product-modal .product-modal-close {
+  background: var(--glass);
+  color: var(--muted);
+}
+#product-modal .product-modal-close:hover {
+  color: var(--text-color);
+}
+#product-modal .product-size-panel,
+#product-modal .product-media-panel {
+  background: var(--glass);
+  border-color: var(--glass);
+}
+#product-modal .product-size-panel span {
+  color: var(--text-color);
+}
+#product-modal input[type="file"] {
+  color: var(--text-color);
+}
+#product-modal .product-modal-footer {
+  border-color: var(--glass);
+}
+#product-modal .product-modal-cancel {
+  color: var(--muted);
+}
+#product-modal .product-modal-save {
+  background: var(--accent);
+  box-shadow: none;
+}
+#product-modal .product-modal-save:hover {
+  background: var(--accent-2);
+  transform: none;
+}
+
+      @media (max-width: 767px) {
+        body.flex.h-screen {
+          display: block;
+          height: auto;
+          min-height: 100vh;
+          overflow-x: hidden;
+        }
+
+        aside.sidebar {
+          display: flex;
+          width: min(18rem, 86vw);
+          height: 100vh;
+          height: 100dvh;
+          border-radius: 0 12px 12px 0;
+          z-index: 50;
+          transform: translateX(-105%);
+        }
+
+        aside.sidebar:not(.mobile-open):hover {
+          transform: translateX(-105%);
+        }
+
+        aside.sidebar.mobile-open,
+        aside.sidebar.mobile-open:hover {
+          transform: translateX(0);
+        }
+
+        .mobile-nav-backdrop {
+          position: fixed;
+          inset: 0;
+          z-index: 45;
+          display: none;
+          border: 0;
+          background: rgba(2, 6, 23, 0.58);
+        }
+
+        .mobile-nav-backdrop.is-visible {
+          display: block;
+        }
+
+        main.flex-1 {
+          width: 100%;
+          min-width: 0;
+          min-height: 100vh;
+          overflow-x: hidden;
+          overflow-y: visible;
+        }
+
+        header.topbar {
+          height: auto;
+          min-height: 4rem;
+          padding: 0.5rem 0.75rem;
+          gap: 0.4rem;
+        }
+
+        header.topbar > div:first-child {
+          min-width: 0;
+          gap: 0.5rem;
+        }
+
+        header.topbar #menuToggle {
+          flex: 0 0 auto;
+          padding: 0.55rem 0.65rem;
+        }
+
+        #section-title {
+          font-size: 1rem;
+          line-height: 1.25;
+        }
+
+        header.topbar > div:last-child {
+          flex: 0 0 auto;
+          gap: 0.4rem;
+        }
+
+        .content-wrapper {
+          padding-left: 0.75rem;
+          padding-right: 0.75rem;
+        }
+
+        .content-wrapper section,
+        .panel,
+        .stat-card {
+          min-width: 0;
+        }
+
+        #section-products > .flex,
+        #section-products > .flex > div:first-child {
+          width: 100%;
+          align-items: stretch;
+          flex-direction: column;
+        }
+
+        #section-products .product-search-wrapper,
+        #section-products .search-input {
+          width: 100%;
+        }
+
+        #section-products .table-wrap,
+        #section-orders .table-scroll {
+          max-width: 100%;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+        }
+
+        #section-products .products-table,
+        #section-orders .table-scroll table,
+        #section-customers .customers-table {
+          min-width: 42rem;
+        }
+
+        #section-orders {
+          grid-template-columns: minmax(0, 1fr);
+          gap: 1rem;
+        }
+
+        #section-orders > .col-span-2,
+        #section-orders > aside {
+          grid-column: 1 / -1;
+          min-width: 0;
+        }
+
+        #section-orders > aside {
+          position: static;
+          height: auto;
+        }
+
+        #section-orders #order-review {
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          z-index: 60;
+          width: min(34rem, calc(100vw - 2rem));
+          max-height: calc(100vh - 2rem);
+          max-height: calc(100dvh - 2rem);
+          min-height: 0;
+          overflow-y: auto;
+          transform: translate(-50%, -50%);
+          box-shadow: 0 0 0 100vmax rgba(2, 6, 23, 0.72);
+        }
+
+        #section-orders .panel.flex {
+          flex-wrap: wrap;
+          gap: 0.5rem;
+        }
+
+        #section-customers > .flex {
+          align-items: stretch;
+          flex-direction: column;
+          gap: 0.75rem;
+        }
+
+        #section-customers .customer-search-wrapper,
+        #section-customers .customer-search-wrapper .search-input {
+          width: 100%;
+        }
+
+        #section-analytics > .flex {
+          flex-wrap: wrap;
+          gap: 0.75rem;
+        }
+
+        #notifDropdown {
+          right: 0.5rem;
+          left: 0.5rem;
+          width: auto;
+          min-width: 0;
+        }
+      }
+
       
     </style>
   </head>
 
   <body class="flex h-screen" >
     <!-- SIDEBAR -->
-    <aside class="w-72 sidebar hidden md:flex flex-col px-4 py-6">
+    <aside id="admin-sidebar" class="w-72 sidebar md:flex flex-col px-4 py-6" aria-label="Admin navigation">
       <div class="mb-6 px-2 flex items-center justify-between">
         <h1 class="logo text-2xl font-bold flex items-center gap-3">
           <span
@@ -952,6 +1184,7 @@ tbody tr:not(:last-child) {
         </button>
       </nav>
     </aside>
+    <button id="mobileNavBackdrop" class="mobile-nav-backdrop" type="button" aria-label="Close navigation menu" aria-hidden="true" tabindex="-1"></button>
 
     <!-- MAIN -->
 <main class="flex-1 flex flex-col overflow-y-auto">
@@ -962,8 +1195,11 @@ tbody tr:not(:last-child) {
           <button
             id="menuToggle"
             class="md:hidden bg-indigo-600 text-white px-3 py-2 rounded-lg"
+            aria-controls="admin-sidebar"
+            aria-expanded="false"
+            aria-label="Open navigation menu"
           >
-            Menu
+            <i class="fas fa-bars" aria-hidden="true"></i>
           </button>
           <h2 id="section-title" class="text-xl font-semibold">
             eCommerce Dashboard
@@ -1200,7 +1436,7 @@ tbody tr:not(:last-child) {
                 <button id="clear-product-search" class="clear-btn hidden" aria-label="Clear search">&times;</button>
               </div>
               <button
-                onclick="toggleModal('product-modal')"
+                onclick="startNewProduct()"
                 class="bg-indigo-600 text-white px-4 py-2 rounded-lg"
               >
                 Add Product
@@ -1294,9 +1530,8 @@ tbody tr:not(:last-child) {
     </div>
 
     <!-- Table -->
-    <table
-      class="w-full border border-t-0 rounded-b-xl shadow-sm"
-    >
+    <div class="table-scroll">
+      <table class="w-full border border-t-0 rounded-b-xl shadow-sm">
       <thead>
         <tr>
           <th class="p-4 text-left text-xs font-semibold text-gray-500">
@@ -1326,7 +1561,8 @@ tbody tr:not(:last-child) {
       <tbody id="order-table-body">
         <!-- Rows injected by JS -->
       </tbody>
-    </table>
+      </table>
+    </div>
   </div>
 
   <!-- =======================
@@ -1339,10 +1575,13 @@ tbody tr:not(:last-child) {
     <div
       id="order-review"
       class="panel p-4 min-h-screen hidden overflow-auto"
+    >
       <!-- Header -->
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-lg font-semibold">Order Preview</h2>
         <button
+          type="button"
+          aria-label="Close order details"
           onclick="closeReview()"
           class="text-gray-400 hover:text-gray-700 text-xl"
         >
@@ -1450,44 +1689,60 @@ tbody tr:not(:last-child) {
 
         <!-- SETTINGS -->
         <section id="section-settings" class="hidden space-y-6">
-          <h3 class="page-title">Settings</h3>
-          <div class="panel p-4 rounded-xl">
-            <form id="settings-form" class="space-y-4">
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label class="block small-muted">Store Name</label>
-                  <input id="settings-store-name" class="search-small w-full" />
+          <div class="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h3 class="page-title">Settings</h3>
+              <p class="small-muted">Store profile and regional preferences</p>
+            </div>
+            <span class="small-muted inline-flex items-center gap-2">
+              <i class="fas fa-sliders-h" aria-hidden="true"></i>
+              Store configuration
+            </span>
+          </div>
+          <div class="panel rounded-xl overflow-hidden">
+            <div class="p-5 border-b flex items-center gap-3" style="border-color: var(--glass)">
+              <span class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: var(--glass); color: var(--accent)">
+                <i class="fas fa-store" aria-hidden="true"></i>
+              </span>
+              <div>
+                <h4 class="font-semibold">Store profile</h4>
+                <p class="small-muted">Identity and checkout defaults</p>
+              </div>
+            </div>
+            <form id="settings-form" class="p-5 space-y-6">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-4xl">
+                <div class="space-y-2">
+                  <label for="settings-store-name" class="block small-muted">Store name</label>
+                  <input id="settings-store-name" type="text" autocomplete="organization" placeholder="Bellewear Boutique" class="search-small w-full" />
                 </div>
-                <div>
-                  <label class="block small-muted">Store Email</label>
-                  <input
-                    id="settings-store-email"
-                    class="search-small w-full"
-                  />
+                <div class="space-y-2">
+                  <label for="settings-store-email" class="block small-muted">Store email</label>
+                  <input id="settings-store-email" type="email" autocomplete="email" placeholder="hello@example.com" class="search-small w-full" />
                 </div>
-                <div>
-                  <label class="block small-muted">Default Currency</label>
+                <div class="space-y-2">
+                  <label for="settings-currency" class="block small-muted">Default currency</label>
                   <select id="settings-currency" class="search-small w-full">
                     <option value="USD">USD</option>
                     <option value="EUR">EUR</option>
-                    <option value="KES">KES</option>
+                    <option value="KES">KES (Ksh)</option>
                   </select>
                 </div>
               </div>
-              <div class="flex gap-2">
-                <button
-                  type="submit"
-                  class="bg-indigo-600 text-white px-4 py-2 rounded"
-                >
-                  Save Settings
-                </button>
-                <button
-                  type="button"
-                  id="settings-reload"
-                  class="bg-gray-200 px-4 py-2 rounded"
-                >
-                  Reload
-                </button>
+              <div class="pt-4 border-t flex flex-wrap items-center justify-between gap-3" style="border-color: var(--glass)">
+                <span class="small-muted inline-flex items-center gap-2">
+                  <i class="fas fa-lock" aria-hidden="true"></i>
+                  Admin-only settings
+                </span>
+                <div class="flex flex-wrap gap-2">
+                  <button type="button" id="settings-reload" class="search-small inline-flex items-center gap-2 px-4 py-2">
+                    <i class="fas fa-rotate" aria-hidden="true"></i>
+                    Reload
+                  </button>
+                  <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-white font-semibold" style="background: var(--accent)">
+                    <i class="fas fa-save" aria-hidden="true"></i>
+                    Save settings
+                  </button>
+                </div>
               </div>
             </form>
           </div>
@@ -1501,13 +1756,9 @@ tbody tr:not(:last-child) {
       class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
     >
 
-<div class="bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f0f23] text-[#e0e0e0] rounded-2xl w-full max-w-2xl max-h-[85vh] shadow-2xl border border-[#2a2a4a]/50 font-sans relative overflow-hidden">
-    <!-- Decorative gradient orbs -->
-    <div class="absolute -top-20 -right-20 w-40 h-40 bg-indigo-600/20 rounded-full blur-3xl"></div>
-    <div class="absolute -bottom-20 -left-20 w-40 h-40 bg-purple-600/20 rounded-full blur-3xl"></div>
-    
+<div class="product-modal-dialog w-full max-w-2xl max-h-[85vh] shadow-2xl font-sans relative overflow-hidden">
     <!-- Close Button -->
-    <button class="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 transition-all" onclick="toggleModal('product-modal')">
+  <button type="button" aria-label="Close product form" class="product-modal-close absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center rounded-full transition-all" onclick="toggleModal('product-modal')">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
         </svg>
@@ -1515,11 +1766,11 @@ tbody tr:not(:last-child) {
 
     <!-- Scrollable Content Area - Hidden Scrollbar -->
     <div class="p-6 overflow-y-auto max-h-[85vh] scrollbar-hide">
-        <div class="flex items-center gap-3 mb-6 border-b border-white/10 pb-4">
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
-                <i class="fas fa-plus text-white text-sm"></i>
+        <div class="product-modal-heading flex items-center gap-3 mb-6 border-b pb-4">
+          <div class="product-modal-icon w-10 h-10 rounded-lg flex items-center justify-center">
+            <i class="fas fa-plus text-sm"></i>
             </div>
-            <h3 class="text-xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent" id="modal-title">Create New Product</h3>
+          <h3 class="text-xl font-bold" id="modal-title">Create New Product</h3>
         </div>
 
         <form id="product-form" class="space-y-5">
@@ -1532,7 +1783,7 @@ tbody tr:not(:last-child) {
             </div>
 
             <!-- Category & Brand Row -->
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div class="space-y-2">
                     <label class="block text-xs font-bold uppercase tracking-wider text-indigo-300/80">Category</label>
                     <input id="p-category" placeholder="Category" class="w-full bg-white/5 border border-white/10 text-white px-4 py-3.5 rounded-xl focus:border-indigo-500 focus:bg-white/10 outline-none transition-all placeholder:text-gray-500 backdrop-blur-sm" />
@@ -1543,8 +1794,14 @@ tbody tr:not(:last-child) {
                 </div>
             </div>
 
+              <div class="space-y-2">
+                <label for="p-colors" class="block text-xs font-bold uppercase tracking-wider text-indigo-300/80">Available Colors</label>
+                <input id="p-colors" placeholder="Black, White, Red" class="w-full bg-white/5 border border-white/10 text-white px-4 py-3.5 rounded-xl focus:border-indigo-500 focus:bg-white/10 outline-none transition-all placeholder:text-gray-500 backdrop-blur-sm" />
+                <p class="text-xs text-gray-500">Separate colors with commas. These appear as options on the product page.</p>
+              </div>
+
             <!-- Pricing & Stock Row -->
-            <div class="grid grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div class="space-y-2">
                     <label class="block text-xs font-bold uppercase tracking-wider text-indigo-300/80">Price</label>
                     <input id="p-price" type="number" placeholder="0.00" class="w-full bg-white/5 border border-white/10 text-white px-4 py-3.5 rounded-xl focus:border-indigo-500 focus:bg-white/10 outline-none transition-all placeholder:text-gray-500 backdrop-blur-sm" />
@@ -1564,7 +1821,7 @@ tbody tr:not(:last-child) {
                 <label class="block text-xs font-bold uppercase tracking-wider text-indigo-300/80">Available Sizes</label>
                 
                 <!-- Letter Sizes (S, M, L, XL) - Default for clothing -->
-                <div id="sizes-letter" class="flex gap-3 bg-white/5 p-4 rounded-xl border border-white/10">
+                <div id="sizes-letter" class="product-size-panel flex gap-3 p-4 rounded-xl border">
                     <label class="flex-1 flex items-center justify-center gap-2 cursor-pointer text-sm py-2 px-3 rounded-lg bg-white/5 hover:bg-white/10 transition-all border border-white/5 hover:border-indigo-500/50">
                         <input type="checkbox" class="p-size rounded bg-[#2a2a2a] border-none text-indigo-500 focus:ring-2 focus:ring-indigo-500/50" value="S"> <span class="text-gray-300">S</span>
                     </label>
@@ -1580,7 +1837,7 @@ tbody tr:not(:last-child) {
                 </div>
                 
                 <!-- Numeric Sizes (23-45) - For shoes -->
-                <div id="sizes-numeric" class="hidden flex gap-2 bg-white/5 p-4 rounded-xl border border-white/10 flex-wrap">
+                <div id="sizes-numeric" class="product-size-panel hidden flex gap-2 p-4 rounded-xl border flex-wrap">
                     <div class="grid grid-cols-5 gap-2 w-full">
                         <label class="flex items-center justify-center gap-1 cursor-pointer text-xs py-2 px-2 rounded-lg bg-white/5 hover:bg-white/10 transition-all border border-white/5 hover:border-indigo-500/50">
                             <input type="checkbox" class="p-size-numeric rounded bg-[#2a2a2a] border-none text-indigo-500 focus:ring-2 focus:ring-indigo-500/50" value="23"> <span class="text-gray-300">23</span>
@@ -1656,18 +1913,20 @@ tbody tr:not(:last-child) {
             </div>
 
             <!-- Media/Images Section -->
-            <div class="bg-gradient-to-br from-[#1a1a3a]/50 to-[#0f0f2a]/50 p-5 rounded-2xl border border-white/10 space-y-4 backdrop-blur-sm">
+            <div class="product-media-panel p-5 rounded-xl border space-y-4">
                 <label class="block text-xs font-bold uppercase tracking-wider text-indigo-300/80">Product Media</label>
-                <div id="p-image-preview-container" class="flex gap-2 mb-2 flex-wrap"></div>
                 <input id="p-image" type="file" accept="image/*" multiple class="w-full text-sm text-gray-400 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer transition-all" />
+                <div id="p-image-preview-container" class="flex gap-3 mb-2 flex-wrap"></div>
+                <p id="product-image-count" class="text-xs text-gray-500" aria-live="polite">0 / 3 images</p>
+              <p class="text-xs text-gray-500">Add or remove up to 3 images. New images are compressed before saving.</p>
                 
                 <textarea id="p-description" placeholder="Product description..." rows="3" class="w-full bg-white/5 border border-white/10 text-white px-4 py-3 rounded-xl focus:border-indigo-500 focus:bg-white/10 outline-none transition-all placeholder:text-gray-500 backdrop-blur-sm resize-none"></textarea>
             </div>
 
             <!-- Footer Actions -->
-            <div class="flex justify-end items-center gap-4 pt-4 border-t border-white/10">
-                <button type="button" class="px-5 py-2.5 text-gray-400 hover:text-white font-medium text-sm rounded-lg hover:bg-white/5 transition-all" onclick="toggleModal('product-modal')">Cancel</button>
-                <button type="submit" class="px-8 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl font-bold transition-all shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:scale-[1.02] active:scale-[0.98]">
+            <div class="product-modal-footer flex justify-end items-center gap-4 pt-4 border-t">
+              <button type="button" class="product-modal-cancel px-5 py-2.5 font-medium text-sm rounded-lg hover:bg-white/5 transition-all" onclick="toggleModal('product-modal')">Cancel</button>
+              <button type="submit" class="product-modal-save px-8 py-2.5 text-white rounded-lg font-bold transition-all">
                     Save Product
                 </button>
             </div>

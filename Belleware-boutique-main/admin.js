@@ -23,14 +23,9 @@ import {
   setDoc,
   updateDoc,
   deleteDoc,
+  deleteField,
   serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-import {
-  getStorage,
-  ref as storageRef,
-  uploadBytes,
-  getDownloadURL,
-} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js";
 
 // ===============================
 // FIREBASE CONFIG
@@ -51,7 +46,6 @@ const app =
   getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 const auth = getAuth(app);
 const db = getFirestore(app);
-const storage = getStorage(app);
 
 // Track the current authenticated admin uid globally for read tracking
 let currentAdminUid = null;
@@ -1971,6 +1965,107 @@ function initDashboard(user) {
   const productForm = document.getElementById("product-form");
   const imageInput = document.getElementById("p-image");
   const previewContainer = document.getElementById("p-image-preview-container");
+  let retainedProductImages = [];
+  let pendingProductImages = [];
+  const maxProductImages = 3;
+  const maxProductImageDataChars = 700 * 1024;
+
+  function clearPendingProductImages() {
+    pendingProductImages.forEach(({ previewUrl }) =>
+      URL.revokeObjectURL(previewUrl),
+    );
+    pendingProductImages = [];
+  }
+
+  function renderProductImagePreviews() {
+    if (!previewContainer) return;
+    previewContainer.replaceChildren();
+    const imageCount = document.getElementById("product-image-count");
+    if (imageCount) {
+      imageCount.textContent = `${retainedProductImages.length + pendingProductImages.length} / ${maxProductImages} images`;
+    }
+
+    const appendPreview = (src, label, onRemove) => {
+      const wrapper = document.createElement("div");
+      wrapper.className = "relative w-24 overflow-hidden rounded-lg border border-white/10 bg-black/5";
+      const image = document.createElement("img");
+      image.src = src;
+      image.alt = label;
+      image.className = "block h-20 w-24 object-cover";
+      const removeButton = document.createElement("button");
+      removeButton.type = "button";
+      removeButton.textContent = "×";
+      removeButton.setAttribute("aria-label", `Remove ${label}`);
+      removeButton.className = "absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/75 text-white";
+      removeButton.addEventListener("click", onRemove);
+      const caption = document.createElement("div");
+      caption.className = "truncate px-2 py-1 text-xs text-gray-500";
+      caption.textContent = label;
+      wrapper.append(image, removeButton, caption);
+      previewContainer.appendChild(wrapper);
+    };
+
+    retainedProductImages.forEach((image, index) => {
+      appendPreview(image, `Current image ${index + 1}`, () => {
+        retainedProductImages.splice(index, 1);
+        renderProductImagePreviews();
+      });
+    });
+    pendingProductImages.forEach(({ previewUrl, file }, index) => {
+      appendPreview(previewUrl, file.name || `Selected image ${index + 1}`, () => {
+        URL.revokeObjectURL(previewUrl);
+        pendingProductImages.splice(index, 1);
+        renderProductImagePreviews();
+      });
+    });
+  }
+
+  function fileToDataUrl(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(new Error("Could not read selected image."));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function compressProductImage(file, maxDataUrlChars) {
+    const bitmap = await createImageBitmap(file);
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
+    if (!context) throw new Error("Image compression is unavailable.");
+    let scale = Math.min(1, 1400 / Math.max(bitmap.width, bitmap.height));
+    try {
+      for (let resizeAttempt = 0; resizeAttempt < 8; resizeAttempt += 1) {
+        canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+        canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+        for (const quality of [0.82, 0.72, 0.62, 0.52]) {
+          const blob = await new Promise((resolve) =>
+            canvas.toBlob(resolve, "image/webp", quality),
+          );
+          if (!blob) continue;
+          const dataUrl = await fileToDataUrl(blob);
+          if (dataUrl.length <= maxDataUrlChars) return dataUrl;
+        }
+        scale *= 0.78;
+      }
+    } finally {
+      bitmap.close?.();
+    }
+    throw new Error("An image could not be compressed enough for Firestore.");
+  }
+
+  window.startNewProduct = () => {
+    productForm?.reset();
+    document.getElementById("p-id").value = "";
+    document.getElementById("modal-title").textContent = "Create New Product";
+    retainedProductImages = [];
+    clearPendingProductImages();
+    renderProductImagePreviews();
+    toggleModal("product-modal");
+  };
 
   // ======= CATEGORY-BASED SIZE SWITCHING =======
   const categoryInput = document.getElementById("p-category");
@@ -2017,18 +2112,22 @@ function initDashboard(user) {
   // ======= IMAGE PREVIEW SETUP =======
   if (imageInput && previewContainer) {
     imageInput.addEventListener("change", () => {
-      previewContainer.innerHTML = ""; // clear old previews
-      const files = Array.from(imageInput.files).slice(0, 3); // max 3 files
-      files.forEach((file) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const img = document.createElement("img");
-          img.src = e.target.result;
-          img.className = "w-20 h-20 object-cover rounded border mr-2 mb-2";
-          previewContainer.appendChild(img);
-        };
-        reader.readAsDataURL(file);
+      const selectedFiles = Array.from(imageInput.files || []).filter((file) =>
+        file.type.startsWith("image/"),
+      );
+      const availableSlots =
+        maxProductImages - retainedProductImages.length - pendingProductImages.length;
+      selectedFiles.slice(0, Math.max(0, availableSlots)).forEach((file) => {
+        pendingProductImages.push({
+          file,
+          previewUrl: URL.createObjectURL(file),
+        });
       });
+      if (selectedFiles.length > availableSlots) {
+        showToast(`A product can have up to ${maxProductImages} images.`, "error");
+      }
+      imageInput.value = "";
+      renderProductImagePreviews();
     });
   }
 
@@ -2052,22 +2151,31 @@ function initDashboard(user) {
         Array.from(
           document.querySelectorAll(".p-size:checked, .p-size-numeric:checked"),
         ).map((el) => el.value) || [];
-      const files = imageInput ? Array.from(imageInput.files).slice(0, 3) : [];
-
       if (!name || isNaN(price) || isNaN(stock))
         return showToast("Please fill all fields correctly", "error");
 
       try {
-        // Upload images to Firebase Storage
-        let imageUrls = [];
-        for (const file of files) {
-          const imgRef = storageRef(
-            storage,
-            `products/${Date.now()}_${file.name}`,
+        const images = [...retainedProductImages];
+        if (images.length + pendingProductImages.length > maxProductImages) {
+          throw new Error(`A product can have up to ${maxProductImages} images.`);
+        }
+        let remainingImageBudget =
+          maxProductImageDataChars -
+          images.reduce(
+            (total, image) =>
+              total + (image.startsWith("data:") ? image.length : 0),
+            0,
           );
-          const snapshot = await uploadBytes(imgRef, file);
-          const url = await getDownloadURL(snapshot.ref);
-          imageUrls.push(url);
+        if (remainingImageBudget <= 0 && pendingProductImages.length) {
+          throw new Error("Remove an existing image before adding a new one.");
+        }
+        for (let index = 0; index < pendingProductImages.length; index += 1) {
+          const { file } = pendingProductImages[index];
+          const imagesRemaining = pendingProductImages.length - index;
+          const imageBudget = Math.floor(remainingImageBudget / imagesRemaining);
+          const image = await compressProductImage(file, imageBudget);
+          images.push(image);
+          remainingImageBudget -= image.length;
         }
 
         if (id) {
@@ -2081,8 +2189,9 @@ function initDashboard(user) {
             brand,
             description,
             sizes,
+            images,
+            image: deleteField(),
           };
-          if (imageUrls.length) updateData.images = imageUrls;
 
           await updateDoc(doc(db, "products", id), updateData);
           showToast("Product updated successfully", "success");
@@ -2095,7 +2204,7 @@ function initDashboard(user) {
             price,
             oldPrice,
             stock,
-            images: imageUrls.length ? imageUrls : ["img/shoes/shoe1.jpg"],
+            images,
             sizes,
             description,
             colors: [],
@@ -2110,7 +2219,9 @@ function initDashboard(user) {
         // Reset form & modal
         toggleModal("product-modal");
         productForm.reset();
-        if (previewContainer) previewContainer.innerHTML = "";
+        retainedProductImages = [];
+        clearPendingProductImages();
+        renderProductImagePreviews();
         document.getElementById("p-id").value = "";
         document.getElementById("modal-title").textContent = "Add Product";
       } catch (err) {
@@ -2131,13 +2242,16 @@ function initDashboard(user) {
     document.getElementById("p-price").value = product.price;
     document.getElementById("p-stock").value = product.stock;
 
-    previewContainer.innerHTML = "";
-    (product.images || []).slice(0, 3).forEach((url) => {
-      const img = document.createElement("img");
-      img.src = url;
-      img.className = "w-20 h-20 object-cover rounded";
-      previewContainer.appendChild(img);
-    });
+    clearPendingProductImages();
+    const existingImages = Array.isArray(product.images)
+      ? product.images
+      : typeof product.images === "string" && product.images
+        ? [product.images]
+        : typeof product.image === "string" && product.image
+        ? [product.image]
+        : [];
+    retainedProductImages = existingImages.slice(0, maxProductImages);
+    renderProductImagePreviews();
 
     document.getElementById("modal-title").textContent = "Edit Product";
     toggleModal("product-modal");

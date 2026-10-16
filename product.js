@@ -94,10 +94,17 @@ async function loadProductFromFirestore() {
     const product = docSnap.data();
 
     // Preload main product image for faster display
-    if (Array.isArray(product.images) && product.images.length > 0) {
+    const productImages = Array.isArray(product.images)
+      ? product.images
+      : typeof product.images === "string" && product.images
+        ? [product.images]
+        : product.image
+          ? [product.image]
+          : [];
+    if (productImages.length > 0) {
       const img = new Image();
       img.fetchPriority = "high";
-      img.src = product.images[0];
+      img.src = productImages[0];
     }
 
     loadProduct(product);
@@ -165,7 +172,13 @@ function loadProduct(product) {
   // PRODUCT IMAGES
   // =====================================================
 
-  const images = Array.isArray(product.images) ? product.images : [];
+  const images = Array.isArray(product.images)
+    ? product.images
+    : typeof product.images === "string" && product.images
+      ? [product.images]
+      : product.image
+        ? [product.image]
+        : [];
 
   // Set main image with optimization
   productImage.hidden = images.length === 0;
@@ -231,10 +244,16 @@ function loadProduct(product) {
   sizeVariant.appendChild(sizeSelect);
 
   const colorSelect = document.createElement("select");
-  colorSelect.innerHTML = `<option value="">Select color</option>`;
+  const colorPlaceholder = document.createElement("option");
+  colorPlaceholder.value = "";
+  colorPlaceholder.textContent = "Select color";
+  colorSelect.appendChild(colorPlaceholder);
 
   (product.colors || []).forEach((color) => {
-    colorSelect.innerHTML += `<option value="${color}">${color}</option>`;
+    const option = document.createElement("option");
+    option.value = color;
+    option.textContent = color;
+    colorSelect.appendChild(option);
   });
 
   colorVariant.innerHTML = "";
