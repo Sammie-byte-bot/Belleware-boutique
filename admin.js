@@ -1954,8 +1954,15 @@ function initDashboard(user) {
        ROW CLICK → REVIEW
     ================================ */
       tr.addEventListener("click", (e) => {
-        if (e.target.tagName === "SELECT" || e.target.tagName === "BUTTON")
+        const target = e.target;
+        if (
+          !(target instanceof Element) ||
+          target.closest(
+            ".update-btn, .update-dropdown, button, input, label, select, a",
+          )
+        ) {
           return;
+        }
         openReview(order);
       });
 

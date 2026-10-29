@@ -53,6 +53,10 @@
         accent-color: #6366f1;
       }
       .submit-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.6rem;
         background: #6366f1;
         color: white;
         width: 100%;
@@ -62,6 +66,29 @@
       }
       .submit-btn:hover {
         background: #4f46e5;
+      }
+      .submit-btn:disabled {
+        cursor: wait;
+        opacity: 0.8;
+      }
+      .auth-spinner {
+        width: 1rem;
+        height: 1rem;
+        flex: 0 0 auto;
+        border: 2px solid rgb(255 255 255 / 45%);
+        border-top-color: #fff;
+        border-radius: 50%;
+        animation: auth-spin 0.7s linear infinite;
+      }
+      @keyframes auth-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .auth-spinner {
+          animation-duration: 1.5s;
+        }
       }
       .social-btn {
         border: 1px solid #d1d5db;
@@ -138,8 +165,9 @@
           />
           I agree to the Terms & Conditions
         </label>
-        <button type="submit" class="submit-btn" id="submitBtn">
-          Create account
+        <button type="submit" class="submit-btn" id="submitBtn" aria-busy="false">
+          <span id="submitBtnLabel">Create account</span>
+          <span class="auth-spinner" id="authSpinner" aria-hidden="true" hidden></span>
         </button>
         <div id="authMessage"></div>
       </form>
@@ -177,7 +205,7 @@
       </button>
 
       <p class="login-prompt mt-4 text-center">
-        Already have an account?
+        <span id="authModePrompt">Already have an account?</span>
         <a href="#" class="text-indigo-600 font-medium" id="switchMode"
           >Log in</a
         >

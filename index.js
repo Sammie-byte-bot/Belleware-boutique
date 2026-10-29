@@ -454,15 +454,26 @@ function validateProduct(p) {
   return p.id && p.name && Number.isFinite(price) && price > 0 && hasImage;
 }
 
+function getPrimaryProductImage(product) {
+  const images = Array.isArray(product.images)
+    ? product.images
+    : typeof product.images === "string"
+      ? [product.images]
+      : [];
+  const primaryImage = images.find(
+    (src) => typeof src === "string" && src.trim(),
+  );
+
+  return (
+    primaryImage ||
+    (typeof product.image === "string" && product.image.trim()) ||
+    "img/placeholder.png"
+  );
+}
+
 // Identical product card creator (now matches shop.js exactly)
 function createProductCard(product) {
-  const image =
-    (Array.isArray(product.images) &&
-      product.images.length &&
-      product.images[0]) ||
-    product.images ||
-    product.image ||
-    "img/placeholder.png";
+  const image = getPrimaryProductImage(product);
   return `
     <div class="pro" data-id="${product.id}">
       <div class="img-wrapper">
@@ -772,10 +783,10 @@ async function loadIndexProducts() {
     console.log(`🆕 Best: ${bestSelling.length}, New: ${newArrivals.length}`);
 
     // Preload images
-    const allImages = [...bestSelling, ...newArrivals]
-      .flatMap((p) => p.images || [])
-      .filter(Boolean);
-    allImages.forEach((src) => {
+    const primaryImages = [...bestSelling, ...newArrivals]
+      .map(getPrimaryProductImage)
+      .filter((src) => src !== "img/placeholder.png");
+    primaryImages.forEach((src) => {
       new Image().src = src;
     });
 

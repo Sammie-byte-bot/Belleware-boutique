@@ -69,11 +69,28 @@ const firstNameInput = document.getElementById("first-name");
 const lastNameInput = document.getElementById("last-name");
 const authMessage = document.getElementById("authMessage");
 const switchMode = document.getElementById("switchMode");
+const modePrompt = document.getElementById("authModePrompt");
 const togglePassword = document.getElementById("togglePassword");
 const googleBtn = document.getElementById("googleSignInBtn");
-const submitBtn = form.querySelector("button");
+const submitBtn = document.getElementById("submitBtn");
+const submitBtnLabel = document.getElementById("submitBtnLabel");
+const authSpinner = document.getElementById("authSpinner");
 
 let isLoginMode = false;
+let submitPending = false;
+
+function setSubmitLoading(isLoading) {
+  submitBtn.disabled = isLoading;
+  submitBtn.setAttribute("aria-busy", String(isLoading));
+  authSpinner.hidden = !isLoading;
+  submitBtnLabel.textContent = isLoading
+    ? isLoginMode
+      ? "Logging in..."
+      : "Creating account..."
+    : isLoginMode
+      ? "Log in"
+      : "Create account";
+}
 
 /* =========================
    PASSWORD TOGGLE
@@ -87,22 +104,34 @@ togglePassword.addEventListener("click", () => {
 ========================= */
 switchMode.addEventListener("click", (e) => {
   e.preventDefault();
+  if (submitPending) return;
+
   isLoginMode = !isLoginMode;
 
   if (isLoginMode) {
-    submitBtn.textContent = "Log in";
+    submitBtnLabel.textContent = "Log in";
     document.getElementById("formTitle").textContent = "Log in";
+    modePrompt.textContent = "Don't have an account?";
+    switchMode.textContent = "Create account";
     firstNameInput.style.display = "none";
     lastNameInput.style.display = "none";
+    firstNameInput.required = false;
+    lastNameInput.required = false;
     document.getElementById("terms-checkbox").parentElement.style.display =
       "none";
+    document.getElementById("terms-checkbox").required = false;
   } else {
-    submitBtn.textContent = "Create account";
+    submitBtnLabel.textContent = "Create account";
     document.getElementById("formTitle").textContent = "Create an account";
+    modePrompt.textContent = "Already have an account?";
+    switchMode.textContent = "Log in";
     firstNameInput.style.display = "block";
     lastNameInput.style.display = "block";
+    firstNameInput.required = true;
+    lastNameInput.required = true;
     document.getElementById("terms-checkbox").parentElement.style.display =
       "flex";
+    document.getElementById("terms-checkbox").required = true;
   }
 });
 
@@ -111,6 +140,7 @@ switchMode.addEventListener("click", (e) => {
 ========================= */
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
+  if (submitPending) return;
   authMessage.textContent = "";
 
   const email = emailInput.value.trim();
@@ -123,6 +153,9 @@ form.addEventListener("submit", async (e) => {
     authMessage.textContent = "You must accept Terms & Conditions";
     return;
   }
+
+  submitPending = true;
+  setSubmitLoading(true);
 
   try {
     let userCredential;
@@ -196,6 +229,9 @@ form.addEventListener("submit", async (e) => {
   } catch (err) {
     authMessage.style.color = "red";
     authMessage.textContent = err.message;
+  } finally {
+    submitPending = false;
+    setSubmitLoading(false);
   }
 });
 
