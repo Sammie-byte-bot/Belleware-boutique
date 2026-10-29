@@ -11,9 +11,6 @@
     <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="fontawesome-free-7.1.0-web/css/all.css" />
 
-    <!-- Paystack inline script -->
-    <script src="https://js.paystack.co/v1/inline.js"></script>
-
     <style>
       .order-item {
         display: flex;
@@ -164,8 +161,7 @@
         accent-color: #3bc1a8;
       }
 
-      /* Paystack notice */
-      .paystack-notice {
+      .payment-notice {
         display: flex;
         align-items: center;
         gap: 0.5rem;
@@ -177,19 +173,8 @@
         color: #2a9d8f;
         margin-top: 1rem;
       }
-      .paystack-notice i {
+      .payment-notice i {
         font-size: 1rem;
-      }
-
-      /* M-Pesa info */
-      #mpesa-info {
-        background: #fffbeb;
-        border: 1px solid #f59e0b;
-        border-radius: 8px;
-        padding: 0.75rem 1rem;
-        font-size: 0.85rem;
-        color: #92400e;
-        margin-top: 0.5rem;
       }
     </style>
   </head>
@@ -295,12 +280,8 @@
 
               <div class="payment-options">
                 <label class="payment-option">
-                  <input type="radio" name="payment" value="card" checked />
-                  <span>💳 Credit / Debit Card</span>
-                </label>
-                <label class="payment-option">
-                  <input type="radio" name="payment" value="mpesa" />
-                  <span>📱 M-Pesa</span>
+                  <input type="radio" name="payment" value="POD" checked />
+                  <span>🚚 Cash on Delivery</span>
                 </label>
                 <label class="payment-option">
                   <input type="radio" name="payment" value="pickup" />
@@ -308,40 +289,15 @@
                 </label>
               </div>
 
-              <!-- Shown for card & mpesa -->
-              <div id="paystack-notice" class="paystack-notice">
-                <i class="fas fa-lock"></i>
-                Payments are securely processed by <strong>Paystack</strong>.
-                You will be redirected to a secure checkout popup.
-              </div>
-
-              <!-- M-Pesa tip -->
-              <div id="mpesa-info" style="display: none">
-                <strong>M-Pesa via Paystack:</strong> After clicking "Pay Now",
-                enter your M-Pesa number in the Paystack popup. You'll receive a
-                STK push prompt on your phone.
-              </div>
-
-              <!-- Pickup note -->
-              <div
-                id="pickup-info"
-                style="
-                  display: none;
-                  background: #f1f5f9;
-                  border-radius: 8px;
-                  padding: 0.75rem 1rem;
-                  font-size: 0.85rem;
-                  margin-top: 0.5rem;
-                "
-              >
-                You've chosen to pick up your order. No payment is required now
-                — you'll pay at our store.
+              <div id="payment-notice" class="payment-notice" role="status">
+                <i class="fas fa-info-circle"></i>
+                Pay for your order when it is delivered. No online payment is required.
               </div>
             </div>
 
             <div class="step-navigation">
               <button class="btn-prev" id="back-to-step2">Previous</button>
-              <button class="btn-next" id="place-order">Pay Now</button>
+              <button class="btn-next" id="place-order">Place Delivery Order</button>
             </div>
           </div>
         </div>
@@ -389,12 +345,13 @@
       } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
       import {
         getFirestore,
-        collection,
-        addDoc,
-        serverTimestamp,
         doc,
         getDoc,
       } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+      import {
+        getFunctions,
+        httpsCallable,
+      } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-functions.js";
 
       // ─── Firebase Config ───────────────────────────────────────────────────────
       const firebaseConfig = {
@@ -411,11 +368,8 @@
         : initializeApp(firebaseConfig);
       const auth = getAuth(app);
       const db = getFirestore(app);
-
-      // ─── Paystack Public Key ────────────────────────────────────────────────────
-      // Switch to your live key when going to production!
-      const PAYSTACK_PUBLIC_KEY =
-        "pk_test_60282976d513502972ea51e68dae3642225ed932";
+      const functions = getFunctions(app);
+      const createOrderCallable = httpsCallable(functions, "createOrder");
 
       // ─── Delivery Areas ─────────────────────────────────────────────────────────
       const supportedAreas = {
@@ -443,9 +397,7 @@
       );
       const paymentRadios = document.querySelectorAll('input[name="payment"]');
       const placeOrderBtn = document.getElementById("place-order");
-      const paystackNotice = document.getElementById("paystack-notice");
-      const mpesaInfo = document.getElementById("mpesa-info");
-      const pickupInfo = document.getElementById("pickup-info");
+      const paymentNotice = document.getElementById("payment-notice");
 
       // ─── Helpers ─────────────────────────────────────────────────────────────────
       function getCartStorageKey(userId) {
@@ -487,11 +439,6 @@
         )?.value;
         if (paymentMethod === "pickup") return 0;
         return supportedAreas[selectedArea] ?? 110;
-      }
-
-      function getCurrentTotal() {
-        const subtotal = parseInt(subtotalEl.textContent) || 0;
-        return subtotal + getCurrentDeliveryFee();
       }
 
       function renderOrderItems() {
@@ -586,43 +533,39 @@
         }
       }
 
-      // ─── Save order to Firestore (called after payment confirmed) ────────────────
-      async function saveOrderToFirestore({ paymentReference, paymentMethod }) {
+      async function saveOrderToFirestore(paymentMethod) {
         const fullName = document.getElementById("full-name").value.trim();
         const email = document.getElementById("email").value.trim();
         const phone = document.getElementById("phone").value.trim();
         const address = document.getElementById("address").value.trim();
-        const selectedArea = deliveryAreaSelect.value;
-        const fee = getCurrentDeliveryFee();
-        const subtotal = pendingOrder.items.reduce(
-          (s, i) => s + i.price * i.quantity,
-          0,
-        );
-
-        const orderData = {
-          orderId: "ORD-" + Date.now(),
-          userId: currentUser.uid,
-          items: pendingOrder.items,
-          subtotal,
-          deliveryFee: fee,
-          total: subtotal + fee,
-          customerInfo: {
-            fullName,
-            email,
-            phone,
-            address,
-            deliveryArea: selectedArea,
-          },
+        const result = await createOrderCallable({
+          lines: pendingOrder.items.map((item) => ({
+            productId: item.id,
+            size: item.size || "",
+            color: item.color || "",
+            quantity: Number(item.quantity),
+          })),
+          fulfillment: paymentMethod === "pickup"
+            ? { type: "pickup", pickupPointId: "legacy-store" }
+            : { type: "delivery", deliveryArea: deliveryAreaSelect.value },
+          customerInfo: { fullName, email, phone, address },
           paymentMethod,
-          paymentReference: paymentReference || null,
-          status: paymentMethod === "pickup" ? "PLACED_UNPAID" : "PLACED",
-          createdAt: serverTimestamp(),
-        };
+        });
 
-        await addDoc(collection(db, "orders"), orderData);
+        if (!result.data?.orderDocId || result.data.status !== "PLACED_UNPAID") {
+          throw new Error("The server returned an invalid order response.");
+        }
+        const orderSnapshot = await getDoc(doc(db, "orders", result.data.orderDocId));
+        if (!orderSnapshot.exists()) {
+          throw new Error("The server-created order could not be loaded.");
+        }
+        const orderData = orderSnapshot.data();
 
         // Store receipt data
-        localStorage.setItem("lastReceipt", JSON.stringify(orderData));
+        localStorage.setItem(
+          "lastReceipt",
+          JSON.stringify({ ...orderData, orderDocId: result.data.orderDocId }),
+        );
         localStorage.removeItem("pendingOrder");
         localStorage.removeItem(getCartStorageKey(currentUser.uid));
 
@@ -638,28 +581,18 @@
         }, 2000);
       }
 
-      // ─── Expose to window so plain <script> (Paystack) can call them ─────────────
-      window._bw_saveOrder = saveOrderToFirestore;
-      window._bw_onSuccess = onOrderSuccess;
-      window._bw_getCurrentTotal = getCurrentTotal;
-      window._bw_getDeliveryArea = () => deliveryAreaSelect.value;
-      window._bw_placeOrderBtn = () => document.getElementById("place-order");
-
-      // ─── Handle pickup (no payment) ──────────────────────────────────────────────
-      async function handlePickupOrder() {
+      async function handleOrder(paymentMethod) {
         try {
           placeOrderBtn.disabled = true;
           placeOrderBtn.textContent = "Placing order...";
-          await saveOrderToFirestore({
-            paymentReference: null,
-            paymentMethod: "pickup",
-          });
+          await saveOrderToFirestore(paymentMethod);
           onOrderSuccess();
         } catch (err) {
           console.error("Order failed:", err);
           alert("Order failed to save. Please try again.");
           placeOrderBtn.disabled = false;
-          placeOrderBtn.textContent = "Confirm Order";
+          placeOrderBtn.textContent =
+            paymentMethod === "pickup" ? "Place Pickup Order" : "Place Delivery Order";
         }
       }
 
@@ -696,11 +629,12 @@
       paymentRadios.forEach((radio) => {
         radio.addEventListener("change", (e) => {
           const val = e.target.value;
-          paystackNotice.style.display = val === "pickup" ? "none" : "flex";
-          mpesaInfo.style.display = val === "mpesa" ? "block" : "none";
-          pickupInfo.style.display = val === "pickup" ? "block" : "none";
-          placeOrderBtn.textContent =
-            val === "pickup" ? "Confirm Order" : "Pay Now";
+          paymentNotice.innerHTML = val === "pickup"
+            ? '<i class="fas fa-info-circle"></i> Pay for your order when you collect it at the store. No online payment is required.'
+            : '<i class="fas fa-info-circle"></i> Pay for your order when it is delivered. No online payment is required.';
+          placeOrderBtn.textContent = val === "pickup"
+            ? "Place Pickup Order"
+            : "Place Delivery Order";
 
           // Update delivery fee for pickup (free)
           if (val === "pickup") {
@@ -738,98 +672,19 @@
         .getElementById("back-to-step2")
         .addEventListener("click", () => showStep(2));
 
-      // ─── Place order / Pay Now ───────────────────────────────────────────────────
+      // ─── Place order ────────────────────────────────────────────────────────────
       placeOrderBtn.addEventListener("click", () => {
         if (!currentUser) return;
         const paymentMethod = document.querySelector(
           'input[name="payment"]:checked',
         ).value;
-        if (paymentMethod === "pickup") {
-          handlePickupOrder();
-        } else {
-          // launchPaystack is defined in the plain <script> below to avoid ES module scope issues
-          window._bw_launchPaystack();
-        }
+        handleOrder(paymentMethod);
       });
 
       // ─── View orders button ──────────────────────────────────────────────────────
       document.getElementById("go-to-orders")?.addEventListener("click", () => {
         window.location.href = "account.html";
       });
-    </script>
-    <!-- Paystack launcher in a PLAIN script (not module) to avoid ES module scope issues -->
-    <script>
-      window._bw_launchPaystack = function () {
-        var PAYSTACK_PUBLIC_KEY =
-          "pk_test_60282976d513502972ea51e68dae3642225ed932";
-
-        var email = document.getElementById("email").value.trim();
-        var fullName = document.getElementById("full-name").value.trim();
-        var phone = document.getElementById("phone").value.trim();
-        var totalKsh = window._bw_getCurrentTotal();
-        var amountKobo = totalKsh * 100;
-        var paymentMethod = document.querySelector(
-          'input[name="payment"]:checked',
-        ).value;
-        var deliveryArea = window._bw_getDeliveryArea();
-        var btn = window._bw_placeOrderBtn();
-
-        var handler = PaystackPop.setup({
-          key: PAYSTACK_PUBLIC_KEY,
-          email: email,
-          amount: amountKobo,
-          currency: "KES",
-          ref: "BWB-" + Date.now(),
-          metadata: {
-            custom_fields: [
-              {
-                display_name: "Customer Name",
-                variable_name: "customer_name",
-                value: fullName,
-              },
-              { display_name: "Phone", variable_name: "phone", value: phone },
-              {
-                display_name: "Delivery Area",
-                variable_name: "delivery_area",
-                value: deliveryArea,
-              },
-            ],
-          },
-          channels:
-            paymentMethod === "mpesa"
-              ? ["mobile_money"]
-              : ["card", "bank", "ussd", "mobile_money"],
-
-          callback: function (response) {
-            btn.disabled = true;
-            btn.textContent = "Saving order...";
-            window
-              ._bw_saveOrder({
-                paymentReference: response.reference,
-                paymentMethod: paymentMethod,
-              })
-              .then(function () {
-                window._bw_onSuccess();
-              })
-              .catch(function (err) {
-                console.error("Order save failed:", err);
-                alert(
-                  "Payment received but order save failed. Contact support with ref: " +
-                    response.reference,
-                );
-                btn.disabled = false;
-                btn.textContent = "Pay Now";
-              });
-          },
-
-          onClose: function () {
-            btn.disabled = false;
-            btn.textContent = "Pay Now";
-          },
-        });
-
-        handler.openIframe();
-      };
     </script>
   </body>
 </html>

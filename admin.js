@@ -199,7 +199,6 @@ let productSearchDebounce = null;
 
 // Search state for orders list
 let orderSearchTerm = "";
-let orderSearchDebounce = null;
 
 function renderRevenueChart(orders) {
   // Aggregate orders by date (YYYY-MM-DD)
@@ -521,9 +520,11 @@ function loadDashboardStatsRealtime() {
       ...doc.data(),
     }));
 
-    // Filter for new orders (PLACED and CONFIRMED)
+    // Include unpaid pickup orders in the pending count.
     const newOrders = orders.filter((o) =>
-      ["PLACED", "CONFIRMED"].includes(o.status?.toUpperCase()),
+      ["PLACED", "PLACED_UNPAID", "CONFIRMED"].includes(
+        o.status?.toUpperCase(),
+      ),
     );
 
     const ordersEl = document.getElementById("stat-orders");
@@ -1054,6 +1055,159 @@ function initDashboard(user) {
       const nameEl = document.getElementById("settings-store-name");
       const emailEl = document.getElementById("settings-store-email");
       const curEl = document.getElementById("settings-currency");
+      const areasListEl = document.getElementById("delivery-areas-list");
+      const areasEmptyEl = document.getElementById("delivery-areas-empty");
+      const addAreaBtn = document.getElementById("add-delivery-area");
+      const saveSettingsBtn = document.getElementById("save-settings");
+      const saveSettingsSpinner = saveSettingsBtn?.querySelector(
+        ".settings-save-spinner",
+      );
+      const saveSettingsIcon = saveSettingsBtn?.querySelector(
+        ".fa-save",
+      );
+      const saveSettingsLabel = saveSettingsBtn?.querySelector(
+        ".save-settings-label",
+      );
+      const saveSettingsStatus = document.getElementById("settings-save-status");
+      const deliveryAreasRef = collection(db, "deliveryAreas");
+      let deliveryAreas = [];
+
+      const loadDeliveryAreas = async () => {
+        let areasSnap = await getDocs(deliveryAreasRef);
+        if (areasSnap.empty) {
+          const legacyRef = doc(db, "deliverySettings", "checkout");
+          const legacySnap = await getDoc(legacyRef);
+          const legacyAreas = legacySnap.exists()
+            ? legacySnap.data().areas
+            : [];
+          if (Array.isArray(legacyAreas)) {
+            const migratedAreas = legacyAreas.reduce((areas, area) => {
+              const fee =
+                typeof area?.fee === "string" && area.fee.trim()
+                  ? Number(area.fee)
+                  : area?.fee;
+              if (
+                area &&
+                typeof area.name === "string" &&
+                area.name.trim() &&
+                Number.isSafeInteger(fee) &&
+                fee >= 0
+              ) {
+                areas.push({
+                  name: area.name.trim(),
+                  fee,
+                  active: area.active !== false,
+                  createdAt: serverTimestamp(),
+                  updatedAt: serverTimestamp(),
+                });
+              }
+              return areas;
+            }, []);
+
+            if (migratedAreas.length) {
+              await Promise.all(
+                migratedAreas.map((area) => addDoc(deliveryAreasRef, area)),
+              );
+              await deleteDoc(legacyRef);
+              areasSnap = await getDocs(deliveryAreasRef);
+            }
+          }
+        }
+
+        deliveryAreas = areasSnap.docs.map((areaSnap) => ({
+          id: areaSnap.id,
+          name:
+            typeof areaSnap.data().name === "string"
+              ? areaSnap.data().name
+              : "",
+          fee: areaSnap.data().fee ?? "",
+          active: areaSnap.data().active !== false,
+        }));
+      };
+
+      await loadDeliveryAreas();
+
+      const renderDeliveryAreas = () => {
+        if (!areasListEl || !areasEmptyEl) return;
+        areasListEl.replaceChildren();
+        areasEmptyEl.classList.toggle("hidden", deliveryAreas.length > 0);
+
+        deliveryAreas.forEach((area, index) => {
+          const row = document.createElement("div");
+          row.className =
+            "delivery-area-row grid grid-cols-1 md:grid-cols-[1fr_10rem_auto_auto] gap-3 items-center rounded-xl border p-4";
+          if (area.id) row.dataset.areaId = area.id;
+
+          const nameInput = document.createElement("input");
+          nameInput.type = "text";
+          nameInput.value = area.name;
+          nameInput.placeholder = "Area name";
+          nameInput.required = true;
+          nameInput.className = "search-small w-full";
+          nameInput.setAttribute("aria-label", "Delivery area name");
+
+          const feeInput = document.createElement("input");
+          feeInput.type = "number";
+          feeInput.min = "0";
+          feeInput.step = "1";
+          feeInput.value = String(area.fee);
+          feeInput.placeholder = "Fee (KSh)";
+          feeInput.required = true;
+          feeInput.className = "search-small w-full";
+          feeInput.setAttribute("aria-label", "Delivery fee in KSh");
+
+          const activeLabel = document.createElement("label");
+          activeLabel.className = "inline-flex items-center gap-2 small-muted";
+          const activeInput = document.createElement("input");
+          activeInput.type = "checkbox";
+          activeInput.checked = area.active;
+          activeInput.setAttribute("aria-label", "Offer this area at checkout");
+          activeLabel.append(activeInput, "Active");
+
+          const removeBtn = document.createElement("button");
+          removeBtn.type = "button";
+          removeBtn.className = "search-small px-3 py-2";
+          removeBtn.textContent = "Remove";
+          removeBtn.setAttribute("aria-label", `Remove delivery area ${index + 1}`);
+          removeBtn.addEventListener("click", async () => {
+            const currentRows = Array.from(areasListEl.children);
+            deliveryAreas = currentRows.map((currentRow, rowIndex) => {
+              const inputs = currentRow.querySelectorAll("input");
+              return {
+                ...deliveryAreas[rowIndex],
+                id: currentRow.dataset.areaId || null,
+                name: inputs[0].value,
+                fee: inputs[1].value,
+                active: inputs[2].checked,
+              };
+            });
+            const areaToRemove = deliveryAreas[index];
+            if (
+              areaToRemove.id &&
+              !window.confirm(
+                `Delete the delivery area "${areaToRemove.name}"?`,
+              )
+            ) {
+              return;
+            }
+            try {
+              if (areaToRemove.id) {
+                await deleteDoc(doc(db, "deliveryAreas", areaToRemove.id));
+              }
+              deliveryAreas.splice(index, 1);
+              renderDeliveryAreas();
+              if (areaToRemove.id) showToast("Delivery area deleted", "success");
+            } catch (err) {
+              console.error("Failed to delete delivery area:", err);
+              showToast("Failed to delete delivery area", "error");
+            }
+          });
+
+          row.append(nameInput, feeInput, activeLabel, removeBtn);
+          areasListEl.appendChild(row);
+        });
+      };
+
       if (snap && snap.exists()) {
         const data = snap.data();
         if (nameEl) nameEl.value = data.name || "";
@@ -1064,26 +1218,118 @@ function initDashboard(user) {
         if (emailEl) emailEl.value = "";
         if (curEl) curEl.value = "KES";
       }
+      renderDeliveryAreas();
+
+      if (addAreaBtn) {
+        addAreaBtn.onclick = () => {
+          deliveryAreas.push({ name: "", fee: "", active: true });
+          renderDeliveryAreas();
+          areasListEl?.lastElementChild
+            ?.querySelector('input[type="text"]')
+            ?.focus();
+        };
+      }
 
       const form = document.getElementById("settings-form");
       if (form) {
         form.onsubmit = async (e) => {
           e.preventDefault();
+          if (saveSettingsBtn?.disabled) return;
+          if (saveSettingsBtn) {
+            saveSettingsBtn.disabled = true;
+            saveSettingsBtn.setAttribute("aria-busy", "true");
+          }
+          if (saveSettingsSpinner) saveSettingsSpinner.hidden = false;
+          if (saveSettingsIcon) saveSettingsIcon.hidden = true;
+          if (saveSettingsLabel) saveSettingsLabel.textContent = "Saving…";
+          if (saveSettingsStatus) {
+            saveSettingsStatus.textContent = "Saving settings…";
+            saveSettingsStatus.classList.remove("text-red-500", "text-green-500");
+          }
           try {
-            await setDoc(
-              docRef,
-              {
-                name: nameEl.value || "",
-                email: emailEl.value || "",
-                currency: curEl.value || "KES",
-                updatedAt: serverTimestamp(),
-              },
-              { merge: true },
+            const rows = Array.from(areasListEl?.children || []);
+            const areas = rows.map((row) => {
+              const inputs = row.querySelectorAll("input");
+              const name = inputs[0].value.trim();
+              const feeText = inputs[1].value.trim();
+              const fee = Number(feeText);
+              const active = inputs[2].checked;
+              if (!name || !feeText || !Number.isSafeInteger(fee) || fee < 0) {
+                throw new Error(
+                  "Enter an area name and a whole-number delivery fee of zero or more.",
+                );
+              }
+              return {
+                id: row.dataset.areaId || null,
+                name,
+                fee,
+                active,
+              };
+            });
+            const uniqueNames = new Set(
+              areas.map((area) => area.name.toLocaleLowerCase()),
             );
+            if (uniqueNames.size !== areas.length) {
+              throw new Error("Each delivery area must have a unique name.");
+            }
+
+            const writes = [
+              setDoc(
+                docRef,
+                {
+                  name: nameEl?.value || "",
+                  email: emailEl?.value || "",
+                  currency: curEl?.value || "KES",
+                  updatedAt: serverTimestamp(),
+                },
+                { merge: true },
+              ),
+              ...areas.map((area) => {
+                const areaData = {
+                  name: area.name,
+                  fee: area.fee,
+                  active: area.active,
+                  updatedAt: serverTimestamp(),
+                };
+                return area.id
+                  ? updateDoc(doc(db, "deliveryAreas", area.id), areaData)
+                  : addDoc(deliveryAreasRef, {
+                      ...areaData,
+                      createdAt: serverTimestamp(),
+                    });
+              }),
+            ];
+            await Promise.all(writes);
+            await loadDeliveryAreas();
+            renderDeliveryAreas();
+            if (saveSettingsStatus) {
+              saveSettingsStatus.textContent = "Settings saved.";
+              saveSettingsStatus.classList.add("text-green-500");
+            }
             showToast("Settings saved", "success");
           } catch (err) {
             console.error("Failed to save settings:", err);
-            showToast("Failed to save settings", "error");
+            if (saveSettingsStatus) {
+              saveSettingsStatus.textContent =
+                err instanceof Error
+                  ? err.message
+                  : "Failed to save settings.";
+              saveSettingsStatus.classList.add("text-red-500");
+            }
+            showToast(
+              err instanceof Error
+                ? err.message
+                : "Failed to save settings",
+              "error",
+            );
+          } finally {
+            if (saveSettingsBtn) {
+              saveSettingsBtn.disabled = false;
+              saveSettingsBtn.removeAttribute("aria-busy");
+            }
+            if (saveSettingsSpinner) saveSettingsSpinner.hidden = true;
+            if (saveSettingsIcon) saveSettingsIcon.hidden = false;
+            if (saveSettingsLabel) saveSettingsLabel.textContent = "Save settings";
           }
         };
       }
@@ -1282,22 +1528,22 @@ function initDashboard(user) {
   (function initOrdersUi() {
     const searchInput = document.getElementById("search-order");
     const clearBtn = document.getElementById("clear-order-search");
+    if (!searchInput || searchInput.dataset.searchReady === "true") return;
+    searchInput.dataset.searchReady = "true";
 
     const updateClearVisibility = () => {
-      if (!clearBtn || !searchInput) return;
+      if (!clearBtn) return;
       if (searchInput.value && searchInput.value.trim() !== "") {
         clearBtn.classList.remove("hidden");
       } else {
         clearBtn.classList.add("hidden");
       }
     };
-
     if (searchInput) {
-      searchInput.addEventListener("input", (e) => {
-        orderSearchTerm = (e.target && e.target.value) || "";
+      searchInput.addEventListener("input", () => {
+        orderSearchTerm = searchInput.value;
         updateClearVisibility();
-        if (orderSearchDebounce) clearTimeout(orderSearchDebounce);
-        orderSearchDebounce = setTimeout(() => renderOrders(), 180);
+        renderOrders();
       });
       // Clear on Escape
       searchInput.addEventListener("keydown", (e) => {
@@ -1314,6 +1560,7 @@ function initDashboard(user) {
     }
 
     if (clearBtn) {
+      clearBtn.type = "button";
       clearBtn.addEventListener("click", (e) => {
         e.preventDefault();
         if (searchInput) {
@@ -1335,6 +1582,8 @@ function initDashboard(user) {
 ================================ */
   let ALL_ORDERS = [];
   let ACTIVE_FILTER = "ALL";
+  let orderLoadState = "loading";
+  let orderLoadError = "";
 
   /* ===============================
    LOAD ORDERS (REALTIME)
@@ -1349,6 +1598,8 @@ function initDashboard(user) {
         id: doc.id,
         ...doc.data(),
       }));
+      orderLoadState = "ready";
+      orderLoadError = "";
       updateOrderFilterButtons();
       renderOrders();
 
@@ -1368,19 +1619,39 @@ function initDashboard(user) {
       });
     } catch (err) {
       console.error("Failed to load initial orders:", err);
+      orderLoadState = "error";
+      orderLoadError =
+        err?.code === "permission-denied"
+          ? "You don't have permission to view orders. Verify your admin role and publish the Firestore rules."
+          : "Unable to load orders. Please refresh the page.";
+      renderOrders();
     }
 
-    const unsub = onSnapshot(ordersCol, (snapshot) => {
-      if (!currentAdminUid) return; // Prevent updates after logout
+    const unsub = onSnapshot(
+      ordersCol,
+      (snapshot) => {
+        if (!currentAdminUid) return; // Prevent updates after logout
 
-      ALL_ORDERS = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+        ALL_ORDERS = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        orderLoadState = "ready";
+        orderLoadError = "";
 
-      updateOrderFilterButtons();
-      renderOrders();
-    });
+        updateOrderFilterButtons();
+        renderOrders();
+      },
+      (err) => {
+        console.error("Orders listener failed:", err);
+        orderLoadState = "error";
+        orderLoadError =
+          err?.code === "permission-denied"
+            ? "You don't have permission to view orders. Verify your admin role and publish the Firestore rules."
+            : "Unable to load orders. Please refresh the page.";
+        renderOrders();
+      },
+    );
 
     return unsub;
   }
@@ -1408,7 +1679,9 @@ function initDashboard(user) {
     ).length;
 
     const pendingCount = ALL_ORDERS.filter((o) =>
-      ["PLACED", "CONFIRMED"].includes(normalizeStatus(o.status)),
+      ["PLACED", "PLACED_UNPAID", "CONFIRMED"].includes(
+        normalizeStatus(o.status),
+      ),
     ).length;
 
     const cancelledCount = ALL_ORDERS.filter(
@@ -1470,44 +1743,89 @@ function initDashboard(user) {
         ? [...ALL_ORDERS] // CLONE to avoid mutation bugs
         : ACTIVE_FILTER === "PENDING"
           ? ALL_ORDERS.filter((o) =>
-              ["PLACED", "CONFIRMED"].includes(normalizeStatus(o.status)),
+              ["PLACED", "PLACED_UNPAID", "CONFIRMED"].includes(
+                normalizeStatus(o.status),
+              ),
             )
           : ALL_ORDERS.filter(
               (o) => normalizeStatus(o.status) === ACTIVE_FILTER,
             );
 
     // Apply search filter
-    const q = (orderSearchTerm || "").trim().toLowerCase();
+    const normalizeSearchText = (value) =>
+      String(value)
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLocaleLowerCase()
+        .replace(/\s+/g, " ")
+        .trim();
+    const q = normalizeSearchText(orderSearchTerm || "");
     if (q) {
+      const searchTerms = q.split(" ").filter(Boolean);
       filteredOrders = filteredOrders.filter((order) => {
-        const products = Array.isArray(order.items)
-          ? order.items
-              .map((i) => i.name || "")
-              .join(" ")
-              .toLowerCase()
-          : "";
-        const address = (order.address || "").toLowerCase();
-        const status = normalizeStatus(order.status).toLowerCase();
-        const id = (order.id || "").toLowerCase();
-        const name = (order.userName || "").toLowerCase();
-        const email = (order.userEmail || "").toLowerCase();
-        const account = (order.userId || "").toLowerCase();
-        const date = order.createdAt?.seconds
-          ? new Date(order.createdAt.seconds * 1000)
-              .toLocaleDateString()
-              .toLowerCase()
-          : "";
+        const createdAt =
+          typeof order.createdAt?.toDate === "function"
+            ? order.createdAt.toDate()
+            : order.createdAt?.seconds
+              ? new Date(order.createdAt.seconds * 1000)
+              : order.createdAt instanceof Date
+                ? order.createdAt
+                : order.createdAt
+                  ? new Date(order.createdAt)
+                  : null;
+        const dateValues =
+          createdAt instanceof Date && !Number.isNaN(createdAt.getTime())
+            ? [
+                createdAt.toLocaleDateString(),
+                createdAt.toLocaleDateString("en-KE"),
+                createdAt.toISOString().slice(0, 10),
+              ]
+            : [];
+        const searchableValues = [
+          order.id,
+          order.orderId,
+          order.id?.slice(0, 10),
+          order.userId,
+          order.userName,
+          order.userEmail,
+          order.paymentReference,
+          order.customerInfo?.fullName,
+          order.customerInfo?.email,
+          order.customerInfo?.phone,
+          order.customerInfo?.address,
+          order.customerInfo?.deliveryArea,
+          order.customerInfo?.deliveryAreaId,
+          order.address,
+          order.status,
+          order.paymentMethod,
+          order.total,
+          formatCurrency(order.total),
+          order.subtotal,
+          order.deliveryFee,
+          ...dateValues,
+          ...(Array.isArray(order.items)
+            ? order.items.flatMap((item) => [
+                item.name,
+                item.size,
+                item.color,
+                item.quantity,
+                item.price,
+              ])
+            : []),
+        ]
+          .filter((value) => value !== null && value !== undefined)
+          .map(normalizeSearchText);
+        const searchableText = searchableValues.join(" ");
+        const compactSearchableText = searchableText.replace(/[^a-z0-9]/g, "");
 
-        return (
-          products.includes(q) ||
-          address.includes(q) ||
-          status.includes(q) ||
-          id.includes(q) ||
-          name.includes(q) ||
-          email.includes(q) ||
-          account.includes(q) ||
-          date.includes(q)
-        );
+        return searchTerms.every((term) => {
+          const compactTerm = term.replace(/[^a-z0-9]/g, "");
+          return (
+            searchableText.includes(term) ||
+            (compactTerm.length > 0 &&
+              compactSearchableText.includes(compactTerm))
+          );
+        });
       });
     }
 
@@ -1518,20 +1836,36 @@ function initDashboard(user) {
     }
 
     if (filteredOrders.length === 0) {
-      if (ALL_ORDERS.length === 0) {
-        tbody.innerHTML =
-          '<tr><td colspan="7" class="p-4 text-center text-gray-500">Loading orders...</td></tr>';
-      } else {
-        tbody.innerHTML =
-          '<tr><td colspan="7" class="p-4 text-center text-gray-500">No orders found.</td></tr>';
-      }
+      const message =
+        ALL_ORDERS.length === 0
+          ? orderLoadState === "error"
+            ? orderLoadError
+            : orderLoadState === "ready"
+              ? "No orders found."
+              : "Loading orders..."
+          : q
+            ? `No orders match "${q}".`
+            : "No orders found.";
+      const row = document.createElement("tr");
+      const cell = document.createElement("td");
+      cell.colSpan = 7;
+      cell.className = "p-4 text-center text-gray-500";
+      cell.textContent = message;
+      row.appendChild(cell);
+      tbody.replaceChildren(row);
       return;
     }
 
     tbody.innerHTML = "";
 
     // Define status order for sorting
-    const statusOrder = { PLACED: 1, CONFIRMED: 2, DELIVERED: 3, CANCELLED: 4 };
+    const statusOrder = {
+      PLACED: 1,
+      PLACED_UNPAID: 1,
+      CONFIRMED: 2,
+      DELIVERED: 3,
+      CANCELLED: 4,
+    };
 
     // Sort by status order first, then by latest date
     filteredOrders.sort((a, b) => {

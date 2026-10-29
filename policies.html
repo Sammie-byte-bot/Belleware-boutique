@@ -1,0 +1,974 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Policies | Bellewear Boutique</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="fontawesome-free-7.1.0-web/css/all.css" />
+    <link rel="stylesheet" href="trust.css" />
+    <style>
+      .policies-page {
+        --policy-ink: #25211f;
+        --policy-muted: #6c625e;
+        --policy-accent: #8b4a52;
+        --policy-paper: #f7f4f0;
+        background: var(--policy-paper);
+        color: var(--policy-ink);
+      }
+
+      .policy-shell {
+        width: min(1120px, calc(100% - 40px));
+        margin-inline: auto;
+      }
+
+      .policy-hero {
+        padding: clamp(48px, 8vw, 92px) 0 54px;
+        background:
+          radial-gradient(ellipse at 82% 12%, rgb(255 255 255 / 14%), transparent 42%),
+          linear-gradient(125deg, #332b2b, #684448 58%, #93666a);
+        color: #fff;
+      }
+
+      .policy-eyebrow {
+        margin: 0 0 14px;
+        color: #f4d9c7;
+        font-size: 0.76rem;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+      }
+
+      .policy-hero h1 {
+        max-width: 760px;
+        margin: 0;
+        color: #fff;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: clamp(2.5rem, 7vw, 5rem);
+        font-weight: 500;
+        letter-spacing: -0.045em;
+        line-height: 1.05;
+      }
+
+      .policy-hero-copy {
+        max-width: 620px;
+        margin: 20px 0 0;
+        color: rgb(255 255 255 / 82%);
+        font-size: clamp(1rem, 2vw, 1.12rem);
+        line-height: 1.8;
+      }
+
+      .policy-hero-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 24px;
+        margin-top: 26px;
+        color: rgb(255 255 255 / 75%);
+        font-size: 0.88rem;
+      }
+
+      .policy-hero-meta span::before {
+        content: "•";
+        margin-right: 9px;
+        color: #f4d9c7;
+      }
+
+      .policy-overview {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+        margin-top: -28px;
+        position: relative;
+        z-index: 1;
+      }
+
+      .policy-overview a {
+        min-height: 108px;
+        padding: 20px 22px;
+        border: 1px solid #eee6e1;
+        border-radius: 14px;
+        background: #fff;
+        box-shadow: 0 12px 28px rgb(43 34 31 / 7%);
+        color: inherit;
+        text-decoration: none;
+        transition: transform 160ms ease, box-shadow 160ms ease;
+      }
+
+      .policy-overview a:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 16px 34px rgb(43 34 31 / 12%);
+      }
+
+      .policy-overview strong,
+      .policy-overview span {
+        display: block;
+      }
+
+      .policy-overview strong {
+        margin-bottom: 7px;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 1.15rem;
+      }
+
+      .policy-overview span {
+        color: var(--policy-muted);
+        font-size: 0.9rem;
+        line-height: 1.5;
+      }
+
+      .policy-nav-wrap {
+        position: sticky;
+        top: 0;
+        z-index: 40;
+        margin-top: 30px;
+        border-block: 1px solid #e8dfda;
+        background: rgb(247 244 240 / 94%);
+        backdrop-filter: blur(12px);
+      }
+
+      .policy-nav {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        padding-block: 12px;
+      }
+
+      .policy-nav a {
+        flex: 0 0 auto;
+        padding: 10px 16px;
+        border: 1px solid #ded3ce;
+        border-radius: 999px;
+        color: var(--policy-ink);
+        font-size: 0.88rem;
+        text-decoration: none;
+        transition: background 160ms ease, color 160ms ease, border-color 160ms ease;
+      }
+
+      .policy-nav a:hover,
+      .policy-nav a:focus-visible {
+        border-color: var(--policy-accent);
+        background: var(--policy-accent);
+        color: #fff;
+      }
+
+      .policy-content {
+        display: grid;
+        gap: 22px;
+        padding-block: 34px 74px;
+      }
+
+      .policy-card {
+        scroll-margin-top: 88px;
+        padding: clamp(24px, 5vw, 48px);
+        border: 1px solid #eee6e1;
+        border-radius: 18px;
+        background: #fff;
+        box-shadow: 0 8px 26px rgb(43 34 31 / 4%);
+      }
+
+      .policy-section-heading {
+        display: grid;
+        grid-template-columns: 46px 1fr;
+        gap: 16px;
+        align-items: start;
+        margin-bottom: 28px;
+        padding-bottom: 24px;
+        border-bottom: 1px solid #eee8e4;
+      }
+
+      .policy-section-number {
+        display: grid;
+        width: 44px;
+        height: 44px;
+        place-items: center;
+        border-radius: 50%;
+        background: #f5e9e6;
+        color: var(--policy-accent);
+        font-size: 0.85rem;
+        font-weight: 700;
+      }
+
+      .policy-section-heading h2 {
+        margin: 0;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: clamp(1.8rem, 4vw, 2.6rem);
+        font-weight: 500;
+        letter-spacing: -0.025em;
+        line-height: 1.15;
+      }
+
+      .policy-section-heading p {
+        max-width: 680px;
+        margin: 9px 0 0;
+        color: var(--policy-muted);
+        line-height: 1.7;
+      }
+
+      .policy-updated {
+        margin-top: 9px;
+        color: #8c817c;
+        font-size: 0.8rem;
+      }
+
+      .policy-block + .policy-block {
+        margin-top: 25px;
+      }
+
+      .policy-block h3 {
+        margin: 0 0 9px;
+        color: #342c29;
+        font-size: 1.05rem;
+        font-weight: 700;
+      }
+
+      .policy-block p,
+      .policy-block li {
+        color: #554d49;
+        font-size: 0.96rem;
+        line-height: 1.8;
+      }
+
+      .policy-block p {
+        margin: 0 0 12px;
+      }
+
+      .policy-block ul,
+      .policy-block ol {
+        display: grid;
+        gap: 8px;
+        margin: 0;
+        padding-left: 22px;
+      }
+
+      .policy-block li::marker {
+        color: var(--policy-accent);
+      }
+
+      .policy-callout {
+        margin-top: 26px;
+        padding: 18px 20px;
+        border-left: 3px solid var(--policy-accent);
+        border-radius: 0 10px 10px 0;
+        background: #faf5f2;
+        color: #514542;
+        font-size: 0.93rem;
+        line-height: 1.75;
+      }
+
+      .policy-page a.policy-inline-link {
+        color: #843f49;
+        font-weight: 600;
+        text-underline-offset: 3px;
+      }
+
+      .policy-contact-card {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-top: 25px;
+        padding: 20px;
+        border: 1px solid #eee6e1;
+        border-radius: 12px;
+        background: #fcfaf8;
+      }
+
+      .policy-contact-card p {
+        margin: 0;
+        color: var(--policy-muted);
+        line-height: 1.65;
+      }
+
+      .policy-contact-card a {
+        color: #843f49;
+        font-weight: 700;
+        text-underline-offset: 3px;
+      }
+
+      .policy-back-top {
+        display: inline-block;
+        margin-top: 28px;
+        color: var(--policy-accent);
+        font-size: 0.9rem;
+        font-weight: 700;
+        text-decoration: none;
+      }
+
+      .policy-back-top:hover {
+        text-decoration: underline;
+      }
+
+      @media (max-width: 680px) {
+        .policy-shell {
+          width: min(100% - 28px, 1120px);
+        }
+
+        .policy-overview {
+          grid-template-columns: 1fr;
+          gap: 10px;
+          margin-top: -20px;
+        }
+
+        .policy-overview a {
+          min-height: auto;
+          padding: 16px 18px;
+        }
+
+        .policy-nav-wrap {
+          margin-top: 24px;
+        }
+
+        .policy-content {
+          gap: 14px;
+          padding-block: 22px 48px;
+        }
+
+        .policy-card {
+          border-radius: 14px;
+        }
+
+        .policy-section-heading {
+          grid-template-columns: 38px 1fr;
+          gap: 12px;
+        }
+
+        .policy-section-number {
+          width: 36px;
+          height: 36px;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .policy-overview a,
+        .policy-nav a {
+          transition: none;
+        }
+      }
+    </style>
+  </head>
+  <body class="policies-page">
+    <header id="header">
+      <!-- TOP BAR -->
+      <div class="header-top">
+        <!-- Logo -->
+        <a href="index.html" class="logo">Bellewear <span>Boutique</span></a>
+
+        <!-- Search (WhatsApp-style) -->
+        <div class="search-container">
+          <div class="search-input-wrapper">
+            <i class="fas fa-search search-input-icon"></i>
+            <input
+              type="text"
+              id="searchInput"
+              class="search-input"
+              placeholder="Search for products..."
+            />
+          </div>
+          <button id="searchBtn" class="search-btn">SEARCH</button>
+        </div>
+
+        <!-- Profile Icon + Greeting -->
+        <div class="profile-wrapper">
+          <a href="#" class="profile-link">
+            <i class="fas fa-user-circle"></i>
+            <i class="fas fa-chevron-down chevron"></i>
+          </a>
+
+          <div class="profile-dropdown">
+            <p class="dropdown-title" id="profileGreeting">Sign In</p>
+            <p class="dropdown-user-name" id="profileUserName"></p>
+            <div id="profileActions">
+              <a href="auth.html"><i class="fas fa-sign-in-alt"></i> Sign In</a>
+            </div>
+          </div>
+
+          <span class="profile-greet"
+            >Hello, <span id="userName">Guest</span></span
+          >
+        </div>
+
+        <!-- Right Icons -->
+        <div class="top-icons">
+          <!-- Cart -->
+          <a href="cart.html" class="cart-link">
+            <i class="fas fa-shopping-cart"></i>
+            <span class="cart-count">0</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- NAVIGATION BAR -->
+
+      <nav class="nav-bar">
+        <ul class="nav-links">
+          <!-- Hamburger Button to open menu -->
+          <button id="menuBtn" class="menu-btn" aria-label="Open menu">
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org"
+            >
+              <line
+                x1="3"
+                y1="6"
+                x2="21"
+                y2="6"
+                stroke="currentColor"
+                stroke-width="2"
+              />
+              <line
+                x1="3"
+                y1="12"
+                x2="21"
+                y2="12"
+                stroke="currentColor"
+                stroke-width="2"
+              />
+              <line
+                x1="3"
+                y1="18"
+                x2="21"
+                y2="18"
+                stroke="currentColor"
+                stroke-width="2"
+              />
+            </svg>
+          </button>
+
+          <!-- Main Nav Links -->
+          <li><a href="index.html">Home</a></li>
+          <li><a href="shop.html">Shop</a></li>
+        </ul>
+      </nav>
+
+      <!-- Overlay (for background dimming) -->
+      <div id="overlay" class="overlay"></div>
+
+      <!-- Side Menu -->
+      <aside id="sideMenu" class="side-menu">
+        <div class="menu-header">
+          <span id="mobileGreeting">👤 Hello, John</span>
+          <button id="closeMenu">✕</button>
+        </div>
+
+        <div class="menu-section">
+          <h4>Shop By Department</h4>
+          <ul id="mobileCategories">
+            <!-- Categories will be populated dynamically -->
+          </ul>
+        </div>
+
+        <div class="menu-section">
+          <h4>Other Pages</h4>
+          <div class="help-links">
+            <a href="blog.html" class="help-link">
+              <i class="fas fa-pencil-alt"></i>
+              <span>Blog</span>
+            </a>
+            <a href="about.html" class="help-link">
+              <i class="fas fa-info-circle"></i>
+              <span>About</span>
+            </a>
+            <a href="contact.html" class="help-link">
+              <i class="fas fa-envelope"></i>
+              <span>Contact</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="menu-section help-settings">
+          <h4>Help & Settings</h4>
+          <div class="help-links">
+            <a href="account.html" class="help-link">
+              <i class="fas fa-user"></i>
+              <span>Your account</span>
+            </a>
+
+            <a href="#" class="help-link">
+              <i class="fas fa-headset"></i>
+              <span>Customer Service</span>
+            </a>
+          </div>
+
+          <a href="#" id="signOut" class="sign-out">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Sign out</span>
+          </a>
+        </div>
+      </aside>
+    </header>
+
+    <section id="top" class="policy-hero" aria-labelledby="policy-title">
+      <div class="policy-shell">
+        <p class="policy-eyebrow">Bellewear Boutique · Customer information</p>
+        <h1 id="policy-title">Clear policies.<br />Confident shopping.</h1>
+        <p class="policy-hero-copy">
+          Find the details on returns, privacy and shopping with Bellewear.
+          We want you to know what to expect at every step.
+        </p>
+        <div class="policy-hero-meta">
+          <span>Returns and refunds</span>
+          <span>Privacy and personal data</span>
+          <span>Shopping terms</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="policy-shell">
+      <nav class="policy-overview" aria-label="Policy overview">
+        <a href="#returns">
+          <strong>Returns &amp; refunds</strong>
+          <span>Eligibility, how to request a return and refund timing.</span>
+        </a>
+        <a href="#privacy">
+          <strong>Privacy policy</strong>
+          <span>What information we use and how to manage it.</span>
+        </a>
+        <a href="#terms">
+          <strong>Terms &amp; conditions</strong>
+          <span>Important details about orders, payment and delivery.</span>
+        </a>
+      </nav>
+    </div>
+
+    <div class="policy-nav-wrap">
+      <nav class="policy-shell policy-nav" aria-label="Jump to a policy">
+        <a href="#returns">Returns &amp; refunds</a>
+        <a href="#privacy">Privacy policy</a>
+        <a href="#terms">Terms &amp; conditions</a>
+      </nav>
+    </div>
+
+    <main class="policy-shell policy-content">
+      <section id="returns" class="policy-card" aria-labelledby="returns-title">
+        <div class="policy-section-heading">
+          <span class="policy-section-number" aria-hidden="true">01</span>
+          <div>
+            <h2 id="returns-title">Returns &amp; refunds</h2>
+            <p>
+              If an item is not right, contact us promptly. The rules below explain
+              the return window, what to include in a request and how refunds are handled.
+            </p>
+            <div class="policy-updated">Last updated: October 25, 2026</div>
+          </div>
+        </div>
+
+        <div class="policy-block">
+          <h3>Inspect your order as soon as it arrives</h3>
+          <p>
+            Please check your items at the pickup point before leaving, or as soon
+            as possible after a delivery. If an item is missing, incorrect, damaged
+            or defective, let the pickup attendant know where possible and contact
+            Bellewear within 48 hours of collection or delivery. Please keep the
+            packaging until we have advised you on the next steps.
+          </p>
+        </div>
+
+        <div class="policy-block">
+          <h3>When an item can be returned</h3>
+          <ul>
+            <li>
+              <strong>Wrong, damaged or defective item:</strong> tell us within 48
+              hours of receiving it. Include your order number, a description of
+              the issue and clear photos where possible. We will review the report
+              and arrange a replacement or refund as appropriate.
+            </li>
+            <li>
+              <strong>Change of mind for an in-stock item:</strong> contact us
+              within 7 days of collection or delivery. The item must be unworn,
+              unwashed and unused, with its tags attached and original packaging
+              included.
+            </li>
+            <li>
+              <strong>Items marked “Ready in X days”:</strong> these are ordered
+              from our supplier after purchase and cannot be returned for change
+              of mind. This does not remove our responsibility to address an item
+              that is wrong, damaged or defective.
+            </li>
+          </ul>
+        </div>
+
+        <div class="policy-block">
+          <h3>How to request a return</h3>
+          <p>
+            Contact us before sending or handing back an item so we can confirm
+            the next steps. Send your order number (which starts with
+            <strong>ORD-</strong>), the item name, the reason for the request and
+            photos if the item is damaged or incorrect. Please do not send an item
+            to an address or pickup point until our team has confirmed where it
+            should go.
+          </p>
+          <ol>
+            <li>Email us or message/call the number below within the applicable return window.</li>
+            <li>Wait for our team to review the request and provide return instructions.</li>
+            <li>Keep the item, tags and packaging together while the request is reviewed.</li>
+          </ol>
+        </div>
+
+        <div class="policy-block">
+          <h3>Refunds and delivery charges</h3>
+          <p>
+            Once an approved return has been received and inspected, Bellewear
+            will contact you to arrange an eligible refund within 7 working
+            days. We will let you know if we need more information to process
+            the refund.
+          </p>
+          <p>
+            Delivery fees are refunded when the return is due to an error on our
+            part. For a change-of-mind return, delivery fees are not refunded.
+          </p>
+        </div>
+
+        <div class="policy-block">
+          <h3>Order cancellations</h3>
+          <p>
+            You can cancel an order from your account while its status is still
+            <strong>Placed</strong>. Once we have ordered an item from our
+            supplier, that order can no longer be cancelled. If you cannot access
+            your account, contact us as soon as possible and include your order number.
+          </p>
+        </div>
+
+        <div class="policy-block">
+          <h3>Orders not collected</h3>
+          <p>
+            Orders remain at the pickup point for 7 days. If you need more time,
+            contact us before the collection period ends. After 7 days, an
+            uncollected order may be cancelled and refunded less any costs we
+            cannot recover.
+          </p>
+        </div>
+
+        <div class="policy-callout">
+          The return steps above do not limit any rights you may have under
+          applicable consumer protection law.
+        </div>
+        <a class="policy-back-top" href="#top">↑ Back to top</a>
+      </section>
+
+      <section id="privacy" class="policy-card" aria-labelledby="privacy-title">
+        <div class="policy-section-heading">
+          <span class="policy-section-number" aria-hidden="true">02</span>
+          <div>
+            <h2 id="privacy-title">Privacy policy</h2>
+            <p>
+              This policy explains what personal information Bellewear Boutique
+              handles when you browse, create an account, place an order or contact us.
+            </p>
+            <div class="policy-updated">Last updated: October 25, 2026</div>
+          </div>
+        </div>
+
+        <div class="policy-block">
+          <h3>Who is responsible for your information</h3>
+          <p>
+            Bellewear Boutique, operated by codebee productions LTD, is
+            responsible for the personal information described in this policy.
+            For privacy questions or requests, email
+            <a class="policy-inline-link" href="mailto:admin@bellewear.com">admin@bellewear.com</a>.
+          </p>
+        </div>
+
+        <div class="policy-block">
+          <h3>Information we collect</h3>
+          <ul>
+            <li>
+              <strong>Account and contact details:</strong> information such as
+              your name, email address and phone number that you provide when
+              signing in or contacting us.
+            </li>
+            <li>
+              <strong>Order and fulfilment details:</strong> the items you order,
+              order history, delivery or pickup details, and information needed
+              to prepare and hand over your order.
+            </li>
+            <li>
+              <strong>Customer communications:</strong> messages and information
+              you choose to share when asking for help, requesting a return or
+              submitting a review.
+            </li>
+            <li>
+              <strong>Payment status:</strong> whether an order is awaiting
+              payment or has been paid for at delivery or collection.
+            </li>
+            <li>
+              <strong>Browser storage:</strong> information such as your cart,
+              wishlist and recently viewed items stored in your browser to make
+              the shop work as expected.
+            </li>
+          </ul>
+          <p>
+            Orders are paid for in person when delivered or collected. Bellewear
+            does not request or store card numbers, online payment credentials
+            or M-Pesa PINs.
+          </p>
+        </div>
+
+        <div class="policy-block">
+          <h3>How we use information</h3>
+          <p>We use relevant information to:</p>
+          <ul>
+            <li>create and manage your account and provide access to the shop;</li>
+            <li>process orders and coordinate delivery or pickup;</li>
+            <li>send order, collection and service updates;</li>
+            <li>answer questions, review return requests and resolve order issues;</li>
+            <li>protect the shop, help prevent fraud and maintain reliable services; and</li>
+            <li>meet applicable record-keeping and legal obligations.</li>
+          </ul>
+        </div>
+
+        <div class="policy-block">
+          <h3>Who may receive information</h3>
+          <p>
+            We share information only as needed to operate the shop and fulfil
+            your request. This may include:
+          </p>
+          <ul>
+            <li>
+              <strong>Google Firebase</strong> for the website's database and
+              sign-in services.
+            </li>
+            <li>
+              <strong>Suppliers and pickup-point partners</strong> who need
+              limited order details, such as your name, order number or phone
+              number, to prepare or hand over an order.
+            </li>
+          </ul>
+          <p>We do not sell your personal data.</p>
+        </div>
+
+        <div class="policy-block">
+          <h3>Cookies and local storage</h3>
+          <p>
+            The site uses browser storage for shopping features such as your
+            cart, wishlist and recently viewed items. You can clear this data in
+            your browser settings; doing so may remove saved shopping information
+            or affect how parts of the site work.
+          </p>
+        </div>
+
+        <div class="policy-block">
+          <h3>Keeping information safe and for how long</h3>
+          <p>
+            We use service providers and reasonable safeguards to support the
+            operation of the shop. No website or online transfer can be
+            guaranteed completely secure. We keep order information for as long
+            as reasonably needed for fulfilment, customer support, accounting
+            and legal obligations, then delete or retain it as required.
+          </p>
+        </div>
+
+        <div class="policy-block">
+          <h3>Your choices and data requests</h3>
+          <p>
+            Subject to applicable law, you may ask us to access, correct or
+            delete your personal information, or raise an objection about how it
+            is used. You may also ask us to close your account. Some information
+            may need to be retained where required for a transaction, legal
+            obligation or legitimate operational reason. Email
+            <a class="policy-inline-link" href="mailto:admin@bellewear.com">admin@bellewear.com</a>
+            with your request; we may need to verify your identity before acting.
+          </p>
+          <p>
+            This policy is intended to reflect the Kenya Data Protection Act,
+            2019. Please contact us if you have a concern about your personal data.
+          </p>
+        </div>
+
+        <div class="policy-block">
+          <h3>Changes to this policy</h3>
+          <p>
+            We may revise this notice when our services or practices change.
+            The “Last updated” date at the start of this section identifies the
+            current version. Please check this page for the latest information.
+          </p>
+        </div>
+
+        <a class="policy-back-top" href="#top">↑ Back to top</a>
+      </section>
+
+      <section id="terms" class="policy-card" aria-labelledby="terms-title">
+        <div class="policy-section-heading">
+          <span class="policy-section-number" aria-hidden="true">03</span>
+          <div>
+            <h2 id="terms-title">Terms &amp; conditions</h2>
+            <p>
+              These terms apply when you browse or place an order through the
+              Bellewear Boutique website.
+            </p>
+            <div class="policy-updated">Last updated: October 25, 2026</div>
+          </div>
+        </div>
+
+        <div class="policy-block">
+          <h3>Using the website and your account</h3>
+          <p>
+            By using the site or placing an order, you agree to these terms.
+            Please provide accurate contact, delivery and account information
+            and keep your sign-in details private. Contact us if you believe
+            someone else has accessed your account.
+          </p>
+          <p>
+            Do not use the site in a way that disrupts its operation, interferes
+            with other customers or is unlawful. We may restrict access where
+            needed to protect customers, the site or our services.
+          </p>
+        </div>
+
+        <div class="policy-block">
+          <h3>Products, availability and prices</h3>
+          <p>
+            Product information and images are provided to help you choose.
+            Colours may look different on different screens. Product availability
+            can change, and an item marked “Ready in X days” is ordered from a
+            supplier after purchase; the stated timeframe is an estimate.
+          </p>
+          <p>
+            Prices are shown in Kenya Shillings (Ksh). If an item is unavailable
+            or we discover a pricing or stock error before fulfilment, we may
+            contact you to discuss the issue or cancel the affected order. If we
+            cancel it, we will refund the amount paid for that order.
+          </p>
+        </div>
+
+        <div class="policy-block">
+          <h3>Orders and payment</h3>
+          <p>
+            An order is confirmed when you receive an order number. Please review
+            your items and contact details before submitting the order. Payment
+            Payment is collected in person: on delivery for delivery orders, or
+            at the store when you collect a pickup order. No online payment is
+            required when placing an order.
+          </p>
+          <p>
+            Do not send payment card numbers, account credentials or M-Pesa PINs
+            to Bellewear by email, phone or chat.
+          </p>
+        </div>
+
+        <div class="policy-block">
+          <h3>Delivery and pickup</h3>
+          <p>
+            Choose from the delivery and pickup options shown at checkout. Home
+            delivery is available only where offered. We will notify you when
+            your order is ready for collection. To collect an order, you may be
+            asked to provide your order number or pickup code and identification.
+          </p>
+          <p>
+            Delivery dates, pickup readiness and “Ready in X days” timings are
+            estimates, not guaranteed arrival dates. Please contact us if you
+            have not received an update or need help with a collection.
+          </p>
+        </div>
+
+        <div class="policy-block">
+          <h3>Returns and cancellations</h3>
+          <p>
+            Our <a class="policy-inline-link" href="#returns">Returns &amp; refunds policy</a>
+            explains return eligibility, time limits, cancellation rules and
+            refund processing. Your applicable statutory consumer rights are not
+            excluded by these terms.
+          </p>
+        </div>
+
+        <div class="policy-block">
+          <h3>Website content and service availability</h3>
+          <p>
+            We work to keep product information and the website available and
+            accurate, but occasional errors, interruptions or maintenance may
+            occur. We may update site content or features as our shop changes.
+            If information affecting your order needs correction, we will take
+            reasonable steps to contact you.
+          </p>
+        </div>
+
+        <div class="policy-block">
+          <h3>Responsibility and applicable law</h3>
+          <p>
+            Nothing in these terms removes responsibility that cannot lawfully
+            be excluded, including applicable rights under Kenyan consumer law.
+            To the extent permitted by law, Bellewear is not responsible for
+            indirect losses or delays caused by circumstances outside our
+            reasonable control.
+          </p>
+          <p>These terms are governed by the laws of Kenya.</p>
+        </div>
+
+        <div class="policy-contact-card">
+          <p>
+            Need help with an order or these terms?<br />
+            Our team can help with questions and requests.
+          </p>
+          <div>
+            <a href="mailto:admin@bellewear.com">admin@bellewear.com</a><br />
+            <a href="https://wa.me/254117355310" target="_blank" rel="noopener">+254 117 355 310 on WhatsApp</a>
+          </div>
+        </div>
+        <a class="policy-back-top" href="#top">↑ Back to top</a>
+      </section>
+    </main>
+    
+    <footer class="section-p1">
+      <div class="col">
+        <a href="#" class="logo">Bellewear <span>Boutique</span></a>
+        <h4>Contact</h4>
+        <p>Address: <strong>31 Gatukuyu</strong></p>
+        <p>Phone: <strong>+254 117 355 310 / +254 737 018 962</strong></p>
+        <p>Hours: <strong>8:00am - 7:00 pm mon -sat</strong></p>
+        <div class="follow">
+          <h4>follow us</h4>
+          <div class="icon">
+            <i class="fab fa-facebook"></i>
+            <i class="fab fa-twitter"></i>
+            <i class="fab fa-instagram"></i>
+            <i class="fab fa-pinterest-p"></i>
+            <i class="fab fa-youtube"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="col">
+        <h4>About</h4>
+        <a href="#">about us</a>
+        <a href="#">Delivery information</a>
+        <a href="#">privacy policy</a>
+        <a href="#">Terms and condition</a>
+        <a href="Contact.html">Contact</a>
+      </div>
+
+      <div class="col">
+        <h4>My Account</h4>
+        <a href="#">Sign in</a>
+        <a href="cart.html">View Cart</a>
+        <a href="#">My Wishlist</a>
+        <a href="#">Track my Order</a>
+        <a href="#">Help</a>
+      </div>
+
+      <div class="col-install">
+        <h4>Install app</h4>
+        <p>From apple store or google play store</p>
+        <div class="row">
+          <img src="img/pay/app.jpg" alt="" />
+          <img src="img/pay/play.jpg" alt="" />
+        </div>
+        <p>secured payment Gateways</p>
+        <img src="img/pay/pay.png" alt="" />
+      </div>
+
+      <div class="copyright">
+        <p>©️ 2025 BELLEWEAR BOUTIQUE @ codebee productions LTD</p>
+      </div>
+    </footer>
+
+    <script type="module" src="authstate.js"></script>
+    <script type="module" src="main.js"></script>
+      <script src="trust.js" defer></script>
+  </body>
+</html>

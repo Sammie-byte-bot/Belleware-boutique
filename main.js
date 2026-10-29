@@ -211,8 +211,6 @@ function hideLoader() {
   if (loader) loader.remove();
 }
 
-const CART_DELIVERY_FEE = 150;
-
 function parseJSON(value, fallback = []) {
   try {
     const parsed = JSON.parse(value);
@@ -832,7 +830,7 @@ function renderCartPage() {
       0,
     );
   if (subtotalEl) subtotalEl.textContent = subtotal;
-  if (grandTotalEl) grandTotalEl.textContent = subtotal + CART_DELIVERY_FEE;
+  if (grandTotalEl) grandTotalEl.textContent = subtotal;
 
   cartContainer.querySelectorAll(".remove-cart-item").forEach((button) => {
     button.addEventListener("click", () => {
@@ -993,8 +991,8 @@ function handleProceedToCheckout() {
   const pendingOrder = {
     items: cartItems,
     subtotal,
-    deliveryFee: CART_DELIVERY_FEE,
-    total: subtotal + CART_DELIVERY_FEE,
+    deliveryFee: 0,
+    total: subtotal,
     createdAt: Date.now(),
   };
 

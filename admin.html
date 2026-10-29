@@ -41,6 +41,8 @@
         --accent: #6d28d9;
         --accent-2: #088178;
         --glass: rgba(255, 255, 255, 0.04);
+        --header-bg: #0b1220;
+        --header-border: rgba(255, 255, 255, 0.1);
       }
       .light-theme {
         --bg: linear-gradient(90deg, #ffffff 0%, #eef2ff 100%);
@@ -51,6 +53,8 @@
         --accent: #4f46e5;
         --accent-2: #0f766e;
         --glass: rgba(0, 0, 0, 0.06);
+        --header-bg: #ffffff;
+        --header-border: #e5e7eb;
       }
 
       /* Smooth transitions for theme changes */
@@ -91,8 +95,12 @@
         transform: translateY(-1px);
       }
       header.topbar {
-        background: transparent;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        position: sticky;
+        top: 0;
+        z-index: 40;
+        background: var(--header-bg);
+        border-bottom: 1px solid var(--header-border);
+        box-shadow: 0 2px 8px rgba(2, 6, 23, 0.08);
         padding: 0.5rem 0.75rem;
         display: flex;
         align-items: center;
@@ -146,6 +154,77 @@
         color: var(--text-color) !important;
         border: 1px solid rgba(255, 255, 255, 0.03);
         transition: background 250ms ease, color 250ms ease;
+      }
+      #userDropdown {
+        top: calc(100% + 0.65rem);
+        right: 0;
+        width: min(16rem, calc(100vw - 1.5rem));
+        padding: 0.4rem;
+        overflow: hidden;
+        border: 1px solid var(--header-border);
+        border-radius: 0.85rem;
+        background: var(--header-bg);
+        color: var(--text-color);
+        box-shadow: 0 16px 40px rgba(2, 6, 23, 0.22);
+        transform-origin: top right;
+      }
+      #userDropdown:not(.hidden) {
+        display: flex;
+        flex-direction: column;
+        animation: user-menu-enter 160ms ease-out;
+      }
+      #userDropdown a,
+      #userDropdown button {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        min-height: 2.75rem;
+        padding: 0.65rem 0.75rem;
+        border: 0;
+        border-radius: 0.55rem;
+        background: transparent;
+        color: var(--text-color);
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        text-align: left;
+        text-decoration: none;
+        cursor: pointer;
+      }
+      #userDropdown a:hover,
+      #userDropdown a:focus-visible,
+      #userDropdown button:hover,
+      #userDropdown button:focus-visible {
+        background: var(--glass);
+        outline: none;
+      }
+      #userDropdown a:focus-visible,
+      #userDropdown button:focus-visible {
+        box-shadow: inset 0 0 0 2px var(--accent);
+      }
+      #userDropdown a i,
+      #userDropdown button i {
+        width: 1.1rem;
+        color: var(--muted);
+        text-align: center;
+      }
+      #userDropdown #logoutBtn {
+        margin-top: 0.35rem;
+        border-top: 1px solid var(--header-border);
+        border-radius: 0;
+        color: #ef4444;
+      }
+      #userDropdown #logoutBtn i {
+        color: inherit;
+      }
+      @keyframes user-menu-enter {
+        from {
+          opacity: 0;
+          transform: translateY(-4px) scale(0.98);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
       }
       .stat-card {
         background: var(--panel);
@@ -450,9 +529,6 @@
         width: 540px;
         max-width: 100%;
         padding: 10px 48px 10px 48px; /* left icon + right clear */
-        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2399a0a6' stroke-width='2'><circle cx='11' cy='11' r='7'/><line x1='21' y1='21' x2='16.65' y2='16.65'/></svg>");
-        background-repeat: no-repeat;
-        background-position: 16px center;
         border-radius: 24px;
         transition: box-shadow 200ms ease, border-color 200ms ease, background 150ms ease, transform 120ms ease;
         background: #ffffff;
@@ -470,18 +546,20 @@
       }
 
       /* Orders-specific search styling — Google-like pill input */
-      .order-search-wrapper { position: relative; display:inline-block; }
+      .order-search-wrapper {
+        position: relative;
+        display: flex;
+        width: 100%;
+        max-width: 44rem;
+      }
       #section-orders .search-input {
-        width: 540px;
+        width: 100%;
         max-width: 100%;
         padding: 10px 48px 10px 48px; /* left icon + right clear */
-        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2399a0a6' stroke-width='2'><circle cx='11' cy='11' r='7'/><line x1='21' y1='21' x2='16.65' y2='16.65'/></svg>");
-        background-repeat: no-repeat;
-        background-position: 16px center;
-        border-radius: 24px;
-        transition: box-shadow 200ms ease, border-color 200ms ease, background 150ms ease, transform 120ms ease;
         background: #ffffff;
         border: 1px solid rgba(0,0,0,0.12);
+        border-radius: 24px;
+        transition: box-shadow 200ms ease, border-color 200ms ease, background 150ms ease, transform 120ms ease;
         box-shadow: 0 1px 3px rgba(60,64,67,0.15), 0 1px 2px rgba(60,64,67,0.1);
         color: #111827;
         font-size: 0.98rem;
@@ -517,6 +595,75 @@
       @media (max-width: 640px) {
         #section-products .search-input { width: 100%; padding-left: 44px; padding-right: 44px; }
         #section-orders .search-input { width: 100%; padding-left: 44px; padding-right: 44px; }
+      }
+
+      #section-settings .settings-panel {
+        border: 1px solid var(--header-border);
+        background: var(--panel);
+        box-shadow: 0 16px 38px rgba(2, 6, 23, 0.12);
+      }
+      #section-settings .settings-card-header {
+        background: linear-gradient(120deg, var(--glass), transparent);
+      }
+      #section-settings .settings-form-grid {
+        max-width: none;
+      }
+      #section-settings .settings-field {
+        display: grid;
+        gap: 0.5rem;
+      }
+      #section-settings .settings-field label {
+        color: var(--text-color);
+        font-size: 0.9rem;
+        font-weight: 600;
+      }
+      #section-settings .delivery-area-row {
+        border-color: var(--header-border);
+        background: var(--glass);
+      }
+      #section-settings .delivery-area-row:focus-within {
+        border-color: var(--accent-2);
+        box-shadow: 0 0 0 3px rgba(8, 129, 120, 0.12);
+      }
+      #section-settings .settings-actions {
+        border-color: var(--header-border);
+      }
+      #settings-save-status {
+        min-height: 1.25rem;
+      }
+      .settings-save-spinner {
+        display: inline-block;
+        width: 1rem;
+        height: 1rem;
+        border: 2px solid currentColor;
+        border-right-color: transparent;
+        border-radius: 50%;
+        animation: settings-spin 0.7s linear infinite;
+      }
+      .settings-save-spinner[hidden] {
+        display: none;
+      }
+      @keyframes settings-spin {
+        to { transform: rotate(360deg); }
+      }
+      #save-settings:disabled {
+        cursor: wait;
+        opacity: 0.8;
+      }
+      @media (max-width: 640px) {
+        #section-settings .settings-panel > form {
+          padding: 1rem;
+        }
+        #section-settings .settings-actions {
+          align-items: stretch;
+        }
+        #section-settings .settings-actions > div {
+          width: 100%;
+        }
+        #section-settings .settings-actions button {
+          flex: 1 1 auto;
+          justify-content: center;
+        }
       }
 
       /* Order review content scrollable without scrollbar */
@@ -973,9 +1120,12 @@ tbody tr:not(:last-child) {
         main.flex-1 {
           width: 100%;
           min-width: 0;
-          min-height: 100vh;
+          height: 100vh;
+          height: 100dvh;
+          min-height: 0;
           overflow-x: hidden;
-          overflow-y: visible;
+          overflow-y: auto;
+          overscroll-behavior-y: contain;
         }
 
         header.topbar {
@@ -1069,6 +1219,18 @@ tbody tr:not(:last-child) {
           overflow-y: auto;
           transform: translate(-50%, -50%);
           box-shadow: 0 0 0 100vmax rgba(2, 6, 23, 0.72);
+        }
+
+        #section-orders #order-review-content {
+          height: auto;
+          max-height: none;
+          overflow: visible;
+        }
+
+        #section-orders .update-dropdown {
+          right: 0;
+          left: auto;
+          z-index: 20;
         }
 
         #section-orders .panel.flex {
@@ -1261,6 +1423,9 @@ tbody tr:not(:last-child) {
     <button
       id="userMenuBtn"
       class="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold"
+      aria-label="Open profile menu"
+      aria-controls="userDropdown"
+      aria-expanded="false"
     >
       A
     </button>
@@ -1273,14 +1438,23 @@ tbody tr:not(:last-child) {
     <!-- USER DROPDOWN -->
     <div
       id="userDropdown"
-      class="hidden absolute right-0 mt-2 w-44 bg-[#081024] border rounded-lg shadow-lg z-50"
+      class="hidden absolute z-50"
     >
-      <a href="#" class="block px-4 py-2 hover:bg-slate-800 text-white">Profile</a>
-      <a href="#" class="block px-4 py-2 hover:bg-slate-800 text-white">Settings</a>
+      <button type="button" data-route="profile" aria-label="Profile">
+        <i class="fas fa-user" aria-hidden="true"></i>
+        <span>Profile</span>
+      </button>
+      <button type="button" data-route="settings" aria-label="Settings">
+        <i class="fas fa-cog" aria-hidden="true"></i>
+        <span>Settings</span>
+      </button>
       <button
         id="logoutBtn"
-        class="w-full text-left px-4 py-2 hover:bg-slate-800 text-red-400"
-      >Log out</button>
+        type="button"
+      >
+        <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
+        <span>Log out</span>
+      </button>
     </div>
   </div>
 </div>
@@ -1483,7 +1657,10 @@ tbody tr:not(:last-child) {
       <div class="order-search-wrapper mb-4 flex items-center">
         <input
           id="search-order"
-          placeholder="Search orders..."
+          type="search"
+          autocomplete="off"
+          aria-label="Search orders by order ID, customer, phone, item, area, status, amount or date"
+          placeholder="Search order ID, customer, phone, item, area, amount..."
           class="search-input px-4 py-2 rounded-lg flex-1"
         />
         <button id="clear-order-search" class="clear-btn hidden" aria-label="Clear search">&times;</button>
@@ -1687,6 +1864,50 @@ tbody tr:not(:last-child) {
           </div>
         </section>
 
+        <!-- ADMIN PROFILE -->
+        <section id="section-profile" class="hidden space-y-6">
+          <div>
+            <h3 class="page-title">Profile</h3>
+            <p class="small-muted">Your administrator account details</p>
+          </div>
+          <div class="panel max-w-3xl rounded-xl p-6 sm:p-8">
+            <div class="flex flex-col items-center gap-4 border-b pb-6 sm:flex-row sm:text-left" style="border-color: var(--glass)">
+              <img
+                id="profile-photo"
+                class="hidden h-20 w-20 rounded-full border-2 object-cover"
+                style="border-color: var(--accent)"
+                alt="Administrator profile"
+              />
+              <div
+                id="profile-initial"
+                class="flex h-20 w-20 items-center justify-center rounded-full text-2xl font-bold text-white"
+                style="background: linear-gradient(135deg, var(--accent), #a78bfa)"
+                aria-hidden="true"
+              >
+                A
+              </div>
+              <div class="min-w-0 text-center sm:text-left">
+                <h4 id="profile-name" class="break-words text-xl font-semibold">Administrator</h4>
+                <p id="profile-email" class="small-muted break-all">—</p>
+              </div>
+            </div>
+            <dl class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2">
+              <div>
+                <dt class="small-muted text-sm">Account ID</dt>
+                <dd id="profile-uid" class="mt-1 break-all font-medium">—</dd>
+              </div>
+              <div>
+                <dt class="small-muted text-sm">Sign-in method</dt>
+                <dd id="profile-provider" class="mt-1 font-medium">—</dd>
+              </div>
+              <div>
+                <dt class="small-muted text-sm">Account created</dt>
+                <dd id="profile-created" class="mt-1 font-medium">—</dd>
+              </div>
+            </dl>
+          </div>
+        </section>
+
         <!-- SETTINGS -->
         <section id="section-settings" class="hidden space-y-6">
           <div class="flex flex-wrap items-end justify-between gap-3">
@@ -1699,8 +1920,8 @@ tbody tr:not(:last-child) {
               Store configuration
             </span>
           </div>
-          <div class="panel rounded-xl overflow-hidden">
-            <div class="p-5 border-b flex items-center gap-3" style="border-color: var(--glass)">
+          <div class="panel settings-panel rounded-2xl overflow-hidden">
+            <div class="settings-card-header p-5 border-b flex items-center gap-3" style="border-color: var(--glass)">
               <span class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: var(--glass); color: var(--accent)">
                 <i class="fas fa-store" aria-hidden="true"></i>
               </span>
@@ -1709,17 +1930,17 @@ tbody tr:not(:last-child) {
                 <p class="small-muted">Identity and checkout defaults</p>
               </div>
             </div>
-            <form id="settings-form" class="p-5 space-y-6">
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-4xl">
-                <div class="space-y-2">
+            <form id="settings-form" class="settings-form p-6 space-y-7">
+              <div class="settings-form-grid grid grid-cols-1 md:grid-cols-2 gap-5 max-w-4xl">
+                <div class="settings-field">
                   <label for="settings-store-name" class="block small-muted">Store name</label>
                   <input id="settings-store-name" type="text" autocomplete="organization" placeholder="Bellewear Boutique" class="search-small w-full" />
                 </div>
-                <div class="space-y-2">
+                <div class="settings-field">
                   <label for="settings-store-email" class="block small-muted">Store email</label>
                   <input id="settings-store-email" type="email" autocomplete="email" placeholder="hello@example.com" class="search-small w-full" />
                 </div>
-                <div class="space-y-2">
+                <div class="settings-field">
                   <label for="settings-currency" class="block small-muted">Default currency</label>
                   <select id="settings-currency" class="search-small w-full">
                     <option value="USD">USD</option>
@@ -1728,19 +1949,35 @@ tbody tr:not(:last-child) {
                   </select>
                 </div>
               </div>
-              <div class="pt-4 border-t flex flex-wrap items-center justify-between gap-3" style="border-color: var(--glass)">
+              <div class="space-y-4 border-t pt-6" style="border-color: var(--glass)">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h4 class="font-semibold">Delivery service areas</h4>
+                    <p class="small-muted mt-1">Manage delivery areas and fees shown at checkout. Save settings to add or update an area; Remove deletes it immediately.</p>
+                  </div>
+                  <button type="button" id="add-delivery-area" class="search-small inline-flex items-center gap-2 px-4 py-2">
+                    <i class="fas fa-plus" aria-hidden="true"></i>
+                    Add area
+                  </button>
+                </div>
+                <div id="delivery-areas-list" class="space-y-3"></div>
+                <p id="delivery-areas-empty" class="small-muted hidden">No delivery areas configured. Customers can still choose pickup.</p>
+              </div>
+              <div class="settings-actions pt-5 border-t flex flex-wrap items-center justify-between gap-3" style="border-color: var(--glass)">
                 <span class="small-muted inline-flex items-center gap-2">
                   <i class="fas fa-lock" aria-hidden="true"></i>
                   Admin-only settings
                 </span>
-                <div class="flex flex-wrap gap-2">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span id="settings-save-status" class="small-muted" role="status" aria-live="polite"></span>
                   <button type="button" id="settings-reload" class="search-small inline-flex items-center gap-2 px-4 py-2">
                     <i class="fas fa-rotate" aria-hidden="true"></i>
                     Reload
                   </button>
-                  <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-white font-semibold" style="background: var(--accent)">
+                  <button type="submit" id="save-settings" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-white font-semibold" style="background: var(--accent)">
+                    <span class="settings-save-spinner" aria-hidden="true" hidden></span>
                     <i class="fas fa-save" aria-hidden="true"></i>
-                    Save settings
+                    <span class="save-settings-label">Save settings</span>
                   </button>
                 </div>
               </div>

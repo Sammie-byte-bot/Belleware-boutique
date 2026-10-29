@@ -410,6 +410,32 @@
       }
 
       @media (max-width: 520px) {
+        body {
+          padding: 1rem 0.75rem 2rem;
+        }
+
+        .topbar {
+          flex-direction: column;
+          align-items: stretch;
+          gap: 0.75rem;
+          margin-bottom: 1rem;
+        }
+
+        .logo-text {
+          text-align: center;
+        }
+
+        .topbar-actions {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 0.5rem;
+        }
+
+        .btn {
+          min-height: 44px;
+          width: 100%;
+        }
+
         .receipt-body {
           padding: 2rem 1.25rem 1.5rem;
         }
@@ -424,6 +450,27 @@
 
         .receipt-footer {
           padding: 1.25rem 1.25rem 1.5rem;
+        }
+
+        .receipt-meta {
+          align-items: flex-start;
+          flex-direction: column;
+          gap: 0.75rem;
+        }
+
+        .receipt-meta-value,
+        .receipt-meta-value.order-id,
+        .info-cell-value {
+          overflow-wrap: anywhere;
+        }
+
+        .item-row {
+          gap: 0.65rem;
+          padding: 0.75rem;
+        }
+
+        .actions-row {
+          flex-direction: column;
         }
       }
     </style>
@@ -553,7 +600,7 @@
             class="btn btn-primary"
             onclick="window.location.href = 'index.html'"
           >
-            Shop More
+            Go to Home
           </button>
         </div>
       </div>

@@ -690,19 +690,22 @@ onAuthStateChanged(auth, async (user) => {
 // ================= MODAL CLOSE =================
 document.addEventListener("DOMContentLoaded", () => {
   const closeModal = document.getElementById("closeReviewModal");
+  const reviewModal = document.getElementById("reviewModal");
+
   if (closeModal) {
-    closeModal.onclick = () => {
-      document.getElementById("reviewModal").classList.remove("show");
-    };
+    closeModal.addEventListener("click", () =>
+      reviewModal?.classList.remove("show"),
+    );
   }
 
   // Close modal when clicking outside
-  window.onclick = (event) => {
-    const modal = document.getElementById("reviewModal");
-    if (event.target === modal) {
-      modal.classList.remove("show");
-    }
-  };
+  reviewModal?.addEventListener("click", (event) => {
+    if (event.target === reviewModal) reviewModal.classList.remove("show");
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") reviewModal?.classList.remove("show");
+  });
 });
 
 // ================= MAIN PRODUCT LOAD =================

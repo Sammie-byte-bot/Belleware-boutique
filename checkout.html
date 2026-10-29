@@ -15,6 +15,144 @@
     <script src="https://js.paystack.co/v1/inline.js"></script>
 
     <style>
+      #header.checkout-header {
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        width: 100%;
+        min-height: 76px;
+        box-sizing: border-box;
+        padding: 0.75rem clamp(1rem, 4vw, 3rem);
+        border-bottom: 1px solid #e8eee9;
+        background: rgb(255 255 255 / 96%);
+        box-shadow: 0 8px 24px rgb(22 46 32 / 7%);
+        backdrop-filter: blur(14px);
+      }
+      .checkout-header-brand {
+        display: flex;
+        align-items: center;
+        gap: clamp(0.75rem, 2vw, 1.5rem);
+        min-width: 0;
+      }
+      #header.checkout-header .logo {
+        justify-content: flex-start;
+        gap: 0.35rem;
+        padding: 0.25rem 0;
+        color: #17251c;
+        font-size: clamp(1.05rem, 2.4vw, 1.4rem);
+        font-weight: 800;
+        letter-spacing: -0.035em;
+        white-space: nowrap;
+      }
+      #header.checkout-header .logo span {
+        color: #258653;
+        font-size: inherit;
+        font-weight: 700;
+      }
+      #header.checkout-header .profile-greet {
+        margin: 0;
+        padding-left: 1rem;
+        border-left: 1px solid #dfe8e1;
+        color: #627268;
+        font-size: 0.82rem;
+      }
+      #header.checkout-header .profile-greet #userName {
+        color: #24372a;
+        font-weight: 700;
+      }
+      #header.checkout-header #navbar {
+        position: static;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-end;
+        width: auto;
+        height: auto;
+        left: auto;
+        top: auto;
+        margin: 0;
+        padding: 0;
+        background: transparent;
+        box-shadow: none;
+        list-style: none;
+        overflow: visible;
+        transition: none;
+        z-index: auto;
+      }
+      #header.checkout-header #navbar li {
+        width: auto;
+        margin: 0;
+      }
+      #header.checkout-header #navbar a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.55rem;
+        min-height: 44px;
+        padding: 0.65rem 1rem;
+        border: 1px solid #d9e8dd;
+        border-radius: 999px;
+        background: #f5faf6;
+        color: #236942;
+        font-size: 0.9rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition:
+          background-color 0.2s ease,
+          border-color 0.2s ease,
+          transform 0.2s ease;
+      }
+      #header.checkout-header #navbar a:hover {
+        transform: translateY(-1px);
+        border-color: #b7d5c1;
+        background: #eaf5ed;
+      }
+      #header.checkout-header #navbar a:focus-visible {
+        outline: 3px solid rgb(37 134 83 / 28%);
+        outline-offset: 3px;
+      }
+      @media (max-width: 520px) {
+        #header.checkout-header {
+          min-height: 64px;
+          gap: 0.5rem;
+          padding: 0.6rem 0.8rem;
+        }
+        .checkout-header-brand {
+          gap: 0.5rem;
+        }
+        #header.checkout-header .profile-greet {
+          max-width: 8.5rem;
+          overflow: hidden;
+          padding-left: 0.6rem;
+          font-size: 0.72rem;
+          text-overflow: ellipsis;
+        }
+        #header.checkout-header #navbar a {
+          gap: 0.35rem;
+          min-height: 42px;
+          padding: 0.55rem 0.7rem;
+          font-size: 0.78rem;
+          white-space: nowrap;
+        }
+      }
+      @media (max-width: 360px) {
+        #header.checkout-header {
+          padding-right: 0.55rem;
+          padding-left: 0.55rem;
+        }
+        #header.checkout-header .profile-greet {
+          display: none;
+        }
+        #header.checkout-header #navbar a {
+          padding-right: 0.55rem;
+          padding-left: 0.55rem;
+        }
+      }
+
       .order-item {
         display: flex;
         align-items: center;
@@ -163,6 +301,143 @@
       .payment-option input {
         accent-color: #3bc1a8;
       }
+      .fulfillment-options {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+        margin: 1rem 0 1.5rem;
+      }
+      .fulfillment-option {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.85rem;
+        min-width: 0;
+        padding: 1rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        background: #fff;
+        cursor: pointer;
+        transition:
+          border-color 0.2s ease,
+          background-color 0.2s ease,
+          box-shadow 0.2s ease;
+      }
+      .fulfillment-option:has(input:checked) {
+        border-color: #2a9d8f;
+        background: #f0fdfb;
+        box-shadow: 0 0 0 3px rgb(42 157 143 / 10%);
+      }
+      .fulfillment-option input {
+        width: 1rem;
+        height: 1rem;
+        margin-top: 0.2rem;
+        flex: 0 0 auto;
+        accent-color: #2a9d8f;
+      }
+      .fulfillment-option-copy {
+        display: grid;
+        gap: 0.3rem;
+      }
+      .fulfillment-option-copy strong {
+        color: #17211f;
+      }
+      .fulfillment-option-copy small {
+        color: #64748b;
+        line-height: 1.45;
+      }
+      .delivery-area-fields[hidden],
+      .pickup-step-note[hidden] {
+        display: none;
+      }
+      .pickup-step-note {
+        margin-top: 1rem;
+        padding: 0.9rem 1rem;
+        border: 1px solid #99d9cf;
+        border-radius: 10px;
+        background: #f0fdfb;
+        color: #17685e;
+        line-height: 1.5;
+      }
+      .delivery-request-card {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-top: 1.25rem;
+        padding: 1rem;
+        border: 1px solid #d5e7df;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #f8fffb, #effaf4);
+      }
+      .delivery-request-copy {
+        display: grid;
+        gap: 0.3rem;
+        min-width: 0;
+      }
+      .delivery-request-copy strong {
+        color: #183b2c;
+      }
+      .delivery-request-copy span {
+        color: #5b7065;
+        font-size: 0.88rem;
+        line-height: 1.45;
+      }
+      .delivery-request-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.55rem;
+        flex: 0 0 auto;
+        padding: 0.75rem 1rem;
+        border: 0;
+        border-radius: 10px;
+        background: #168c53;
+        color: #fff;
+        font-weight: 700;
+        text-decoration: none;
+        box-shadow: 0 4px 12px rgb(22 140 83 / 20%);
+        transition:
+          background-color 0.2s ease,
+          transform 0.2s ease,
+          box-shadow 0.2s ease;
+      }
+      .delivery-request-link:hover {
+        background: #117443;
+        box-shadow: 0 6px 16px rgb(22 140 83 / 26%);
+        transform: translateY(-1px);
+      }
+      .delivery-request-link:focus-visible {
+        outline: 3px solid rgb(22 140 83 / 35%);
+        outline-offset: 3px;
+      }
+      .delivery-request-link svg {
+        width: 1.25rem;
+        height: 1.25rem;
+        flex: 0 0 auto;
+      }
+      @media (max-width: 520px) {
+        .fulfillment-options {
+          grid-template-columns: 1fr;
+          gap: 0.7rem;
+        }
+        .fulfillment-option {
+          padding: 0.85rem;
+        }
+        .step-navigation {
+          gap: 0.75rem;
+        }
+        .step-navigation button {
+          padding: 0.75rem 1rem;
+          min-width: 0;
+        }
+        .delivery-request-card {
+          align-items: stretch;
+          flex-direction: column;
+        }
+        .delivery-request-link {
+          width: 100%;
+        }
+      }
 
       /* Paystack notice */
       .paystack-notice {
@@ -196,18 +471,20 @@
 
   <body>
     <!-- NAVBAR -->
-    <section id="header">
-      <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0">
+    <section id="header" class="checkout-header">
+      <div class="checkout-header-brand">
         <a href="index.html" class="logo">Bellewear <span>Boutique</span></a>
-        <span
-          class="profile-greet"
-          style="white-space: nowrap; font-size: 12px"
-        >
+        <span class="profile-greet">
           Hello, <span id="userName">Guest</span>
         </span>
       </div>
       <ul id="navbar">
-        <li><a href="index.html">Continue shopping</a></li>
+        <li>
+          <a href="index.html">
+            <i class="fas fa-arrow-left" aria-hidden="true"></i>
+            <span>Continue shopping</span>
+          </a>
+        </li>
       </ul>
     </section>
 
@@ -254,8 +531,8 @@
                 <label for="phone">Phone Number</label>
                 <input type="tel" id="phone" required />
 
-                <label for="address">Delivery Address</label>
-                <textarea id="address" rows="5" required></textarea>
+                <label for="address">Delivery Address (required for home delivery)</label>
+                <textarea id="address" rows="5"></textarea>
               </form>
             </div>
             <div class="step-navigation">
@@ -268,17 +545,58 @@
           <div class="checkout-step" id="step2-content">
             <div class="checkout-card">
               <div class="card-number">2</div>
-              <h3>Delivery Details</h3>
-              <label for="delivery-area">Select Delivery Area</label>
-              <select id="delivery-area">
-                <option value="Nairobi CBD">Nairobi CBD - Ksh 150</option>
-                <option value="Kangemi">Kangemi - Ksh 150</option>
-                <option value="Kabete">Kabete - Ksh 150</option>
-                <option value="Uthiru" selected>Uthiru - Ksh 110</option>
-                <option value="Kinoo">Kinoo - Ksh 150</option>
-              </select>
+              <h3>Delivery or Pickup</h3>
+              <p class="small-muted">Choose how you would like to receive your order.</p>
+              <div class="fulfillment-options" role="radiogroup" aria-label="Delivery or pickup">
+                <label class="fulfillment-option">
+                  <input type="radio" name="fulfillment" value="delivery" checked />
+                  <span class="fulfillment-option-copy">
+                    <strong><i class="fas fa-truck" aria-hidden="true"></i> Home delivery</strong>
+                    <small>Select a service area and see its delivery fee before continuing.</small>
+                  </span>
+                </label>
+                <label class="fulfillment-option">
+                  <input type="radio" name="fulfillment" value="pickup" />
+                  <span class="fulfillment-option-copy">
+                    <strong><i class="fas fa-store" aria-hidden="true"></i> Pickup at our store</strong>
+                    <small>Collect your order in person. No delivery fee will be added.</small>
+                  </span>
+                </label>
+              </div>
+              <div id="delivery-area-fields" class="delivery-area-fields">
+                <label for="delivery-area">Select Delivery Area</label>
+                <select id="delivery-area" aria-describedby="delivery-area-message" disabled>
+                  <option value="">Loading delivery areas...</option>
+                </select>
+                <p id="delivery-area-message" class="small-muted" role="status" aria-live="polite">
+                  Loading delivery areas...
+                </p>
+                <div class="delivery-request-card">
+                  <div class="delivery-request-copy">
+                    <strong>Can’t find your delivery area?</strong>
+                    <span>Message us and we’ll confirm delivery availability and the fee for your location.</span>
+                  </div>
+                  <a
+                    id="delivery-request-whatsapp"
+                    class="delivery-request-link"
+                    href="https://wa.me/254117355310"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Request delivery to an unlisted area on WhatsApp"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path d="M20.2 11.8a8.2 8.2 0 0 1-12.1 7.2L3.5 20l1.1-4.4a8.2 8.2 0 1 1 15.6-3.8Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M9 8.2c.2-.4.4-.4.7-.4h.5c.2 0 .4.1.5.4l.7 1.7c.1.2.1.4 0 .5l-.5.7c-.2.2-.2.4 0 .6.4.7 1 1.3 1.7 1.7.2.1.4.1.6-.1l.7-.8c.2-.2.4-.2.6-.1l1.6.8c.2.1.4.3.4.5 0 .4-.2 1.1-.7 1.5-.4.4-1 .6-1.6.5-1-.2-2.1-.7-3.3-1.7-1-.8-1.8-1.8-2.2-2.8-.4-.8-.4-1.7 0-2.3.2-.3.4-.6.7-.7Z" fill="currentColor"/>
+                    </svg>
+                    <span>WhatsApp 0117 355 310</span>
+                  </a>
+                </div>
+              </div>
               <p class="delivery-fee">
-                Delivery Fee: Ksh <span id="delivery-fee-display">110</span>
+                Delivery Fee: Ksh <span id="delivery-fee-display">—</span>
+              </p>
+              <p id="pickup-step-note" class="pickup-step-note" role="status" hidden>
+                Pickup selected. No delivery fee will be added. You can pay when you collect your order.
               </p>
             </div>
             <div class="step-navigation">
@@ -291,7 +609,7 @@
           <div class="checkout-step" id="step3-content">
             <div class="checkout-card">
               <div class="card-number">3</div>
-              <h3>Payment Method</h3>
+              <h3 id="payment-step-title">Payment Method</h3>
 
               <div class="payment-options">
                 <label class="payment-option">
@@ -301,10 +619,6 @@
                 <label class="payment-option">
                   <input type="radio" name="payment" value="mpesa" />
                   <span>📱 M-Pesa</span>
-                </label>
-                <label class="payment-option">
-                  <input type="radio" name="payment" value="pickup" />
-                  <span>🏪 Pickup at our store (Pay on arrival)</span>
                 </label>
               </div>
 
@@ -322,20 +636,8 @@
                 STK push prompt on your phone.
               </div>
 
-              <!-- Pickup note -->
-              <div
-                id="pickup-info"
-                style="
-                  display: none;
-                  background: #f1f5f9;
-                  border-radius: 8px;
-                  padding: 0.75rem 1rem;
-                  font-size: 0.85rem;
-                  margin-top: 0.5rem;
-                "
-              >
-                You've chosen to pick up your order. No payment is required now
-                — you'll pay at our store.
+              <div id="pickup-info" class="pickup-step-note" hidden>
+                Pickup is selected. You can confirm your order now and pay at the store when you collect it.
               </div>
             </div>
 
@@ -355,7 +657,7 @@
             <span>Ksh <span id="subtotal">0</span></span>
           </div>
           <div class="summary-row">
-            <span>Delivery</span>
+            <span id="fulfillment-summary-label">Delivery</span>
             <span>Ksh <span id="delivery-fee">0</span></span>
           </div>
           <div class="summary-row total">
@@ -390,6 +692,7 @@
       import {
         getFirestore,
         collection,
+        getDocs,
         addDoc,
         serverTimestamp,
         doc,
@@ -417,18 +720,10 @@
       const PAYSTACK_PUBLIC_KEY =
         "pk_test_60282976d513502972ea51e68dae3642225ed932";
 
-      // ─── Delivery Areas ─────────────────────────────────────────────────────────
-      const supportedAreas = {
-        "Nairobi CBD": 150,
-        Kangemi: 150,
-        Kabete: 150,
-        Uthiru: 110,
-        Kinoo: 150,
-      };
-
       // ─── State ───────────────────────────────────────────────────────────────────
       let currentUser = null;
       let currentStep = 1;
+      const deliveryAreaFees = new Map();
       const rawOrder = localStorage.getItem("pendingOrder");
       let pendingOrder = rawOrder ? JSON.parse(rawOrder) : null;
 
@@ -441,20 +736,139 @@
       const deliveryFeeDisplay = document.getElementById(
         "delivery-fee-display",
       );
+      const deliveryAreaMessage = document.getElementById(
+        "delivery-area-message",
+      );
+      const deliveryRequestWhatsapp = document.getElementById(
+        "delivery-request-whatsapp",
+      );
+      const fulfillmentRadios = document.querySelectorAll(
+        'input[name="fulfillment"]',
+      );
+      const deliveryAreaFields = document.getElementById(
+        "delivery-area-fields",
+      );
+      const pickupStepNote = document.getElementById("pickup-step-note");
+      const paymentStepTitle = document.getElementById("payment-step-title");
+      const fulfillmentSummaryLabel = document.getElementById(
+        "fulfillment-summary-label",
+      );
       const paymentRadios = document.querySelectorAll('input[name="payment"]');
       const placeOrderBtn = document.getElementById("place-order");
       const paystackNotice = document.getElementById("paystack-notice");
       const mpesaInfo = document.getElementById("mpesa-info");
       const pickupInfo = document.getElementById("pickup-info");
 
+      ["full-name", "phone", "address"].forEach((id) => {
+        document
+          .getElementById(id)
+          .addEventListener("input", updateDeliveryRequestLink);
+      });
+      updateDeliveryRequestLink();
+
       // ─── Helpers ─────────────────────────────────────────────────────────────────
       function getCartStorageKey(userId) {
         return userId ? `cart_${userId}` : "cart_guest";
       }
 
+      function updateDeliveryRequestLink() {
+        const customerName =
+          document.getElementById("full-name").value.trim() || "Not provided";
+        const customerPhone =
+          document.getElementById("phone").value.trim() || "Not provided";
+        const deliveryAddress =
+          document.getElementById("address").value.trim() ||
+          "I will share my location in chat";
+        const items = Array.isArray(pendingOrder?.items)
+          ? pendingOrder.items
+          : [];
+        const orderItems = items
+          .slice(0, 8)
+          .map(
+            (item) =>
+              `${item.name || "Item"} x${Number(item.quantity) || 1}`,
+          );
+        if (items.length > 8) {
+          orderItems.push(`and ${items.length - 8} more item(s)`);
+        }
+        const subtotal = items.reduce(
+          (sum, item) =>
+            sum +
+            (Number(item.price) || 0) * (Number(item.quantity) || 1),
+          0,
+        );
+        const message = [
+          "Hello Bellewear Boutique, my delivery area is not listed at checkout. Could you confirm delivery availability and the delivery fee?",
+          `Name: ${customerName}`,
+          `Phone: ${customerPhone}`,
+          `Requested location/address: ${deliveryAddress}`,
+          `Order items: ${orderItems.join(", ") || "Please help me with my order"}`,
+          `Items subtotal: Ksh ${subtotal.toLocaleString("en-KE")}`,
+        ].join("\n");
+        const whatsappUrl = new URL("https://wa.me/254117355310");
+        whatsappUrl.searchParams.set("text", message);
+        deliveryRequestWhatsapp.href = whatsappUrl.toString();
+      }
+
+      async function loadDeliveryAreas() {
+        const areasSnap = await getDocs(collection(db, "deliveryAreas"));
+        const activeAreas = areasSnap.docs.reduce((areas, areaSnap) => {
+          const area = areaSnap.data();
+          const fee =
+            typeof area.fee === "string" && area.fee.trim()
+              ? Number(area.fee)
+              : area.fee;
+          if (
+            area.active !== false &&
+            typeof area.name === "string" &&
+            area.name.trim() &&
+            Number.isSafeInteger(fee) &&
+            fee >= 0
+          ) {
+            areas.push({
+              id: areaSnap.id,
+              name: area.name.trim(),
+              fee,
+            });
+          }
+          return areas;
+        }, []);
+
+        deliveryAreaFees.clear();
+        deliveryAreaSelect.replaceChildren();
+        const placeholder = document.createElement("option");
+        placeholder.value = "";
+
+        if (activeAreas.length === 0) {
+          placeholder.textContent = "No delivery areas available";
+          deliveryAreaSelect.appendChild(placeholder);
+          deliveryAreaSelect.disabled = true;
+          deliveryAreaMessage.textContent =
+            "Delivery is not currently offered in any area. You can still choose pickup.";
+          return;
+        }
+
+        placeholder.textContent = "Choose your delivery area";
+        deliveryAreaSelect.appendChild(placeholder);
+        activeAreas.forEach((area) => {
+          const name = area.name;
+          deliveryAreaFees.set(name, { id: area.id, fee: area.fee });
+          const option = document.createElement("option");
+          option.value = name;
+          option.textContent = `${name} - Ksh ${area.fee.toLocaleString("en-KE")}`;
+          deliveryAreaSelect.appendChild(option);
+        });
+        deliveryAreaSelect.disabled = false;
+        deliveryAreaMessage.textContent =
+          "Delivery fees are based on the selected area.";
+
+        const savedArea = pendingOrder?.customerInfo?.deliveryArea;
+        if (savedArea && deliveryAreaFees.has(savedArea)) {
+          deliveryAreaSelect.value = savedArea;
+        }
+      }
+
       function buildPendingOrderFromCart(cartItems) {
-        const defaultArea = "Uthiru";
-        const fee = supportedAreas[defaultArea];
         const subtotal = cartItems.reduce(
           (sum, item) =>
             sum + (Number(item.price) || 0) * (Number(item.quantity) || 1),
@@ -463,8 +877,8 @@
         return {
           items: cartItems,
           subtotal,
-          deliveryFee: fee,
-          total: subtotal + fee,
+          deliveryFee: 0,
+          total: subtotal,
           createdAt: Date.now(),
           status: "CHECKOUT",
         };
@@ -482,16 +896,56 @@
 
       function getCurrentDeliveryFee() {
         const selectedArea = deliveryAreaSelect.value;
-        const paymentMethod = document.querySelector(
-          'input[name="payment"]:checked',
+        const fulfillment = document.querySelector(
+          'input[name="fulfillment"]:checked',
         )?.value;
-        if (paymentMethod === "pickup") return 0;
-        return supportedAreas[selectedArea] ?? 110;
+        if (fulfillment === "pickup") return 0;
+        return deliveryAreaFees.get(selectedArea)?.fee ?? null;
       }
 
       function getCurrentTotal() {
         const subtotal = parseInt(subtotalEl.textContent) || 0;
-        return subtotal + getCurrentDeliveryFee();
+        return subtotal + (getCurrentDeliveryFee() ?? 0);
+      }
+
+      function updateDeliveryTotals() {
+        const fee = getCurrentDeliveryFee();
+        const subtotal = parseInt(subtotalEl.textContent) || 0;
+        deliveryEl.textContent = fee ?? "Select area";
+        deliveryFeeDisplay.textContent = fee ?? "Select area";
+        grandTotalEl.textContent = subtotal + (fee ?? 0);
+      }
+
+      function updateFulfillmentSelection() {
+        const fulfillment = document.querySelector(
+          'input[name="fulfillment"]:checked',
+        )?.value;
+        const isPickup = fulfillment === "pickup";
+
+        deliveryAreaFields.hidden = isPickup;
+        pickupStepNote.hidden = !isPickup;
+        document.getElementById("address").required = !isPickup;
+        paymentRadios.forEach((radio) => {
+          radio.disabled = isPickup;
+        });
+        document.querySelector(".payment-options").hidden = isPickup;
+        paymentStepTitle.textContent = isPickup
+          ? "Confirm Pickup Order"
+          : "Payment Method";
+        fulfillmentSummaryLabel.textContent = isPickup ? "Pickup" : "Delivery";
+        paystackNotice.hidden = isPickup;
+        paystackNotice.style.display = isPickup ? "none" : "flex";
+        mpesaInfo.hidden = isPickup;
+        mpesaInfo.style.display =
+          !isPickup &&
+          document.querySelector('input[name="payment"]:checked')?.value ===
+            "mpesa"
+            ? "block"
+            : "none";
+        pickupInfo.hidden = !isPickup;
+        placeOrderBtn.textContent = isPickup ? "Confirm Pickup Order" : "Pay Now";
+
+        updateDeliveryTotals();
       }
 
       function renderOrderItems() {
@@ -513,9 +967,7 @@
           orderItemsContainer.appendChild(div);
         });
         subtotalEl.textContent = subtotal;
-        const fee = getCurrentDeliveryFee();
-        deliveryEl.textContent = fee;
-        grandTotalEl.textContent = subtotal + fee;
+        updateDeliveryTotals();
       }
 
       function showStep(step) {
@@ -592,8 +1044,19 @@
         const email = document.getElementById("email").value.trim();
         const phone = document.getElementById("phone").value.trim();
         const address = document.getElementById("address").value.trim();
-        const selectedArea = deliveryAreaSelect.value;
+        const isPickup =
+          document.querySelector('input[name="fulfillment"]:checked')?.value ===
+          "pickup";
+        const selectedArea = isPickup ? "" : deliveryAreaSelect.value;
+        const selectedAreaData = isPickup
+          ? null
+          : deliveryAreaFees.get(selectedArea);
         const fee = getCurrentDeliveryFee();
+        if (paymentMethod !== "pickup" && fee === null) {
+          throw new Error(
+            "Select an available delivery area before placing your order.",
+          );
+        }
         const subtotal = pendingOrder.items.reduce(
           (s, i) => s + i.price * i.quantity,
           0,
@@ -612,6 +1075,7 @@
             phone,
             address,
             deliveryArea: selectedArea,
+            deliveryAreaId: selectedAreaData?.id || "",
           },
           paymentMethod,
           paymentReference: paymentReference || null,
@@ -659,7 +1123,7 @@
           console.error("Order failed:", err);
           alert("Order failed to save. Please try again.");
           placeOrderBtn.disabled = false;
-          placeOrderBtn.textContent = "Confirm Order";
+          placeOrderBtn.textContent = "Confirm Pickup Order";
         }
       }
 
@@ -680,48 +1144,44 @@
           window.location.href = "cart.html";
           return;
         }
+        updateDeliveryRequestLink();
+        try {
+          await loadDeliveryAreas();
+        } catch (error) {
+          console.error("Failed to load delivery areas:", error);
+          deliveryAreaSelect.disabled = true;
+          deliveryAreaMessage.textContent =
+            "Delivery options could not be loaded. Please refresh the page or contact support.";
+          alert(
+            "Unable to load current delivery options. Please refresh the page and try again.",
+          );
+          return;
+        }
         renderOrderItems();
       });
 
       // ─── Delivery area change ────────────────────────────────────────────────────
-      deliveryAreaSelect.addEventListener("change", (e) => {
-        const fee = supportedAreas[e.target.value];
-        deliveryFeeDisplay.textContent = fee;
-        deliveryEl.textContent = fee;
-        grandTotalEl.textContent =
-          (parseInt(subtotalEl.textContent) || 0) + fee;
-      });
+      deliveryAreaSelect.addEventListener("change", updateDeliveryTotals);
 
       // ─── Payment method change ───────────────────────────────────────────────────
       paymentRadios.forEach((radio) => {
         radio.addEventListener("change", (e) => {
-          const val = e.target.value;
-          paystackNotice.style.display = val === "pickup" ? "none" : "flex";
-          mpesaInfo.style.display = val === "mpesa" ? "block" : "none";
-          pickupInfo.style.display = val === "pickup" ? "block" : "none";
-          placeOrderBtn.textContent =
-            val === "pickup" ? "Confirm Order" : "Pay Now";
-
-          // Update delivery fee for pickup (free)
-          if (val === "pickup") {
-            deliveryEl.textContent = "0";
-            grandTotalEl.textContent = parseInt(subtotalEl.textContent) || 0;
-          } else {
-            const fee = supportedAreas[deliveryAreaSelect.value];
-            deliveryEl.textContent = fee;
-            grandTotalEl.textContent =
-              (parseInt(subtotalEl.textContent) || 0) + fee;
-          }
+          paystackNotice.style.display = "flex";
+          mpesaInfo.style.display =
+            e.target.value === "mpesa" ? "block" : "none";
         });
       });
+      fulfillmentRadios.forEach((radio) => {
+        radio.addEventListener("change", updateFulfillmentSelection);
+      });
+      updateFulfillmentSelection();
 
       // ─── Step navigation ─────────────────────────────────────────────────────────
       document.getElementById("next-to-step2").addEventListener("click", () => {
         const fullName = document.getElementById("full-name").value.trim();
         const email = document.getElementById("email").value.trim();
         const phone = document.getElementById("phone").value.trim();
-        const address = document.getElementById("address").value.trim();
-        if (!fullName || !email || !phone || !address) {
+        if (!fullName || !email || !phone) {
           alert("Please fill in all required fields before proceeding.");
           return;
         }
@@ -733,7 +1193,24 @@
         .addEventListener("click", () => showStep(1));
       document
         .getElementById("next-to-step3")
-        .addEventListener("click", () => showStep(3));
+        .addEventListener("click", () => {
+          const fulfillment = document.querySelector(
+            'input[name="fulfillment"]:checked',
+          )?.value;
+          if (fulfillment === "delivery") {
+            if (!deliveryAreaFees.has(deliveryAreaSelect.value)) {
+              alert("Please select an available delivery area.");
+              return;
+            }
+            if (!document.getElementById("address").value.trim()) {
+              alert("Please enter your delivery address.");
+              document.getElementById("address").focus();
+              showStep(1);
+              return;
+            }
+          }
+          showStep(3);
+        });
       document
         .getElementById("back-to-step2")
         .addEventListener("click", () => showStep(2));
@@ -741,15 +1218,23 @@
       // ─── Place order / Pay Now ───────────────────────────────────────────────────
       placeOrderBtn.addEventListener("click", () => {
         if (!currentUser) return;
+        const fulfillment = document.querySelector(
+          'input[name="fulfillment"]:checked',
+        )?.value;
+        if (fulfillment === "pickup") {
+          handlePickupOrder();
+          return;
+        }
         const paymentMethod = document.querySelector(
           'input[name="payment"]:checked',
         ).value;
-        if (paymentMethod === "pickup") {
-          handlePickupOrder();
-        } else {
-          // launchPaystack is defined in the plain <script> below to avoid ES module scope issues
-          window._bw_launchPaystack();
+        if (!deliveryAreaFees.has(deliveryAreaSelect.value)) {
+          alert("Select an available delivery area before paying.");
+          showStep(2);
+          return;
         }
+        // launchPaystack is defined in the plain <script> below to avoid ES module scope issues
+        window._bw_launchPaystack();
       });
 
       // ─── View orders button ──────────────────────────────────────────────────────
