@@ -1,0 +1,6 @@
+# Only for local `wrangler dev`. Copy to .dev.vars (git-ignored). Never commit real values.
+MPESA_CONSUMER_KEY=
+MPESA_CONSUMER_SECRET=
+MPESA_PASSKEY=
+MPESA_CALLBACK_TOKEN=
+FIREBASE_SERVICE_ACCOUNT=

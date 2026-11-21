@@ -1,0 +1,22 @@
+name = "bellewear-pay"
+main = "src/index.js"
+compatibility_date = "2025-09-01"
+
+[vars]
+FIREBASE_PROJECT_ID = "bellewear-boutique"
+
+# "production" = real money (your Daraja "Prod-BELLEWEAR BOUTIQUE" app)
+# "sandbox"    = Daraja sandbox testing
+MPESA_ENV = "production"
+MPESA_SHORTCODE = "1444988"
+
+# CustomerPayBillOnline  -> the short code is a PAYBILL
+# CustomerBuyGoodsOnline -> the short code is a TILL number
+MPESA_TRANSACTION_TYPE = "CustomerPayBillOnline"
+
+# Only for Till numbers whose Till differs from the Store/HO number. Usually leave blank.
+MPESA_PARTY_B = ""
+
+# Websites allowed to call this Worker (comma separated, no trailing slash).
+# Put your real live site address here.
+ALLOWED_ORIGINS = "https://YOUR-SITE.vercel.app,http://localhost:5500,http://127.0.0.1:5500,http://localhost:3000"

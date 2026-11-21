@@ -66,7 +66,7 @@ service cloud.firestore {
              'customerInfo', 'paymentMethod', 'status', 'createdAt'
            ])
         && d.userId == request.auth.uid
-        && d.paymentMethod in ['card', 'mpesa', 'pickup']
+        && d.paymentMethod in ['card', 'pickup']
         && d.status == (d.paymentMethod == 'pickup' ? 'PLACED_UNPAID' : 'PLACED')
         && (
              d.paymentMethod == 'pickup'
@@ -143,6 +143,14 @@ service cloud.firestore {
         && request.resource.data.status == 'CANCELLED';
 
       allow read, update, delete: if isAdmin();
+    }
+
+    // M-Pesa payment attempts. Written ONLY by Cloud Functions (admin SDK);
+    // the paying customer can read their own so checkout can show the result.
+    match /mpesaPayments/{paymentId} {
+      allow read: if signedIn() && request.auth.uid == resource.data.userId;
+      allow read: if isAdmin();
+      allow write: if false;
     }
 
     match /notifications/{notifId} {

@@ -466,6 +466,104 @@
         color: #92400e;
         margin-top: 0.5rem;
       }
+      #mpesa-info label {
+        display: block;
+        margin: 0.75rem 0 0.25rem;
+        font-weight: 600;
+      }
+      #mpesa-info input {
+        width: 100%;
+        padding: 0.65rem 0.8rem;
+        border: 1px solid #f59e0b;
+        border-radius: 8px;
+        font-size: 1rem;
+        background: #fff;
+        box-sizing: border-box;
+      }
+
+      /* M-Pesa waiting overlay */
+      .mpesa-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 2000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(15, 23, 42, 0.6);
+      }
+      .mpesa-overlay.hidden {
+        display: none;
+      }
+      .mpesa-card {
+        width: min(440px, calc(100% - 32px));
+        background: #fff;
+        border-radius: 24px;
+        padding: 32px 28px;
+        text-align: center;
+        box-shadow: 0 24px 60px rgba(15, 23, 42, 0.25);
+      }
+      .mpesa-card h2 {
+        font-size: 1.4rem;
+        color: #111827;
+        margin: 0 0 10px;
+      }
+      .mpesa-card p {
+        color: #475569;
+        margin: 0 0 14px;
+        line-height: 1.5;
+      }
+      .mpesa-amount {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: #0f766e;
+        margin-bottom: 6px;
+      }
+      .mpesa-spinner {
+        width: 56px;
+        height: 56px;
+        margin: 0 auto 18px;
+        border: 5px solid #d1fae5;
+        border-top-color: #0f766e;
+        border-radius: 50%;
+        animation: mpesa-spin 0.9s linear infinite;
+      }
+      .mpesa-icon-fail {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 16px;
+        border-radius: 50%;
+        background: #fee2e2;
+        color: #b91c1c;
+        font-size: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .mpesa-actions {
+        display: flex;
+        gap: 0.75rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 8px;
+      }
+      .mpesa-actions button {
+        border: none;
+        border-radius: 12px;
+        padding: 11px 20px;
+        cursor: pointer;
+        font-weight: 600;
+        background: #0f766e;
+        color: #fff;
+      }
+      .mpesa-actions button.secondary {
+        background: #e2e8f0;
+        color: #334155;
+      }
+      @keyframes mpesa-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
     </style>
   </head>
 
@@ -631,9 +729,18 @@
 
               <!-- M-Pesa tip -->
               <div id="mpesa-info" style="display: none">
-                <strong>M-Pesa via Paystack:</strong> After clicking "Pay Now",
-                enter your M-Pesa number in the Paystack popup. You'll receive a
-                STK push prompt on your phone.
+                <strong>Pay with M-Pesa:</strong> Enter the Safaricom number to
+                charge. After you click "Pay Now" you'll get an M-Pesa prompt on
+                that phone &mdash; enter your PIN to complete the payment.
+                <label for="mpesa-phone">M-Pesa phone number</label>
+                <input
+                  type="tel"
+                  id="mpesa-phone"
+                  inputmode="tel"
+                  autocomplete="tel"
+                  placeholder="07XXXXXXXX"
+                  maxlength="16"
+                />
               </div>
 
               <div id="pickup-info" class="pickup-step-note" hidden>
@@ -680,6 +787,20 @@
       </div>
     </div>
 
+    <!-- M-PESA WAITING OVERLAY -->
+    <div id="mpesa-overlay" class="mpesa-overlay hidden" role="dialog" aria-modal="true" aria-live="polite">
+      <div class="mpesa-card">
+        <div id="mpesa-visual" class="mpesa-spinner"></div>
+        <h2 id="mpesa-title">Check your phone</h2>
+        <div id="mpesa-amount" class="mpesa-amount"></div>
+        <p id="mpesa-message">
+          An M-Pesa prompt was sent to your phone. Enter your M-Pesa PIN to
+          complete the payment.
+        </p>
+        <div id="mpesa-actions" class="mpesa-actions" hidden></div>
+      </div>
+    </div>
+
     <script type="module">
       import {
         initializeApp,
@@ -697,6 +818,7 @@
         serverTimestamp,
         doc,
         getDoc,
+        onSnapshot,
       } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
       // ─── Firebase Config ───────────────────────────────────────────────────────
@@ -714,6 +836,46 @@
         : initializeApp(firebaseConfig);
       const auth = getAuth(app);
       const db = getFirestore(app);
+
+      // ─── M-Pesa payments server (Cloudflare Worker) ─────────────────────────────
+      // After running `npx wrangler deploy` in /cloudflare-worker, paste the
+      // https://bellewear-pay.<your-subdomain>.workers.dev address it prints here.
+      const PAYMENTS_API = "https://belleware-api.belleware-boutique.workers.dev";
+
+
+
+      async function payApi(path, payload) {
+        const user = auth.currentUser;
+        if (!user) throw new Error("Please sign in again.");
+        const token = await user.getIdToken();
+        let res;
+        try {
+          res = await fetch(`${PAYMENTS_API}${path}`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(payload),
+          });
+        } catch (fetchErr) {
+          const msg = fetchErr instanceof TypeError && fetchErr.message
+            ? fetchErr.message
+            : String(fetchErr);
+          throw new Error(
+            `Cannot reach the payments server (${PAYMENTS_API}). Make sure the Worker is deployed and PAYMENTS_API points to it. Original error: ${msg}`,
+          );
+        }
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          const err = new Error(
+            data?.error?.message || "The payment request failed.",
+          );
+          err.code = data?.error?.code;
+          throw err;
+        }
+        return data;
+      }
 
       // ─── Paystack Public Key ────────────────────────────────────────────────────
       // Switch to your live key when going to production!
@@ -758,6 +920,7 @@
       const paystackNotice = document.getElementById("paystack-notice");
       const mpesaInfo = document.getElementById("mpesa-info");
       const pickupInfo = document.getElementById("pickup-info");
+      const mpesaPhoneInput = document.getElementById("mpesa-phone");
 
       ["full-name", "phone", "address"].forEach((id) => {
         document
@@ -916,6 +1079,33 @@
         grandTotalEl.textContent = subtotal + (fee ?? 0);
       }
 
+      // Show the right notice / inputs for the chosen payment method.
+      function syncPaymentUI() {
+        const isPickup =
+          document.querySelector('input[name="fulfillment"]:checked')?.value ===
+          "pickup";
+        const method = document.querySelector(
+          'input[name="payment"]:checked',
+        )?.value;
+        const isMpesa = !isPickup && method === "mpesa";
+        const isCard = !isPickup && !isMpesa;
+
+        paystackNotice.hidden = !isCard;
+        paystackNotice.style.display = isCard ? "flex" : "none";
+        mpesaInfo.hidden = !isMpesa;
+        mpesaInfo.style.display = isMpesa ? "block" : "none";
+        pickupInfo.hidden = !isPickup;
+        placeOrderBtn.textContent = isPickup
+          ? "Confirm Pickup Order"
+          : isMpesa
+            ? "Pay with M-Pesa"
+            : "Pay Now";
+
+        if (isMpesa && !mpesaPhoneInput.value.trim()) {
+          mpesaPhoneInput.value = document.getElementById("phone").value.trim();
+        }
+      }
+
       function updateFulfillmentSelection() {
         const fulfillment = document.querySelector(
           'input[name="fulfillment"]:checked',
@@ -933,17 +1123,7 @@
           ? "Confirm Pickup Order"
           : "Payment Method";
         fulfillmentSummaryLabel.textContent = isPickup ? "Pickup" : "Delivery";
-        paystackNotice.hidden = isPickup;
-        paystackNotice.style.display = isPickup ? "none" : "flex";
-        mpesaInfo.hidden = isPickup;
-        mpesaInfo.style.display =
-          !isPickup &&
-          document.querySelector('input[name="payment"]:checked')?.value ===
-            "mpesa"
-            ? "block"
-            : "none";
-        pickupInfo.hidden = !isPickup;
-        placeOrderBtn.textContent = isPickup ? "Confirm Pickup Order" : "Pay Now";
+        syncPaymentUI();
 
         updateDeliveryTotals();
       }
@@ -1127,6 +1307,203 @@
         }
       }
 
+      // ─── M-Pesa (Daraja STK Push) ────────────────────────────────────────────────
+      // The server creates the order only after Safaricom confirms payment.
+      // Here we send the request, then watch mpesaPayments/{id} for the result.
+      const mpesaOverlay = document.getElementById("mpesa-overlay");
+      const mpesaVisual = document.getElementById("mpesa-visual");
+      const mpesaTitle = document.getElementById("mpesa-title");
+      const mpesaAmount = document.getElementById("mpesa-amount");
+      const mpesaMessage = document.getElementById("mpesa-message");
+      const mpesaActions = document.getElementById("mpesa-actions");
+      let mpesaUnsubscribe = null;
+      let mpesaTimers = [];
+      let activePaymentId = null;
+
+      function stopWatchingPayment() {
+        if (mpesaUnsubscribe) mpesaUnsubscribe();
+        mpesaUnsubscribe = null;
+        mpesaTimers.forEach(clearTimeout);
+        mpesaTimers = [];
+      }
+
+      function resetPayButton() {
+        placeOrderBtn.disabled = false;
+        syncPaymentUI();
+      }
+
+      function setMpesaActions(buttons) {
+        mpesaActions.replaceChildren();
+        buttons.forEach(({ label, secondary, onClick }) => {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.textContent = label;
+          if (secondary) b.className = "secondary";
+          b.addEventListener("click", onClick);
+          mpesaActions.appendChild(b);
+        });
+        mpesaActions.hidden = buttons.length === 0;
+      }
+
+      function closeMpesaOverlay() {
+        stopWatchingPayment();
+        mpesaOverlay.classList.add("hidden");
+        resetPayButton();
+      }
+
+      function showMpesaWaiting(total) {
+        mpesaVisual.className = "mpesa-spinner";
+        mpesaVisual.textContent = "";
+        mpesaTitle.textContent = "Check your phone";
+        mpesaAmount.textContent = `KES ${Number(total).toLocaleString("en-KE")}`;
+        mpesaMessage.textContent =
+          "An M-Pesa prompt was sent to your phone. Enter your M-Pesa PIN to complete the payment. Please don't close this page.";
+        setMpesaActions([]);
+        mpesaOverlay.classList.remove("hidden");
+      }
+
+      function showMpesaFailure(message) {
+        stopWatchingPayment();
+        mpesaVisual.className = "mpesa-icon-fail";
+        mpesaVisual.innerHTML = '<i class="fas fa-times"></i>';
+        mpesaTitle.textContent = "Payment not completed";
+        mpesaAmount.textContent = "";
+        mpesaMessage.textContent =
+          message || "The M-Pesa payment was not completed.";
+        setMpesaActions([
+          { label: "Try again", onClick: closeMpesaOverlay },
+        ]);
+      }
+
+      function showMpesaTimeout(paymentId) {
+        mpesaVisual.className = "mpesa-icon-fail";
+        mpesaVisual.innerHTML = '<i class="fas fa-clock"></i>';
+        mpesaTitle.textContent = "Still waiting for M-Pesa";
+        mpesaAmount.textContent = "";
+        mpesaMessage.textContent =
+          "We haven't received confirmation yet. If M-Pesa already took the money, your order will appear in My Orders shortly \u2014 don't pay again.";
+        setMpesaActions([
+          {
+            label: "Check again",
+            onClick: async () => {
+              showMpesaWaiting(mpesaAmount.dataset.total || 0);
+              await pollPaymentStatus(paymentId);
+              scheduleTimeout(paymentId, 30000);
+            },
+          },
+          { label: "Close", secondary: true, onClick: closeMpesaOverlay },
+        ]);
+      }
+
+      async function pollPaymentStatus(paymentId) {
+        try {
+          // The result is written to Firestore; the snapshot listener reacts.
+          await payApi("/api/pay/status", { paymentId });
+        } catch (err) {
+          console.warn("Payment status check failed:", err);
+        }
+      }
+
+      function scheduleTimeout(paymentId, ms) {
+        mpesaTimers.push(
+          setTimeout(() => {
+            if (activePaymentId === paymentId) showMpesaTimeout(paymentId);
+          }, ms),
+        );
+      }
+
+      async function finishMpesaOrder(paymentId) {
+        stopWatchingPayment();
+        try {
+          const orderSnap = await getDoc(doc(db, "orders", paymentId));
+          if (orderSnap.exists()) {
+            localStorage.setItem(
+              "lastReceipt",
+              JSON.stringify(orderSnap.data()),
+            );
+          }
+        } catch (err) {
+          console.warn("Could not load the order for the receipt:", err);
+        }
+        localStorage.removeItem("pendingOrder");
+        localStorage.removeItem(getCartStorageKey(currentUser.uid));
+        mpesaOverlay.classList.add("hidden");
+        onOrderSuccess();
+      }
+
+      function watchPayment(paymentId) {
+        activePaymentId = paymentId;
+        mpesaUnsubscribe = onSnapshot(
+          doc(db, "mpesaPayments", paymentId),
+          (snap) => {
+            const pay = snap.data();
+            if (!pay) return;
+            if (pay.status === "PAID") {
+              finishMpesaOrder(paymentId);
+            } else if (["FAILED", "CANCELLED", "REVIEW"].includes(pay.status)) {
+              showMpesaFailure(pay.failureReason);
+            }
+          },
+          (err) => console.error("Payment listener error:", err),
+        );
+        // Ask Safaricom directly if the callback is slow, then give up waiting.
+        mpesaTimers.push(setTimeout(() => pollPaymentStatus(paymentId), 45000));
+        mpesaTimers.push(setTimeout(() => pollPaymentStatus(paymentId), 90000));
+        scheduleTimeout(paymentId, 120000);
+      }
+
+      async function startMpesaPayment() {
+        const mpesaPhone = mpesaPhoneInput.value.trim();
+        if (!mpesaPhone) {
+          alert("Enter the M-Pesa phone number you want to pay with.");
+          mpesaPhoneInput.focus();
+          return;
+        }
+        const area = deliveryAreaFees.get(deliveryAreaSelect.value);
+        if (!area) {
+          alert("Select an available delivery area before paying.");
+          showStep(2);
+          return;
+        }
+        if (PAYMENTS_API.includes("YOUR-SUBDOMAIN")) {
+          alert(
+            "M-Pesa isn't switched on yet: set PAYMENTS_API in checkout.html to your Cloudflare Worker address.",
+          );
+          return;
+        }
+
+        placeOrderBtn.disabled = true;
+        placeOrderBtn.textContent = "Sending M-Pesa prompt...";
+        try {
+          const result = await payApi("/api/pay/start", {
+            mpesaPhone,
+            deliveryAreaId: area.id,
+            expectedTotal: getCurrentTotal(),
+            customerInfo: {
+              fullName: document.getElementById("full-name").value.trim(),
+              email: document.getElementById("email").value.trim(),
+              phone: document.getElementById("phone").value.trim(),
+              address: document.getElementById("address").value.trim(),
+            },
+            lines: pendingOrder.items.map((item) => ({
+              productId: item.productId || item.id,
+              size: item.size || "",
+              color: item.color || "",
+              quantity: Number(item.quantity) || 1,
+            })),
+          });
+          mpesaAmount.dataset.total = result.total;
+          showMpesaWaiting(result.total);
+          watchPayment(result.paymentId);
+        } catch (err) {
+          console.error("M-Pesa request failed:", err);
+          alert(
+            err?.message || "Could not start the M-Pesa payment. Please try again.",
+          );
+          resetPayButton();
+        }
+      }
+
       // ─── Auth ────────────────────────────────────────────────────────────────────
       onAuthStateChanged(auth, async (user) => {
         if (!user) {
@@ -1165,11 +1542,7 @@
 
       // ─── Payment method change ───────────────────────────────────────────────────
       paymentRadios.forEach((radio) => {
-        radio.addEventListener("change", (e) => {
-          paystackNotice.style.display = "flex";
-          mpesaInfo.style.display =
-            e.target.value === "mpesa" ? "block" : "none";
-        });
+        radio.addEventListener("change", syncPaymentUI);
       });
       fulfillmentRadios.forEach((radio) => {
         radio.addEventListener("change", updateFulfillmentSelection);
@@ -1231,6 +1604,10 @@
         if (!deliveryAreaFees.has(deliveryAreaSelect.value)) {
           alert("Select an available delivery area before paying.");
           showStep(2);
+          return;
+        }
+        if (paymentMethod === "mpesa") {
+          startMpesaPayment();
           return;
         }
         // launchPaystack is defined in the plain <script> below to avoid ES module scope issues
